@@ -19,7 +19,7 @@ allprojects {
     
     
     ext {
-        appName = "ShipsGame"
+        appName = "ChessGame"
         gdxVersion = '1.9.14'
         roboVMVersion = '2.3.12'
         box2DLightsVersion = '1.5'
@@ -67,7 +67,7 @@ project(":desktop") {
 
     } 
     jar{
-        archiveName = 'Ships.jar'
+        archiveName = 'Chess.jar'
         
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
 

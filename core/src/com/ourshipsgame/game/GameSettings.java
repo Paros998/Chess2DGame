@@ -69,7 +69,7 @@ public class GameSettings {
         music.setVolume(musicVolume);
         music.play();
 
-        clickSound = Gdx.audio.newSound(Gdx.files.internal("core/assets/sounds/menu-click.mp3"));
+        clickSound = Gdx.audio.newSound(Gdx.files.internal("core/assets/sounds/click.mp3"));
         clickSound.pause();
     }
 
@@ -88,8 +88,8 @@ public class GameSettings {
         } else {
             Scanner scanner = new Scanner(file);
 
-            sliderMusicPercent = Float.valueOf(scanner.nextLine().trim());
-            sliderSoundPercent = Float.valueOf(scanner.next().trim());
+            sliderMusicPercent = Float.parseFloat(scanner.nextLine().trim());
+            sliderSoundPercent = Float.parseFloat(scanner.next().trim());
 
             musicVolume = sliderMusicPercent / 5.0f;
             soundVolume = sliderSoundPercent / 5.0f;

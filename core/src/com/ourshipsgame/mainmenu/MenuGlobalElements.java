@@ -71,7 +71,7 @@ public class MenuGlobalElements {
 
         this.game = game;
         gameSettings = new GameSettings(game);
-        menuTexture = new GameObject(new Texture("core/assets/backgroundtextures/ChessMenuBg.png"), 0, 0, true, false,
+        menuTexture = new GameObject(new Texture("core/assets/backgroundtextures/ChessMenuBgv2.png"), 0, 0, true, false,
                 null);
         skin = new Skin(Gdx.files.internal("core/assets/buttons/skins/golden-spiral/skin/golden-ui-skin.json"));
 
