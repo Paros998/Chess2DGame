@@ -42,51 +42,11 @@ public class HelpScreen implements Screen, Constant {
      * Głównie odseparowywuje tabele childTable i przycisk backButton.
      */
     private Table mainTable;
-
-    /**
-     * Sprite małego statku.
-     */
-    private Sprite smallShip;
-
-    /**
-     * Sprite średniego statku.
-     */
-    private Sprite mediumShip;
-
-    /**
-     * Sprite dużego statku.
-     */
-    private Sprite largeShip;
-
-    /**
-     * Sprite dużego zniszczonego statka.
-     */
-    private Sprite destroyedLagreShip;
-
-    /**
-     * Sprite zielonego celownika.
-     */
-    private Sprite greenCrosshair;
-
-    /**
-     * Sprite czerwonego celownika.
-     */
-    private Sprite redCrosshair;
     
     /**
      * Sprite kursora myszki w grze.
      */
     private Sprite cursor;
-
-    /**
-     * Sprite czarnego krzyżyka.
-     */
-    private Sprite blackX;
-
-    /**
-     * Sprite czerwonego krzyżyka.
-     */
-    private Sprite redX;
 
     /**
      * Przycisk z libGDX. Wraca do głównego okna menu gry.
@@ -150,82 +110,69 @@ public class HelpScreen implements Screen, Constant {
 
         backButton = new GameTextButton("Back", 0, 0, game.menuElements.skin, 6, game);
 
-        // Loading ships
-        smallShip = new Sprite(new Texture("core/assets/oneship/one/oneshipModel.png"));
-        mediumShip = new Sprite(new Texture("core/assets/oneship/two/twoshipModel.png"));
-        largeShip = new Sprite(new Texture("core/assets/oneship/three/threeshipModel.png"));
-        destroyedLagreShip = new Sprite(new Texture("core/assets/oneship/three/threeshipModelDestroyed.png"));
 
-        // Loading crosshairs
-        greenCrosshair = new Sprite(new Texture("core/assets/cursors/crosshairGreen.png"));
-        redCrosshair = new Sprite(new Texture("core/assets/cursors/crosshairRed.png"));
-        cursor = new Sprite(new Texture("core/assets/ui/ui.hud/cursors/test.png"));
-
-        // Loading X symbols
-        blackX = new Sprite(new Texture("core/assets/backgroundtextures/blackcross.png"));
-        redX = new Sprite(new Texture("core/assets/backgroundtextures/redcross.png"));
 
         // Creating main Table for buttons and child Table
         mainTable = new Table();
         mainTable.setFillParent(true);
         mainTable.left();
 
-        // Creating Table for descriptions and icons
-        childTable = new Table();
-        // childTable.setFillParent(true);
-
-        // Adding elements to child Table
-        Label label;
-
-        // Small Ship expand
-        childTable.add(new Image(new SpriteDrawable(smallShip))).expandX();
-        label = new Label("- small ship. Has 1 life.", style);
-        childTable.add(label).expandX().padRight(50);
-
-        // Green Crosshair expand
-        childTable.add(new Image(new SpriteDrawable(greenCrosshair))).expandX().padLeft(20);
-        label = new Label("- means that you are able to shoot.", style);
-        childTable.add(label).expandX().padRight(120);
-
-        // Black X symbol expand
-        childTable.add(new Image(new SpriteDrawable(blackX))).expandX().padLeft(20);
-        label = new Label("- means that you have missed your shot.", style);
-        childTable.add(label).expandX().padRight(190);
-
-        childTable.row();
-
-        // Medium Ship expand
-        childTable.add(new Image(new SpriteDrawable(mediumShip))).expandX();
-        label = new Label("- medium ship. Has 2 lifes.", style);
-        childTable.add(label).expandX();
-
-        // Red Crosshair expand
-        childTable.add(new Image(new SpriteDrawable(redCrosshair))).expandX().padLeft(20);
-        label = new Label("- means that you aren't able to shoot.", style);
-        childTable.add(label).expandX().padRight(90);
-
-        // Red X symbol expand
-        childTable.add(new Image(new SpriteDrawable(redX))).expandX().padLeft(20);
-        label = new Label("- means that you have hit enemy's ship.", style);
-        childTable.add(label).expandX().padRight(200);
-
-        childTable.row();
-
-        // Large Ship expand
-        childTable.add(new Image(new SpriteDrawable(largeShip))).expandX();
-        label = new Label("- large ship. Has 3 lifes.", style);
-        childTable.add(label).expandX().padRight(30);
-
-        // Cursor expand
-        childTable.add(new Image(new SpriteDrawable(cursor))).expandX().padLeft(20);
-        label = new Label("- mouse cursor. You can press buttons with it.", style);
-        childTable.add(label).expandX();
-
-        // Destroyed Ship expand
-        childTable.add(new Image(new SpriteDrawable(destroyedLagreShip))).expandX().padLeft(20);
-        label = new Label("- black stains on ship means that it has been destroyed.", style);
-        childTable.add(label).expandX();
-
+//        // Creating Table for descriptions and icons
+//        childTable = new Table();
+//        // childTable.setFillParent(true);
+//
+//        // Adding elements to child Table
+//        Label label;
+//
+//        // Small Ship expand
+//        childTable.add(new Image(new SpriteDrawable())).expandX();
+//        label = new Label("- small ship. Has 1 life.", style);
+//        childTable.add(label).expandX().padRight(50);
+//
+//        // Green Crosshair expand
+//        childTable.add(new Image(new SpriteDrawable())).expandX().padLeft(20);
+//        label = new Label("- means that you are able to shoot.", style);
+//        childTable.add(label).expandX().padRight(120);
+//
+//        // Black X symbol expand
+//        childTable.add(new Image(new SpriteDrawable())).expandX().padLeft(20);
+//        label = new Label("- means that you have missed your shot.", style);
+//        childTable.add(label).expandX().padRight(190);
+//
+//        childTable.row();
+//
+//        // Medium Ship expand
+//        childTable.add(new Image(new SpriteDrawable())).expandX();
+//        label = new Label("- medium ship. Has 2 lifes.", style);
+//        childTable.add(label).expandX();
+//
+//        // Red Crosshair expand
+//        childTable.add(new Image(new SpriteDrawable())).expandX().padLeft(20);
+//        label = new Label("- means that you aren't able to shoot.", style);
+//        childTable.add(label).expandX().padRight(90);
+//
+//        // Red X symbol expand
+//        childTable.add(new Image(new SpriteDrawable())).expandX().padLeft(20);
+//        label = new Label("- means that you have hit enemy's ship.", style);
+//        childTable.add(label).expandX().padRight(200);
+//
+//        childTable.row();
+//
+//        // Large Ship expand
+//        childTable.add(new Image(new SpriteDrawable())).expandX();
+//        label = new Label("- large ship. Has 3 lifes.", style);
+//        childTable.add(label).expandX().padRight(30);
+//
+//        // Cursor expand
+//        childTable.add(new Image(new SpriteDrawable(cursor))).expandX().padLeft(20);
+//        label = new Label("- mouse cursor. You can press buttons with it.", style);
+//        childTable.add(label).expandX();
+//
+//        // Destroyed Ship expand
+//        childTable.add(new Image(new SpriteDrawable())).expandX().padLeft(20);
+//        label = new Label("- black stains on ship means that it has been destroyed.", style);
+//        childTable.add(label).expandX();
+//
         // Adding elements to main Table
         mainTable.add(childTable).expandX();// .padRight(200);
         mainTable.row();
@@ -297,15 +244,8 @@ public class HelpScreen implements Screen, Constant {
         batch.dispose();
         stage.dispose();
 
-        blackX.getTexture().dispose();
-        redX.getTexture().dispose();
-        greenCrosshair.getTexture().dispose();
-        redCrosshair.getTexture().dispose();
-        cursor.getTexture().dispose();
-        smallShip.getTexture().dispose();
-        mediumShip.getTexture().dispose();
-        largeShip.getTexture().dispose();
-        destroyedLagreShip.getTexture().dispose();
+        //cursor.getTexture().dispose();
+
         font.dispose();
     }
 }

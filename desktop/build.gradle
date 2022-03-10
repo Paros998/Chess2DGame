@@ -1,4 +1,4 @@
-sourceCompatibility = 1.7
+sourceCompatibility = 16
 sourceSets.main.java.srcDirs = [ "src/" ]
 sourceSets.main.resources.srcDirs = ["../core/assets"]
 
@@ -23,7 +23,7 @@ task debug(dependsOn: classes, type: JavaExec) {
 }
 
 task dist(type: Jar) {
-    archiveName = 'ShipsDist.jar'
+    archiveName = 'ChessDist.jar'
     exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
     manifest {
         attributes 'Main-Class': 'com/ourshipsgame/desktop/DesktopLauncher'

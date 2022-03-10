@@ -1,17 +1,10 @@
 package com.ourshipsgame.game;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.NumberFormat;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -22,16 +15,19 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
-import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.ourshipsgame.Main;
 import com.ourshipsgame.hud.Hud;
 import com.ourshipsgame.mainmenu.MenuGlobalElements;
 import com.ourshipsgame.mainmenu.MenuScreen;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.NumberFormat;
 
 /**
  * Klasa ekranu głównego gry
@@ -74,14 +70,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
      * Zmienna przechowująca progres ładowania zasobów
      */
     private float progress;
-    /**
-     * Obiekt do renderowania Tile Mapy gry
-     */
-    private OrthogonalTiledMapRenderer renderer;
-    /**
-     * Obiekt określający projekcję gry na ekranie
-     */
-    private OrthographicCamera camera;
+
     /**
      * Zmienna określająca ,który to stopień gry do obliczeń logiki gry
      */
@@ -154,9 +143,10 @@ public class GameScreen extends GameEngine implements InputProcessor {
     private BitmapFont font;
 
     // constructor
+
     /**
      * Konstruktor ekranu głównego
-     * 
+     *
      * @param game Obiekt aplikacji
      */
     public GameScreen(Main game) {
@@ -167,21 +157,12 @@ public class GameScreen extends GameEngine implements InputProcessor {
     }
 
     // Draw methods
+
     /**
      * Metoda do renderowania mapy
      */
     private void drawMap() {
-        switch (gameStage) {
-        case 2:
-            renderer.render();
-            break;
-        case 3:
-            renderer.render(layers);
-            break;
-        case 4:
-            renderer.render(endlayers);
-            break;
-        }
+
     }
 
     /**
@@ -205,47 +186,47 @@ public class GameScreen extends GameEngine implements InputProcessor {
             @Override
             protected void result(Object object) {
                 switch (object.toString()) {
-                case "Yes":
-                    File file = new File("scores.txt");
-                    if (!file.exists())
-                        try {
-                            file.createNewFile();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                    try {
-                        FileWriter writer = new FileWriter(file, true);
-                        writer.write(PlayerOne.getPlayerName() + " ");
-                        writer.write(Float.toString(PlayerOne.getScoreValue()) + " ");
-                        writer.write(Float.toString(PlayerOne.getTimeElapsed()) + " ");
-                        writer.write(Float.toString(PlayerOne.getAccuracyRatio()) + " ");
-                        writer.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                case "No":
-                    new Dialog("What now?", hud.getSkin()) {
-                        {
-
-                            this.button("Main menu!", "menu");
-                            this.button("Exit game!", "game");
-                        }
-
-                        @Override
-                        protected void result(Object object) {
-                            switch (object.toString()) {
-                            case "menu":
-                                GameScreen.dispose();
-                                game.menuElements = new MenuGlobalElements(game);
-                                game.setScreen(new MenuScreen(game));
-                                break;
-                            case "game":
-                                Gdx.app.exit();
-                                break;
+                    case "Yes":
+                        File file = new File("scores.txt");
+                        if (!file.exists())
+                            try {
+                                file.createNewFile();
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
                             }
+                        try {
+                            FileWriter writer = new FileWriter(file, true);
+                            writer.write(PlayerOne.getPlayerName() + " ");
+                            writer.write(Float.toString(PlayerOne.getScoreValue()) + " ");
+                            writer.write(Float.toString(PlayerOne.getTimeElapsed()) + " ");
+                            writer.write(Float.toString(PlayerOne.getAccuracyRatio()) + " ");
+                            writer.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                    }.show(hud.getStage());
-                    break;
+                    case "No":
+                        new Dialog("What now?", hud.getSkin()) {
+                            {
+
+                                this.button("Main menu!", "menu");
+                                this.button("Exit game!", "game");
+                            }
+
+                            @Override
+                            protected void result(Object object) {
+                                switch (object.toString()) {
+                                    case "menu":
+                                        GameScreen.dispose();
+                                        game.menuElements = new MenuGlobalElements(game);
+                                        game.setScreen(new MenuScreen(game));
+                                        break;
+                                    case "game":
+                                        Gdx.app.exit();
+                                        break;
+                                }
+                            }
+                        }.show(hud.getStage());
+                        break;
                 }
             }
         }.show(hud.getStage());
@@ -253,19 +234,19 @@ public class GameScreen extends GameEngine implements InputProcessor {
 
     /**
      * Metoda do renderowania informacji o wynikach gracza i komputera
-     * 
+     *
      * @param batch SpriteBatch do renderowania
      */
     private void drawTurnInfo(SpriteBatch batch) {
         switch (PlayerTurn) {
-        case 1:
-            turnFontActive.draw(batch, "Your Turn!", gameWidth_f / 2 - 250, gameHeight_f - 140);
-            turnFont.draw(batch, "Enemy Turn!", gameWidth_f / 2 + 90, gameHeight_f - 140);
-            break;
-        case 2:
-            turnFont.draw(batch, "Your Turn!", gameWidth_f / 2 - 250, gameHeight_f - 140);
-            turnFontActive.draw(batch, "Enemy Turn!", gameWidth_f / 2 + 90, gameHeight_f - 140);
-            break;
+            case 1:
+                turnFontActive.draw(batch, "Your Turn!", gameWidth_f / 2 - 250, gameHeight_f - 140);
+                turnFont.draw(batch, "Enemy Turn!", gameWidth_f / 2 + 90, gameHeight_f - 140);
+                break;
+            case 2:
+                turnFont.draw(batch, "Your Turn!", gameWidth_f / 2 - 250, gameHeight_f - 140);
+                turnFontActive.draw(batch, "Enemy Turn!", gameWidth_f / 2 + 90, gameHeight_f - 140);
+                break;
         }
     }
 
@@ -318,11 +299,11 @@ public class GameScreen extends GameEngine implements InputProcessor {
     }
 
     // method to create elements
+
     /**
      * Metoda do tworzenia wszystkich elementów graficznych gry
      */
     private void createGraphics() {
-
         // changing game stage from loading to playing
         if (preparation(true, manager)) {
             gameStage = 2;
@@ -352,7 +333,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
         hud.getRepeatButton().addListener(new InputListener() {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                generateAndPlaceShipsOnBoard(1, true);
+
             }
 
             @Override
@@ -363,6 +344,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
     }
 
     // loading method
+
     /**
      * Metoda do ładowania wszystkich zasobów gry
      */
@@ -381,19 +363,12 @@ public class GameScreen extends GameEngine implements InputProcessor {
 
     /**
      * Metoda do aktualizacji logiki gry
-     * 
+     *
      * @param deltaTime czas między klatkami
      */
     // update logics of game
     private void update(float deltaTime) {
 
-        if (FirstBoardShipsDestroyed == sum) {
-            gameStage = 4;
-            PlayerOneLost = true;
-        } else if (SecondBoardShipsDestroyed == sum) {
-            gameStage = 4;
-            PlayerTwoLost = true;
-        }
 
         if (gameStage == 4)
             if (!createDialog) {
@@ -413,21 +388,19 @@ public class GameScreen extends GameEngine implements InputProcessor {
                 PlayerTwo.updateTime(deltaTime);
 
             // Update AI info
-            if (shootOrder)
-                return;
-            else {
-                if (PlayerTurn == 2) {
-                    if (enemyComputerPlayerAi != null) {
 
-                    }
+            if (PlayerTurn == 2) {
+                if (enemyComputerPlayerAi != null) {
+
                 }
             }
+
         }
     }
 
     /**
      * Metoda do renderowania całej szaty graficznej gry
-     * 
+     *
      * @param deltaTime czas między klatkami
      */
     // game loop method
@@ -453,9 +426,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
             else
                 Gdx.input.setInputProcessor(inputMultiplexer);
 
-            // Map update and tilemap render
-            camera.update();
-            renderer.setView(camera);
+
             drawMap();
             // update
             update(deltaTime);
@@ -469,15 +440,9 @@ public class GameScreen extends GameEngine implements InputProcessor {
 
             // Texts
             switch (gameStage) {
-            case 2:
-                drawStage2Text(font, sb);
-                break;
-            case 3:
-                drawTurnInfo(sb);
-                break;
-            case 4:
-                drawExitScreen();
-                break;
+                case 2 -> drawStage2Text(font, sb);
+                case 3 -> drawTurnInfo(sb);
+                case 4 -> drawExitScreen();
             }
 
             sb.end();
@@ -520,7 +485,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
 
     /**
      * Metoda wywoływana gdy rozmiar okna jest zmieniany
-     * 
+     *
      * @param width  Nowa szerokość okna
      * @param height Nowa wysokość okna
      */
@@ -560,7 +525,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
 
     /**
      * Metoda wywoływana gdy klawisz jest wciskany
-     * 
+     *
      * @param keycode Oznaczenie klawisza
      * @return boolean
      */
@@ -571,7 +536,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
 
     /**
      * Metoda wywoływana gdy klawisz jest puszczany
-     * 
+     *
      * @param keycode Oznaczenie klawisza
      * @return boolean
      */
@@ -582,7 +547,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
 
     /**
      * Metoda wywoływana gdy znak klawiatury zostanie wciśnięty
-     * 
+     *
      * @param character Znak
      * @return boolean
      */
@@ -593,7 +558,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
 
     /**
      * Metoda wywoływana gdy klawisz myszki zostanie wciśnięty
-     * 
+     *
      * @param screenX Pozycja X myszki na ekranie
      * @param screenY Pozycja Y myszki na ekranie
      * @param pointer Wskaźnik na coś..
@@ -602,7 +567,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
      */
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        switch(button){
+        switch (button) {
             case Buttons.LEFT:
                 if (gameStage == 3) {
                     if (PlayerTurn == 1) {
@@ -623,7 +588,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
 
     /**
      * Metoda wywoływana gdy klawisz myszki zostanie upuszczony
-     * 
+     *
      * @param screenX Pozycja X myszki na ekranie
      * @param screenY Pozycja Y myszki na ekranie
      * @param pointer Wskaźnik na coś..
@@ -638,7 +603,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
 
     /**
      * Metoda wywoływana gdy klawisz myszki został wciśnięty i ruszony po ekranie
-     * 
+     *
      * @param screenX Pozycja X myszki na ekranie
      * @param screenY Pozycja Y myszki na ekranie
      * @param pointer Wskaźnik na coś..
@@ -651,7 +616,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
 
     /**
      * Metoda wywoływana gdy mysz zostanie ruszona na ekranie
-     * 
+     *
      * @param screenX Pozycja X myszki na ekranie
      * @param screenY Pozycja Y myszki na ekranie
      * @return boolean
@@ -663,7 +628,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
 
     /**
      * Metoda wywoływana gdy scroll myszki będzie aktywowany
-     * 
+     *
      * @param amountX ilość obrotu w poziomie
      * @param amountY ilość obrotu w pionie
      * @return boolean
