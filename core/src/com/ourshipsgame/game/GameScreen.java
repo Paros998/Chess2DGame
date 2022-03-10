@@ -187,164 +187,10 @@ public class GameScreen extends GameEngine implements InputProcessor {
     /**
      * Metoda do renderowania statków i ich elementów
      */
-    private void drawShipsEnTurrets() {
-        if (drawShips)
-            switch (gameStage) {
-            case 2:
-                for (int i = 0; i < sum; i++) {
-                    FirstBoardShipsSprites[i].updateTexture();
-                    FirstBoardShipsSprites[i].drawSprite(sb, true, false, sr);
-                    FirstBoardShipsSprites[i].drawTurrets(sb);
-                    SecondBoardShipsSprites[i].updateTexture();
-                    SecondBoardShipsSprites[i].drawSprite(sb, true, false, sr, true);
-                    SecondBoardShipsSprites[i].drawTurrets(sb, true);
-                }
-                break;
-            case 3:
-                for (int i = 0; i < sum; i++) {
-                    FirstBoardShipsSprites[i].updateTexture();
-                    FirstBoardShipsSprites[i].drawSprite(sb);
-                    FirstBoardShipsSprites[i].drawTurrets(sb);
-                    SecondBoardShipsSprites[i].updateTexture();
-                    SecondBoardShipsSprites[i].drawSprite(sb, true);
-                    SecondBoardShipsSprites[i].drawTurrets(sb, true);
-                }
-                break;
-            case 4:
-                for (int i = 0; i < sum; i++) {
-                    FirstBoardShipsSprites[i].drawSprite(sb);
-                    FirstBoardShipsSprites[i].drawTurrets(sb);
-                    SecondBoardShipsSprites[i].drawSprite(sb);
-                    SecondBoardShipsSprites[i].drawTurrets(sb);
-                }
-                break;
-            }
+    private void drawChessPieces() {
+
     }
 
-    /**
-     * Metoda do renderowania efektu trafienia
-     * 
-     * @param deltaTime czas między klatkami
-     */
-    private void drawHit(float deltaTime) {
-        hitTime += deltaTime;
-        if (hitTime <= 1f) {
-            hitEffect.updateAnimation();
-            hitEffect.drawEffect(sb);
-        } else {
-            hitEffect.resetAnimation();
-            hitTime = 0f;
-            hitted = false;
-        }
-        hitMissSound = false;
-    }
-
-    /**
-     * Metoda do renderowania efektu nietrafienia
-     * 
-     * @param deltaTime czas między klatkami
-     */
-    private void drawMiss(float deltaTime) {
-        missTime += deltaTime;
-        if (missTime <= 1f) {
-            missEffect.updateAnimation();
-            missEffect.drawEffect(sb);
-        } else {
-            missEffect.resetAnimation();
-            missTime = 0f;
-            missed = false;
-        }
-        hitMissSound = false;
-    }
-
-    /**
-     * Metoda do renderowania efektu zniszczenia okrętu
-     * 
-     * @param deltaTime czas między klatkami
-     */
-    private void drawDestroyment(float deltaTime) {
-        destroyTime += deltaTime;
-        if (destroyTime <= 1f) {
-            destroymentEffect.updateAnimation(true);
-            destroymentEffect.drawEffect(sb, true);
-        } else {
-            destroymentEffect.resetAnimation();
-            destroyed = false;
-            destroymentSound = false;
-            destroyTime = 0f;
-        }
-    }
-
-    /**
-     * Metoda do renderowania efektu wystrzału okrętów niezniszczonych
-     * 
-     * @param deltaTime czas między klatkami
-     */
-    private void drawShootingEffect(float deltaTime) {
-        shootingDone = false;
-        shootTime += deltaTime;
-        if (shootTime <= 1f) {
-            shootingEnabled = false;
-            if (PlayerTurn == 1) {
-                for (int i = 0; i < sum; i++) {
-                    if (FirstBoardShipsSprites[i].shipDestroyed)
-                        continue;
-                    shootEffect[i].updateAnimation(FirstBoardShipsSprites[i]);
-                    shootEffect[i].drawAnimation(sb);
-                }
-            }
-        } else if (shootTime > 1f) {
-            for (int i = 0; i < sum; i++) {
-                if (FirstBoardShipsSprites[i].shipDestroyed)
-                    continue;
-                shootEffect[i].resetAnimation();
-            }
-            rotateEnabled = true;
-            shootTime = 0f;
-            shootOrder = false;
-            shootingDone = true;
-        }
-        if (missed && shootingDone)
-            switchTurn();
-    }
-
-    /**
-     * Metoda do renderowania znaczków pomocniczych dla gracza na planszy wroga
-     * 
-     * @param batch SpriteBatch do renderowania
-     */
-    private void drawMarks(SpriteBatch batch) {
-        if (gameStage == 3) {
-            float xpos, ypos;
-            if (PlayerTurn == 1) {
-                if (!shootOrder && !destroyed)
-                    for (int i = 0; i < 10; i++)
-                        for (int j = 0; j < 10; j++) {
-                            if (FirstPlayerShotsDone[i][j] == -1) {
-                                xpos = i * 64f + SecondBoardStart.x;
-                                ypos = j * 64f + SecondBoardStart.y;
-                                batch.draw(shootMarks[0], xpos, ypos);
-                            } else if (FirstPlayerShotsDone[i][j] == 1) {
-                                xpos = i * 64f + SecondBoardStart.x;
-                                ypos = j * 64f + SecondBoardStart.y;
-                                batch.draw(shootMarks[1], xpos, ypos);
-                            }
-                        }
-            } else
-                for (int i = 0; i < 10; i++)
-                    for (int j = 0; j < 10; j++) {
-                        if (FirstPlayerShotsDone[i][j] == -1) {
-                            xpos = i * 64f + SecondBoardStart.x;
-                            ypos = j * 64f + SecondBoardStart.y;
-                            batch.draw(shootMarks[0], xpos, ypos);
-                        } else if (FirstPlayerShotsDone[i][j] == 1) {
-                            xpos = i * 64f + SecondBoardStart.x;
-                            ypos = j * 64f + SecondBoardStart.y;
-                            batch.draw(shootMarks[1], xpos, ypos);
-                        }
-                    }
-        }
-    }
 
     /**
      * Metoda do stworzenia okna dialogowego po skończonej bitwie
@@ -410,11 +256,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
      * 
      * @param batch SpriteBatch do renderowania
      */
-    private void drawScores(SpriteBatch batch) {
-        PlayerOne.drawInfo(hudFont, batch, gameWidth_f, gameHeight_f, FirstBoardThreeShipsLeft, FirstBoardTwoShipsLeft,
-                FirstBoardOneShipsLeft, shipIcons);
-        PlayerTwo.drawInfo(hudFont, batch, gameWidth_f, gameHeight_f, SecondBoardThreeShipsLeft,
-                SecondBoardTwoShipsLeft, SecondBoardOneShipsLeft, shipIcons);
+    private void drawTurnInfo(SpriteBatch batch) {
         switch (PlayerTurn) {
         case 1:
             turnFontActive.draw(batch, "Your Turn!", gameWidth_f / 2 - 250, gameHeight_f - 140);
@@ -455,28 +297,6 @@ public class GameScreen extends GameEngine implements InputProcessor {
 
     // Create methods
     /**
-     * Metoda do utworzenia mapy z AssetManagera oraz innych zmiennych do jej
-     * funkcjonowania
-     */
-    private void createMap() {
-        map = (TiledMap) manager.get("core/assets/map/mp1.tmx");
-        camera = new OrthographicCamera();
-        renderer = new OrthogonalTiledMapRenderer(map);
-        camera.setToOrtho(false, gameWidth_f, gameHeight_f);
-
-        // Map layers
-        layers = new int[4];
-        layers[0] = 0;
-        layers[1] = 1;
-        layers[2] = 2;
-        layers[3] = 3;
-
-        endlayers = new int[2];
-        endlayers[0] = 0;
-        endlayers[1] = 1;
-    }
-
-    /**
      * Metoda do utworzenia czcionek
      */
     private void createFonts() {
@@ -502,9 +322,8 @@ public class GameScreen extends GameEngine implements InputProcessor {
      * Metoda do tworzenia wszystkich elementów graficznych gry
      */
     private void createGraphics() {
-        // Map ,textures,cameras
-        createMap();
-        // changing game stage from loading to Placing ships
+
+        // changing game stage from loading to playing
         if (preparation(true, manager)) {
             gameStage = 2;
             hud = new Hud(manager, game, GameScreen, crosshairs[2]);
@@ -517,7 +336,6 @@ public class GameScreen extends GameEngine implements InputProcessor {
         hud.getPlayButton().addListener(new InputListener() {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                readyButtonCheck();
                 if (gameStage == 3) {
                     hud.getStage().getActors().pop();
                     hud.getPlayersSetNameDialog().hide();
@@ -549,57 +367,16 @@ public class GameScreen extends GameEngine implements InputProcessor {
      * Metoda do ładowania wszystkich zasobów gry
      */
     private void loadAssets() {
-        manager.setLoader(TiledMap.class, new TmxMapLoader(new InternalFileHandleResolver()));
-        manager.load("core/assets/map/mp1.tmx", TiledMap.class);
         loadGameEngine(manager);
         loadHudAssets(manager);
     }
 
-    // Sound effects methods
-    /**
-     * Metoda do odtwarzania dźwięku obrotu wieżyczek
-     */
-    private void startRotateSound() {
-        sid = rotateSound.loop(hud.gameSettings.soundVolume * (1 + 0.5f));
-        rotateSound.pause();
-    }
 
     /**
-     * Metoda do odtwarzania dźwięków wystrzałów
+     * Metoda do odtwarzania dźwięków ruchu pionków
      */
-    private void playShootSound() {
-        if (shootTime <= 1f) {
-            if (PlayerTurn == 1) {
-                int j = 0;
-                for (int i = 0; i < sum; i++)
-                    if (!FirstBoardShipsSprites[i].shipDestroyed)
-                        j++;
-                for (int i = 0; i < j; i++)
-                    ShootSounds[i].play(hud.gameSettings.soundVolume);
-            } else {
-                int j = 0;
-                for (int i = 0; i < sum; i++)
-                    if (!SecondBoardShipsSprites[i].shipDestroyed)
-                        j++;
-                for (int i = 0; i < j; i++)
-                    ShootSounds[i].play(hud.gameSettings.soundVolume);
-            }
-        }
-        shootSound = false;
-    }
+    private void playMoveSound() {
 
-    // Invoked after ready button is pressed in stage 2
-    /**
-     * Metoda do sprawdzenia czy statki są na dobrych pozycjach i wystartowanie
-     * bitwy
-     */
-    public void readyButtonCheck() {
-        if (checkAllShips()) {
-            firstBoard.placeShipOnBoard(sum);
-            // secondBoard.placeShipOnBoard(sum);
-            gameStage = 3;
-            startRotateSound();
-        }
     }
 
     /**
@@ -609,10 +386,6 @@ public class GameScreen extends GameEngine implements InputProcessor {
      */
     // update logics of game
     private void update(float deltaTime) {
-
-        if (gameStage == 2)
-            if (checkAllShips())
-                hud.getPlayButton().getStyle().imageUp = new SpriteDrawable(hud.getPlayButtonGreenStyle());
 
         if (FirstBoardShipsDestroyed == sum) {
             gameStage = 4;
@@ -633,41 +406,19 @@ public class GameScreen extends GameEngine implements InputProcessor {
                 Gdx.graphics.setCursor(crosshairs[2]);
             }
 
-        rotateTime += deltaTime;
-        if (rotateTime >= 0.3f) {
-            rotateTime -= 0.32f;
-            rotateSound.pause();
-        }
-
-        rotateSound.setVolume(sid, hud.gameSettings.soundVolume * (1 + 0.5f));
         if (gameStage == 3) {
-
             if (PlayerTurn == 1)
                 PlayerOne.updateTime(deltaTime);
             else
                 PlayerTwo.updateTime(deltaTime);
+
             // Update AI info
             if (shootOrder)
                 return;
             else {
                 if (PlayerTurn == 2) {
-                    Gdx.graphics.setCursor(crosshairs[2]);
                     if (enemyComputerPlayerAi != null) {
-                        shootingEnabled = true;
-                        shootOrder = enemyComputerPlayerAi.attackEnemy(deltaTime);
-                        if (shootOrder) {
-                            shoot((int) enemyComputerPlayerAi.getX(), (int) enemyComputerPlayerAi.getY());
-                            shootSound = true;
-                            hitMissSound = true;
-                            enemyComputerPlayerAi.update(missed, hitted, destroyed, SecondPlayerShotsDone,
-                                    FirstBoardShipsSprites, FirstBoardStart, sum);
-                            float x, y;
-                            x = (enemyComputerPlayerAi.getX() * 64.0f) + FirstBoardStart.x;
-                            y = (enemyComputerPlayerAi.getY() * 64.0f) + FirstBoardStart.y;
-                            rotateTurretsWithMouse(x, y);
-                            PlayerTwo.update(SecondPlayerShotsDone);
-                            shootingEnabled = false;
-                        }
+
                     }
                 }
             }
@@ -688,7 +439,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
 
         if (manager.update()) {
             // When loading screen disappers
-            if (createdTextures == false) {
+            if (!createdTextures) {
                 loadingTexture.dispose();
                 createGraphics();
                 inputMultiplexer = new InputMultiplexer();
@@ -714,8 +465,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
             sr.begin();
             // Do not place any drawings up!!
 
-            // Ships // Turrets
-            drawShipsEnTurrets();
+            drawChessPieces();
 
             // Texts
             switch (gameStage) {
@@ -723,35 +473,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
                 drawStage2Text(font, sb);
                 break;
             case 3:
-                drawScores(sb);
-                drawMarks(sb);
-                if (shootOrder) {
-                    shootingEnabled = false;
-                    rotateEnabled = false;
-                    if (shootSound) {
-                        playShootSound();
-                    }
-                    drawShootingEffect(deltaTime);
-                    if (hitted == true && destroyed == false) {
-                        if (hitMissSound)
-                            hitEffect.playSound(hud.gameSettings.soundVolume);
-                        drawHit(deltaTime);
-                    }
-                    if (missed) {
-                        if (hitMissSound)
-                            missEffect.playSound(hud.gameSettings.soundVolume);
-                        drawMiss(deltaTime);
-                    }
-
-                }
-                if (destroyed) {
-                    missed = false;
-                    hitMissSound = false;
-                    shootSound = false;
-                    if (destroymentSound)
-                        destroymentSound = destroymentEffect.playSound(true, hud.gameSettings.soundVolume);
-                    drawDestroyment(deltaTime);
-                }
+                drawTurnInfo(sb);
                 break;
             case 4:
                 drawExitScreen();
@@ -775,7 +497,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
         sb = new SpriteBatch();
         sr = new ShapeRenderer();
         manager = new AssetManager();
-        loadingTexture = new Texture("core/assets/backgroundtextures/paperTextOld.png");
+        loadingTexture = new Texture("core/assets/backgroundtextures/ChessMenuBg.png");
         createFonts();
         loadAssets();
     }
@@ -844,11 +566,6 @@ public class GameScreen extends GameEngine implements InputProcessor {
      */
     @Override
     public boolean keyDown(int keycode) {
-        if (gameStage == 2) {
-            if (Gdx.input.isKeyPressed(Keys.R))
-                if ((activeSpriteDrag <= sum - 1) && (activeSpriteDrag >= 0))
-                    rotateActualShip();
-        }
         return false;
     }
 
@@ -860,7 +577,6 @@ public class GameScreen extends GameEngine implements InputProcessor {
      */
     @Override
     public boolean keyUp(int keycode) {
-
         return false;
     }
 
@@ -872,7 +588,6 @@ public class GameScreen extends GameEngine implements InputProcessor {
      */
     @Override
     public boolean keyTyped(char character) {
-
         return false;
     }
 
@@ -887,21 +602,21 @@ public class GameScreen extends GameEngine implements InputProcessor {
      */
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if (button == Buttons.LEFT) {
-            if (gameStage == 2)
-                touchDownSprite(screenX, screenY);
-            if (gameStage == 3) {
-                if (PlayerTurn == 1) {
-                    if (shootingDone) {
-                        shootOrder = shoot(screenX, screenY);
-                        if (shootOrder) {
-                            PlayerOne.update(FirstPlayerShotsDone);
-                            shootSound = true;
-                            hitMissSound = true;
-                        }
+        switch(button){
+            case Buttons.LEFT:
+                if (gameStage == 3) {
+                    if (PlayerTurn == 1) {
+
                     }
                 }
-            }
+                break;
+            case Buttons.RIGHT:
+                if (gameStage == 3) {
+                    if (PlayerTurn == 1) {
+
+                    }
+                }
+                break;
         }
         return false;
     }
@@ -917,8 +632,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
      */
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        if (gameStage == 2)
-            touchUpSprite();
+
         return false;
     }
 
@@ -932,8 +646,6 @@ public class GameScreen extends GameEngine implements InputProcessor {
      */
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
-        if (gameStage == 2)
-            dragSprite(screenX, screenY);
         return false;
     }
 
@@ -946,19 +658,6 @@ public class GameScreen extends GameEngine implements InputProcessor {
      */
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
-        if (gameStage == 3) {
-            if (PlayerTurn == 1) {
-                if (shootingDone) {
-                    if (!shootOrder)
-                        checkEnemyBoard(screenX, screenY);
-                    if (rotateEnabled) {
-                        rotateSound.resume();
-                        rotateTurretsWithMouse(screenX, screenY);
-                    }
-                }
-            }
-
-        }
         return false;
     }
 
