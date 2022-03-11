@@ -64,7 +64,7 @@ public class GameSettings {
             e.printStackTrace();
         }
         // Music and sounds
-        music = Gdx.audio.newMusic(Gdx.files.internal("core/assets/music/Blackmoor Tides Loop.wav"));
+        music = Gdx.audio.newMusic(Gdx.files.internal("core/assets/music/Ambient Piano.mp3"));
         music.setLooping(true);
         music.setVolume(musicVolume);
         music.play();

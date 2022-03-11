@@ -1,7 +1,5 @@
 package com.ourshipsgame.handlers;
 
-import org.lwjgl.util.vector.Vector2f;
-
 /**
  * Interfejs przechowujący kilka stałych do obliczeń itp
  */
@@ -27,24 +25,24 @@ public interface Constant {
     /**
      * Szerokość jednej kratki
      */
-    int BOX_WIDTH = 64;
+    int BOX_WIDTH = 120;
     /**
      * Wysokość jednej kratki
      */
-    int BOX_HEIGHT = 64;
+    int BOX_HEIGHT = 120;
     /**
      * Szerokość jednej kratki
      */
-    float BOX_WIDTH_F = 64.0f;
+    float BOX_WIDTH_F = 120.0f;
     /**
      * Wysokość jednej kratki
      */
-    float BOX_HEIGHT_F = 64.0f;
+    float BOX_HEIGHT_F = 120.0f;
     // Ilosc kwadratów na planszy wg osi
     /**
      * Ilosc kwadratów na planszy wg osi X
      */
-    int BOX_X_AXIS_NUMBER = 10;
+    int BOX_X_AXIS_NUMBER = 8;
     /**
      * Przelicznik kratek mapy tile do growej
      */
@@ -52,23 +50,63 @@ public interface Constant {
     /**
      * Ilosc kwadratów na planszy wg osi Y
      */
-    int BOX_Y_AXIS_NUMBER = 10;
-    // Współrzędne wieżyczek na statkach
-    /**
-     * Pozycje wieżyczek na statku trój-polowym
-     */
-    Vector2f[] TurretsPos3 = { new Vector2f(8, 56), new Vector2f(31, 59), new Vector2f(52, 56),
-            new Vector2f(8, 73), new Vector2f(31, 75), new Vector2f(52, 73), new Vector2f(16, 109),
-            new Vector2f(31, 107), new Vector2f(47, 109), new Vector2f(31, 130) };
-    /**
-     * Pozycje wieżyczek na statku dwu-polowym
-     */
-    Vector2f[] TurretsPos2 = { new Vector2f(31, 21), new Vector2f(31, 37), new Vector2f(31, 73),
-            new Vector2f(31, 92) };
-    /**
-     * Pozycje wieżyczek na statku jedno-polowym
-     */
-    Vector2f[] TurretsPos1 = { new Vector2f(25, 32), new Vector2f(36, 32) };
+    int BOX_Y_AXIS_NUMBER = 8;
+
+    float X_AXIS_BOARD_START = 1920.f - 1080.f / 2;
+
+    float Y_AXIS_BOARD_START = 0.f;
+
+    //Mają po 120px nie 128
+    String[] ChessPiecesTexturesPaths = {
+            "core/assets/chess-pieces/b_bishop_png_shadow_128px.png",
+            "core/assets/chess-pieces/b_king_png_shadow_128px.png",
+            "core/assets/chess-pieces/b_knight_png_shadow_128px.png",
+            "core/assets/chess-pieces/b_pawn_png_shadow_128px.png",
+            "core/assets/chess-pieces/b_queen_png_shadow_128px.png",
+            "core/assets/chess-pieces/b_rook_png_shadow_128px.png",
+
+            "core/assets/chess-pieces/w_bishop_png_shadow_128px.png",
+            "core/assets/chess-pieces/w_king_png_shadow_128px.png",
+            "core/assets/chess-pieces/w_knight_png_shadow_128px.png",
+            "core/assets/chess-pieces/w_pawn_png_shadow_128px.png",
+            "core/assets/chess-pieces/w_queen_png_shadow_128px.png",
+            "core/assets/chess-pieces/w_rook_png_shadow_128px.png",
+    };
+
+    enum ChessPiecesPaths {
+        B_BISHOP,
+        B_KING,
+        B_KNIGHT,
+        B_PAWN,
+        B_QUEEN,
+        B_ROOK,
+        W_BISHOP,
+        W_KING,
+        W_KNIGHT,
+        W_PAWN,
+        W_QUEEN,
+        W_ROOK
+    }
+
+    enum ChessPiecesInArray {
+        King,
+        Queen,
+        FstBishop,
+        SndBishop,
+        FstKnight,
+        SndKnight,
+        FstRook,
+        SndRook,
+        Pawn1,
+        Pawn2,
+        Pawn3,
+        Pawn4,
+        Pawn5,
+        Pawn6,
+        Pawn7,
+        Pawn8
+    }
+
 
     // Opcje graficzne
     /**

@@ -97,13 +97,13 @@ public class MenuGlobalElements {
         if ((menuTexture.x <= 0) && (direction == 0)) {
             if (menuTexture.x <= -119)
                 direction = 1;
-            menuTexture.moveTexture(-20 * deltaTime);
+            menuTexture.moveTexture(-30 * deltaTime);
         }
 
         if ((menuTexture.x >= -120) && (direction == 1)) {
             if (menuTexture.x >= -1)
                 direction = 0;
-            menuTexture.moveTexture(20 * deltaTime);
+            menuTexture.moveTexture(30 * deltaTime);
         }
     }
 
