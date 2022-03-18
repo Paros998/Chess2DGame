@@ -13,12 +13,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.ourshipsgame.Main;
-import com.ourshipsgame.handlers.Constant;
 import com.ourshipsgame.hud.Hud;
 import com.ourshipsgame.mainmenu.MenuGlobalElements;
 import com.ourshipsgame.mainmenu.MenuScreen;
@@ -113,7 +111,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
      */
     private void drawMap() {
         gameBackground.getSprite().draw(sb);
-        gameBoard.Board.getSprite().draw(sb);
+        gameBoard.gameBoardObject.getSprite().draw(sb);
     }
 
     /**
