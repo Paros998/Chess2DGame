@@ -33,11 +33,11 @@ public interface Constant {
     /**
      * Szerokość jednej kratki
      */
-    float BOX_WIDTH_F = 120.0f;
+    float BOX_WIDTH_F = 122.5f;
     /**
      * Wysokość jednej kratki
      */
-    float BOX_HEIGHT_F = 120.0f;
+    float BOX_HEIGHT_F = 122.5f;
     // Ilosc kwadratów na planszy wg osi
     /**
      * Ilosc kwadratów na planszy wg osi X
@@ -52,7 +52,7 @@ public interface Constant {
      */
     int BOX_Y_AXIS_NUMBER = 8;
 
-    float X_AXIS_BOARD_START = 1920.f - 1080.f / 2;
+    float X_AXIS_BOARD_START = (1920.f - 1080.f) / 2;
 
     float Y_AXIS_BOARD_START = 0.f;
 

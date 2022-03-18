@@ -1,10 +1,8 @@
 package com.ourshipsgame.game;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.ourshipsgame.handlers.Constant;
@@ -15,10 +13,6 @@ import org.lwjgl.util.vector.Vector2f;
  * Klasa przechowująca wszystkie dane dotyczące jednego statku
  */
 public class GameObject extends Rectangle implements Constant {
-    /**
-     * Oznaczenie wersji
-     */
-    private static final long serialVersionUID = 1L;
     /**
      * Tekstura obiektu
      */
@@ -34,7 +28,7 @@ public class GameObject extends Rectangle implements Constant {
     /**
      * Prostokąt wokół sprite'a do obliczeń kolizji i logiki
      */
-    protected Rectangle alligmentRectangle;
+    protected Rectangle alignmentRectangle;
     /**
      * Animator do animowania
      */
@@ -87,7 +81,7 @@ public class GameObject extends Rectangle implements Constant {
     /**
      * Metoda do przesuwania tekstury wg osi X
      * 
-     * @param x
+     * @param x offset in x axis
      */
     // This method simply moves main sprite texture in x axis
     public void moveTexture(float x) {
@@ -105,7 +99,7 @@ public class GameObject extends Rectangle implements Constant {
     protected void createSprite(Texture texture) {
         this.sprite = new Sprite(texture);
         this.oldPos = new Vector2(x, y);
-        this.alligmentRectangle = new Rectangle(x, y, width, height);
+        this.alignmentRectangle = new Rectangle(x, y, width, height);
         this.sprite.setSize(width, height);
         setSpritePos(this.oldPos);
     }
@@ -122,7 +116,7 @@ public class GameObject extends Rectangle implements Constant {
     // array which will be used to represent ship destroyment in future
     protected void createSprite(Texture texture, int size) {
         this.sprite = new Sprite(texture);
-        this.alligmentRectangle = new Rectangle(x, y, width, height);
+        this.alignmentRectangle = new Rectangle(x, y, width, height);
         this.oldPos = new Vector2(x, y);
         this.sprite.setSize(width, height);
         setSpritePos(this.oldPos);
@@ -151,7 +145,7 @@ public class GameObject extends Rectangle implements Constant {
     /**
      * Metoda do rysowania sprite
      * 
-     * @param batch
+     * @param batch rendering batch
      */
     // this method draws the main sprite and its waves if they exist
     public void drawSprite(SpriteBatch batch) {
@@ -168,8 +162,8 @@ public class GameObject extends Rectangle implements Constant {
     // and also the ship waves sprite and rectangle if they exist
     public void setSpritePos(Vector2 vector2) {
         this.sprite.setPosition(vector2.x, vector2.y);
-        if (alligmentRectangle != null)
-            this.alligmentRectangle.setPosition(vector2);
+        if (alignmentRectangle != null)
+            this.alignmentRectangle.setPosition(vector2);
         this.x = vector2.x;
         this.y = vector2.y;
     }
@@ -184,8 +178,8 @@ public class GameObject extends Rectangle implements Constant {
     // and the ship turrets if they exist
     public void translate(Vector2 vector2) {
         this.sprite.translate(vector2.x, vector2.y);
-        if (alligmentRectangle != null)
-            this.alligmentRectangle.setPosition(sprite.getX(), sprite.getY());
+        if (alignmentRectangle != null)
+            this.alignmentRectangle.setPosition(sprite.getX(), sprite.getY());
         this.x = sprite.getX();
         this.y = sprite.getY();
 
@@ -201,8 +195,8 @@ public class GameObject extends Rectangle implements Constant {
     // and the ship turrets if they exist but only in x axis
     public void translateX(float x) {
         this.sprite.translateX(x);
-        if (alligmentRectangle != null)
-            this.alligmentRectangle.setPosition(sprite.getX(), this.y);
+        if (alignmentRectangle != null)
+            this.alignmentRectangle.setPosition(sprite.getX(), this.y);
         this.x = sprite.getX();
     }
 
@@ -216,8 +210,8 @@ public class GameObject extends Rectangle implements Constant {
     // and the ship turrets if they exist but only in y axis
     public void translateY(float y) {
         this.sprite.translateY(y);
-        if (alligmentRectangle != null)
-            this.alligmentRectangle.setPosition(this.x, sprite.getY());
+        if (alignmentRectangle != null)
+            this.alignmentRectangle.setPosition(this.x, sprite.getY());
         this.y = sprite.getY();
     }
 
@@ -229,7 +223,7 @@ public class GameObject extends Rectangle implements Constant {
      */
     // this method checks if the point is placed in gameobject
     public boolean spriteContains(Vector2 point) {
-        return this.alligmentRectangle.contains(point);
+        return this.alignmentRectangle.contains(point);
     }
 
     /**
@@ -245,14 +239,14 @@ public class GameObject extends Rectangle implements Constant {
         float by = otherRectangle.y;
         float bx2 = otherRectangle.width + otherRectangle.x;
         float by2 = otherRectangle.height + otherRectangle.y;
-        float ax = alligmentRectangle.x;
-        float ay = alligmentRectangle.y;
-        float ax2 = alligmentRectangle.width + alligmentRectangle.x;
-        float ay2 = alligmentRectangle.height + alligmentRectangle.y;
+        float ax = alignmentRectangle.x;
+        float ay = alignmentRectangle.y;
+        float ax2 = alignmentRectangle.width + alignmentRectangle.x;
+        float ay2 = alignmentRectangle.height + alignmentRectangle.y;
 
-        return alligmentRectangle.contains(new Vector2(bx, by)) || alligmentRectangle.contains(new Vector2(bx2, by))
-                || alligmentRectangle.contains(new Vector2(bx, by2))
-                || alligmentRectangle.contains(new Vector2(bx2, by2)) || otherRectangle.contains(new Vector2(ax, ay))
+        return alignmentRectangle.contains(new Vector2(bx, by)) || alignmentRectangle.contains(new Vector2(bx2, by))
+                || alignmentRectangle.contains(new Vector2(bx, by2))
+                || alignmentRectangle.contains(new Vector2(bx2, by2)) || otherRectangle.contains(new Vector2(ax, ay))
                 || otherRectangle.contains(new Vector2(ax2, ay)) || otherRectangle.contains(new Vector2(ax, ay2))
                 || otherRectangle.contains(new Vector2(ax2, ay2));
     }

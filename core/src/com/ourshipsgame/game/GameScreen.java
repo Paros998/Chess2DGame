@@ -7,19 +7,18 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.ourshipsgame.Main;
+import com.ourshipsgame.handlers.Constant;
 import com.ourshipsgame.hud.Hud;
 import com.ourshipsgame.mainmenu.MenuGlobalElements;
 import com.ourshipsgame.mainmenu.MenuScreen;
@@ -76,10 +75,6 @@ public class GameScreen extends GameEngine implements InputProcessor {
      */
     private int gameStage = 1;
     /**
-     * Mapa główna gry
-     */
-    private TiledMap map;
-    /**
      * Tło do ekranu ładowania
      */
     private Texture loadingTexture;
@@ -88,54 +83,9 @@ public class GameScreen extends GameEngine implements InputProcessor {
      */
     private boolean createdTextures = false;
     /**
-     * Zmienna określająca czy strzelono
-     */
-    private boolean shootOrder = false;
-    /**
-     * Zmienna określająca czy dźwięk strzału można włączyć
-     */
-    private boolean shootSound = false;
-    /**
-     * Zmienna określająca czy dźwięk trafienia/nietrafienia można włączyć
-     */
-    private boolean hitMissSound = false;
-    /**
      * Zmienna określająca czy należy stworzyć okno dialogowe z użytkownikiem
      */
     private boolean createDialog = false;
-    /**
-     * Zmienna określająca czy należy renderować na ekranie statki
-     */
-    private boolean drawShips = true;
-    /**
-     * Identyfikator dźwieku do ciągłego odtwarzania rotacji wieżyczek
-     */
-    private long sid;
-    /**
-     * Warstwy mapy do renderowania w czasie bitwy
-     */
-    private int[] layers;
-    /**
-     * Warstwy mapy do renderowania po bitwie
-     */
-    private int[] endlayers;
-    /**
-     * Zmienna służąca do aktualizacji logiki związanej z obrotem wieżyczek
-     */
-    private float rotateTime;
-
-    /**
-     * Zmienna służąca do aktualizacji logiki związanej z zniszczeniem okrętu
-     */
-    private float destroyTime;
-    /**
-     * Zmienna służąca do aktualizacji logiki związanej oddaniem niecelnego strzału
-     */
-    private float missTime;
-    /**
-     * Zmienna służąca do aktualizacji logiki związanej oddaniem celnego strzału
-     */
-    private float hitTime;
     // other vars
     /**
      * Czcionka do ekranu ładowania
@@ -162,14 +112,25 @@ public class GameScreen extends GameEngine implements InputProcessor {
      * Metoda do renderowania mapy
      */
     private void drawMap() {
-
+        gameBackground.getSprite().draw(sb);
+        gameBoard.Board.getSprite().draw(sb);
     }
 
     /**
      * Metoda do renderowania statków i ich elementów
      */
     private void drawChessPieces() {
+        for (int i = 0; i < 16; i++) {
+            whiteChesses[i].getGameObject().getSprite().draw(sb);
+//            Rectangle alignmentRectangle = whiteChesses[i].getGameObject().alignmentRectangle;
+//            sr.rect(alignmentRectangle.x, alignmentRectangle.y, alignmentRectangle.width, alignmentRectangle.height,
+//                    Color.GREEN,  Color.GREEN,  Color.GREEN,  Color.GREEN);
 
+            blackChesses[i].getGameObject().getSprite().draw(sb);
+//            alignmentRectangle = blackChesses[i].getGameObject().alignmentRectangle;
+//            sr.rect(alignmentRectangle.x, alignmentRectangle.y, alignmentRectangle.width, alignmentRectangle.height,
+//                    Color.GREEN,  Color.GREEN,  Color.GREEN,  Color.GREEN);
+        }
     }
 
 
@@ -186,7 +147,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
             @Override
             protected void result(Object object) {
                 switch (object.toString()) {
-                    case "Yes":
+                    case "Yes" -> {
                         File file = new File("scores.txt");
                         if (!file.exists())
                             try {
@@ -197,36 +158,33 @@ public class GameScreen extends GameEngine implements InputProcessor {
                         try {
                             FileWriter writer = new FileWriter(file, true);
                             writer.write(PlayerOne.getPlayerName() + " ");
-                            writer.write(Float.toString(PlayerOne.getScoreValue()) + " ");
-                            writer.write(Float.toString(PlayerOne.getTimeElapsed()) + " ");
-                            writer.write(Float.toString(PlayerOne.getAccuracyRatio()) + " ");
+                            writer.write(PlayerOne.getScoreValue() + " ");
+                            writer.write(PlayerOne.getTimeElapsed() + " ");
+                            writer.write(PlayerOne.getAccuracyRatio() + " ");
                             writer.close();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                    case "No":
-                        new Dialog("What now?", hud.getSkin()) {
-                            {
+                    }
+                    case "No" -> new Dialog("What now?", hud.getSkin()) {
+                        {
 
-                                this.button("Main menu!", "menu");
-                                this.button("Exit game!", "game");
-                            }
+                            this.button("Main menu!", "menu");
+                            this.button("Exit game!", "game");
+                        }
 
-                            @Override
-                            protected void result(Object object) {
-                                switch (object.toString()) {
-                                    case "menu":
-                                        GameScreen.dispose();
-                                        game.menuElements = new MenuGlobalElements(game);
-                                        game.setScreen(new MenuScreen(game));
-                                        break;
-                                    case "game":
-                                        Gdx.app.exit();
-                                        break;
+                        @Override
+                        protected void result(Object object) {
+                            switch (object.toString()) {
+                                case "menu" -> {
+                                    GameScreen.dispose();
+                                    game.menuElements = new MenuGlobalElements(game);
+                                    game.setScreen(new MenuScreen(game));
                                 }
+                                case "game" -> Gdx.app.exit();
                             }
-                        }.show(hud.getStage());
-                        break;
+                        }
+                    }.show(hud.getStage());
                 }
             }
         }.show(hud.getStage());
@@ -239,14 +197,14 @@ public class GameScreen extends GameEngine implements InputProcessor {
      */
     private void drawTurnInfo(SpriteBatch batch) {
         switch (PlayerTurn) {
-            case 1:
+            case 1 -> {
                 turnFontActive.draw(batch, "Your Turn!", gameWidth_f / 2 - 250, gameHeight_f - 140);
                 turnFont.draw(batch, "Enemy Turn!", gameWidth_f / 2 + 90, gameHeight_f - 140);
-                break;
-            case 2:
+            }
+            case 2 -> {
                 turnFont.draw(batch, "Your Turn!", gameWidth_f / 2 - 250, gameHeight_f - 140);
                 turnFontActive.draw(batch, "Enemy Turn!", gameWidth_f / 2 + 90, gameHeight_f - 140);
-                break;
+            }
         }
     }
 
@@ -307,7 +265,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
         // changing game stage from loading to playing
         if (preparation(true, manager)) {
             gameStage = 2;
-            hud = new Hud(manager, game, GameScreen, crosshairs[2]);
+            hud = new Hud(manager, game, GameScreen, cursor);
             createdTextures = true;
         }
 
@@ -368,34 +326,37 @@ public class GameScreen extends GameEngine implements InputProcessor {
      */
     // update logics of game
     private void update(float deltaTime) {
+        switch (gameStage){
+            case 2 -> {
 
-
-        if (gameStage == 4)
-            if (!createDialog) {
-                if (PlayerOneLost)
-                    endSounds[1].play(hud.gameSettings.soundVolume);
-                else if (PlayerTwoLost)
-                    endSounds[0].play(hud.gameSettings.soundVolume);
-                createDialog();
-                createDialog = true;
-                Gdx.graphics.setCursor(crosshairs[2]);
             }
+            case 3 -> {
+                if (PlayerTurn == 1)
+                    PlayerOne.updateTime(deltaTime);
+                else
+                    PlayerTwo.updateTime(deltaTime);
 
-        if (gameStage == 3) {
-            if (PlayerTurn == 1)
-                PlayerOne.updateTime(deltaTime);
-            else
-                PlayerTwo.updateTime(deltaTime);
+                // Update AI info
 
-            // Update AI info
+                if (PlayerTurn == 2) {
+                    if (enemyComputerPlayerAi != null) {
 
-            if (PlayerTurn == 2) {
-                if (enemyComputerPlayerAi != null) {
-
+                    }
                 }
             }
-
+            case 4 -> {
+                if (!createDialog) {
+                    if (PlayerOneLost)
+                        endSounds[1].play(hud.gameSettings.soundVolume);
+                    else if (PlayerTwoLost)
+                        endSounds[0].play(hud.gameSettings.soundVolume);
+                    createDialog();
+                    createDialog = true;
+                    Gdx.graphics.setCursor(cursor);
+                }
+            }
         }
+
     }
 
     /**
@@ -427,7 +388,6 @@ public class GameScreen extends GameEngine implements InputProcessor {
                 Gdx.input.setInputProcessor(inputMultiplexer);
 
 
-            drawMap();
             // update
             update(deltaTime);
             // render things below
@@ -436,6 +396,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
             sr.begin();
             // Do not place any drawings up!!
 
+            drawMap();
             drawChessPieces();
 
             // Texts

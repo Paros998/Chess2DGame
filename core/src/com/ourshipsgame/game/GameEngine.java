@@ -30,6 +30,13 @@ import static com.ourshipsgame.game.GameBoard.BoardLocations.*;
 public abstract class GameEngine extends ScreenAdapter implements Constant {
 
     // Important vars
+    /*
+    * Map of the background
+    * */
+    protected GameObject gameBackground;
+    /*
+    * Board of the game
+    * */
     protected GameBoard gameBoard = new GameBoard();
     /**
      * Obiekt przechowujący informacje o wynikach gracza
@@ -48,17 +55,13 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      */
     protected int PlayerTurn;
     /**
-     * Tablica kursorów
-     */
-    protected Cursor[] crosshairs = new Cursor[3];
-    /**
      * Kursor
      */
     protected Cursor cursor;
     /**
      * Pixmapa kursorów
      */
-    protected Pixmap[] crosshairPixmaps = new Pixmap[3];
+    protected Pixmap crosshairPixmap;
 
     /**
      * Zmienna przechowująca wysokość okna w pikselach
@@ -155,9 +158,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      */
     // loading method
     protected void loadGameEngine(AssetManager manager) {
-        // Crosshairs
-        manager.load("core/assets/cursors/crosshairRed.png", Pixmap.class);
-        manager.load("core/assets/cursors/crosshairGreen.png", Pixmap.class);
+        // Crosshair
         manager.load("core/assets/ui/ui.hud/cursors/test.png", Pixmap.class);
 
         // Sound effects
@@ -165,7 +166,9 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         manager.load("core/assets/sounds/lose.mp3", Sound.class);
 
         //Board Textures
+        manager.load("core/assets/backgroundtextures/ChessMenuBg.png", Texture.class);
         manager.load("core/assets/backgroundtextures/chessBoard.jpg", Texture.class);
+
         //Chess pieces Textures
         for (int i = 0; i < 12; i++)
             manager.load(ChessPiecesTexturesPaths[i],Texture.class);
@@ -222,15 +225,22 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
     protected boolean preparation(boolean computerEnemy, AssetManager manager) {
         boolean done = false;
 
-        crosshairPixmaps[0] = manager.get("core/assets/cursors/crosshairRed.png", Pixmap.class);
-        crosshairPixmaps[1] = manager.get("core/assets/cursors/crosshairGreen.png", Pixmap.class);
-        crosshairPixmaps[2] = manager.get("core/assets/ui/ui.hud/cursors/test.png", Pixmap.class);
+        crosshairPixmap = manager.get("core/assets/ui/ui.hud/cursors/test.png", Pixmap.class);
 
         endSounds[0] = manager.get("core/assets/sounds/won.mp3", Sound.class);
         endSounds[1] = manager.get("core/assets/sounds/lose.mp3", Sound.class);
 
         turnFont = manager.get("core/assets/fonts/nunito.light.ttf", BitmapFont.class);
         turnFontActive = manager.get("core/assets/fonts/nunito.light2.ttf", BitmapFont.class);
+
+        gameBackground = new GameObject(
+                manager.get("core/assets/backgroundtextures/ChessMenuBg.png",Texture.class),
+                0,
+                0,
+                true,
+                false,
+                null
+        );
 
         gameBoard.Board = new GameObject(
                 manager.get("core/assets/backgroundtextures/chessBoard.jpg",Texture.class),
@@ -428,17 +438,12 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
             PlayerTwo.setPlayerName("TemplateName");
         }
 
-        int xHot = crosshairPixmaps[0].getWidth() / 2;
-        int yHot = crosshairPixmaps[0].getHeight() / 2;
-        crosshairs[0] = Gdx.graphics.newCursor(crosshairPixmaps[0], xHot, yHot);
-        xHot = crosshairPixmaps[1].getWidth() / 2;
-        yHot = crosshairPixmaps[1].getHeight() / 2;
-        crosshairs[1] = Gdx.graphics.newCursor(crosshairPixmaps[1], xHot, yHot);
-        xHot = 0;
-        yHot = 0;
-        crosshairs[2] = Gdx.graphics.newCursor(crosshairPixmaps[2], xHot, yHot);
 
-        Gdx.graphics.setCursor(crosshairs[2]);
+        int xHot = 0;
+        int yHot = 0;
+        cursor = Gdx.graphics.newCursor(crosshairPixmap, xHot, yHot);
+
+        Gdx.graphics.setCursor(cursor);
 
         return true;
     }

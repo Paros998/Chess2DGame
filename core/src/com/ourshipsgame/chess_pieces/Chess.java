@@ -15,27 +15,27 @@ public abstract class Chess {
 
     protected Chess(Texture chessTexture, float posX, float posY){
         gameObject = new GameObject(chessTexture,posX,posY,true,true, new Vector2(1,1));
-    };
+    }
 
     //newPos like A7
     protected abstract void moveChess(GameBoard.BoardLocations newPos);
 
     protected abstract void drawAvailableMovesAndAttacks();
 
-    protected GameObject getGameObject() {
+    public GameObject getGameObject() {
         return gameObject;
     }
 
-    protected Chess setGameObject(GameObject gameObject) {
+    public Chess setGameObject(GameObject gameObject) {
         this.gameObject = gameObject;
         return this;
     }
 
-    protected Player getPlayer() {
+    public Player getPlayer() {
         return player;
     }
 
-    protected Chess setPlayer(Player player) {
+    public Chess setPlayer(Player player) {
         this.player = player;
         return this;
     }
