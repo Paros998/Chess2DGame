@@ -131,6 +131,11 @@ public class GameScreen extends GameEngine implements InputProcessor {
         }
     }
 
+    private void drawCurrentClickedChessAvailableMoves(){
+        if(currentChessClicked != null)
+            currentChessClicked.drawAvailableMovesAndAttacks(sb,gameBoard);
+    }
+
 
     /**
      * Metoda do stworzenia okna dialogowego po skończonej bitwie
@@ -273,10 +278,11 @@ public class GameScreen extends GameEngine implements InputProcessor {
         hud.getPlayButton().addListener(new InputListener() {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                if (gameStage == 3) {
+                if (gameStage == 2) {
                     hud.getStage().getActors().pop();
                     hud.getPlayersSetNameDialog().hide();
                     PlayerOne.setPlayerName(hud.getPlayersName());
+                    gameStage = 3;
                 }
             }
 
@@ -307,14 +313,6 @@ public class GameScreen extends GameEngine implements InputProcessor {
     private void loadAssets() {
         loadGameEngine(manager);
         loadHudAssets(manager);
-    }
-
-
-    /**
-     * Metoda do odtwarzania dźwięków ruchu pionków
-     */
-    private void playMoveSound() {
-
     }
 
     /**
@@ -394,14 +392,23 @@ public class GameScreen extends GameEngine implements InputProcessor {
             sr.begin();
             // Do not place any drawings up!!
 
-            drawMap();
-            drawChessPieces();
-
             // Texts
             switch (gameStage) {
-                case 2 -> drawStage2Text(font, sb);
-                case 3 -> drawTurnInfo(sb);
-                case 4 -> drawExitScreen();
+                case 2 -> {
+                    drawMap();
+                    drawChessPieces();
+                    drawStage2Text(font, sb);
+                }
+                case 3 -> {
+                    drawMap();
+                    drawCurrentClickedChessAvailableMoves();
+                    drawChessPieces();
+                    drawTurnInfo(sb);
+                }
+                case 4 -> {
+                    drawMap();
+                    drawExitScreen();
+                }
             }
 
             sb.end();
@@ -529,16 +536,17 @@ public class GameScreen extends GameEngine implements InputProcessor {
         switch (button) {
             case Buttons.LEFT:
                 if (gameStage == 3) {
-                    if (PlayerTurn == 1) {
-
-                    }
+                        for (int i = 0; i < 16; i++){
+                            if(whiteChesses[i].clickedOnThisChess(screenX,1080 - screenY,gameBoard))
+                                currentChessClicked = whiteChesses[i];
+                            if(blackChesses[i].clickedOnThisChess(screenX,1080 - screenY,gameBoard))
+                                currentChessClicked = blackChesses[i];
+                        }
                 }
                 break;
             case Buttons.RIGHT:
                 if (gameStage == 3) {
-                    if (PlayerTurn == 1) {
-
-                    }
+                        currentChessClicked = null;
                 }
                 break;
         }
