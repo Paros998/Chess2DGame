@@ -1,11 +1,19 @@
 package com.ourshipsgame.game;
 
+import static com.ourshipsgame.game.GameBoard.BoardLocations.*;
 import static com.ourshipsgame.handlers.Constant.*;
 
+import com.ourshipsgame.chess_pieces.Chess;
 import org.lwjgl.util.vector.Vector2f;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Stream;
+
 public class GameBoard {
-    protected GameObject Board;
+    protected GameObject gameBoardObject;
 
     final static float boardXOffset = 50.f;
     final static float boardYOffset = 51.f;
@@ -85,6 +93,7 @@ public class GameBoard {
         ;
 
         private final Vector2f position;
+        private Chess chess;
 
         BoardLocations(Vector2f position) {
             this.position = position;
@@ -93,5 +102,29 @@ public class GameBoard {
         public Vector2f getPosition() {
             return position;
         }
+
+        public Chess getChess() {
+            return chess;
+        }
+
+        public BoardLocations setChess(Chess chess) {
+            this.chess = chess;
+            return this;
+        }
+    }
+
+    protected BoardLocations[][] board;
+
+    public GameBoard() {
+        board = new BoardLocations[8][8];
+
+        List<BoardLocations> boardLocationsList = List.of(BoardLocations.values());
+        Iterator<BoardLocations> boardLocationsIterator = boardLocationsList.iterator();
+
+        for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++) {
+                board[i][j] = boardLocationsIterator.next();
+            }
+
     }
 }

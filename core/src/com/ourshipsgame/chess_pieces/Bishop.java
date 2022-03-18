@@ -1,11 +1,12 @@
 package com.ourshipsgame.chess_pieces;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.ourshipsgame.game.GameBoard;
 
 public class Bishop extends Chess{
-    public Bishop(Texture chessTexture, float posX, float posY) {
-        super(chessTexture, posX, posY);
+    public Bishop(Texture chessTexture, GameBoard.BoardLocations location) {
+        super(chessTexture, location);
     }
 
     @Override
@@ -14,7 +15,12 @@ public class Bishop extends Chess{
     }
 
     @Override
-    protected void drawAvailableMovesAndAttacks() {
+    protected void drawAvailableMovesAndAttacks(SpriteBatch spriteBatch) {
 
+    }
+
+    @Override
+    protected boolean canMove(GameBoard.BoardLocations position) {
+        return false;
     }
 }

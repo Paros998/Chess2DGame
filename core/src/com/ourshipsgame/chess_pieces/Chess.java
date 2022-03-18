@@ -2,6 +2,7 @@ package com.ourshipsgame.chess_pieces;
 
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.ourshipsgame.game.GameBoard;
 import com.ourshipsgame.game.GameObject;
@@ -13,14 +14,23 @@ public abstract class Chess {
     protected Sound moveSound;
     protected Sound attackSound;
 
-    protected Chess(Texture chessTexture, float posX, float posY){
-        gameObject = new GameObject(chessTexture,posX,posY,true,true, new Vector2(1,1));
+    protected Chess(Texture chessTexture, GameBoard.BoardLocations location){
+        gameObject = new GameObject(
+                chessTexture,
+                location.getPosition().getX(),
+                location.getPosition().getY(),
+                true,
+                true,
+                new Vector2(1,1));
+        location.setChess(this);
     }
 
     //newPos like A7
     protected abstract void moveChess(GameBoard.BoardLocations newPos);
 
-    protected abstract void drawAvailableMovesAndAttacks();
+    protected abstract void drawAvailableMovesAndAttacks(SpriteBatch spriteBatch);
+
+    protected abstract boolean canMove(GameBoard.BoardLocations position);
 
     public GameObject getGameObject() {
         return gameObject;
