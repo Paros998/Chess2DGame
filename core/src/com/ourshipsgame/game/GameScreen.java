@@ -539,8 +539,8 @@ public class GameScreen extends GameEngine implements InputProcessor {
         switch (button) {
             case Buttons.LEFT:
                 if (gameStage == 3) {
-                    checkForMoveClicked(screenX, screenY);
-                    checkForChessClicked(screenX, screenY);
+                    if(!checkForMoveClicked(screenX, screenY))
+                        checkForChessClicked(screenX, screenY);
                 }
                 break;
             case Buttons.RIGHT:
@@ -552,18 +552,19 @@ public class GameScreen extends GameEngine implements InputProcessor {
         return false;
     }
 
-    private void checkForMoveClicked(int screenX, int screenY) {
+    private boolean checkForMoveClicked(int screenX, int screenY) {
         if (currentChessClicked != null) {
             GameObject[] possibleMovesAndAttacks = currentChessClicked.getPossibleMovesAndAttacks();
             for (GameObject move: possibleMovesAndAttacks)
                 if(move.contains(screenX,screenY)){
                     currentChessClicked.moveChess(getEnumByPosition(move.getPosition()));
                     //later here will be some kind of changeTurn method called instead
-                    currentChessClicked.evaluateMoves(gameBoard);
                     currentChessClicked = null;
-                    break;
+                    return true;
                 }
+            return false;
         }
+        return false;
     }
 
     private void checkForChessClicked(int screenX, int screenY) {

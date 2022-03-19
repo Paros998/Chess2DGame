@@ -212,26 +212,38 @@ public abstract class Chess {
             differenceX = vector2i.getX() - currentX;
 
             if (checkTop) {
-                for (int i = 1; i < differenceX; i++)
+                for (int i = 1; i < differenceX; i++){
+                    if(currentX + i > 7 || currentY + i > 7)
+                        break;
                     if (gameBoard.getBoard()[currentX + i][currentY + i].getChess() != null)
                         return false;
+                }
 
             } else
-                for (int i = 1; i < differenceX; i++)
+                for (int i = 1; i < differenceX; i++){
+                    if(currentX + i > 7 || currentY - i < 0)
+                        break;
                     if (gameBoard.getBoard()[currentX + i][currentY - i].getChess() != null)
                         return false;
+                }
 
         } else {
             differenceX = currentX - vector2i.getX();
 
             if (checkTop) {
-                for (int i = 1; i < differenceX; i++)
+                for (int i = 1; i < differenceX; i++){
+                    if(currentX - i < 0 || currentY + i < 7)
+                        break;
                     if (gameBoard.getBoard()[currentX - i][currentY + i].getChess() != null)
                         return false;
+                }
             } else
-                for (int i = 1; i < differenceX; i++)
+                for (int i = 1; i < differenceX; i++){
+                    if(currentX - i < 0 || currentY - i < 0)
+                        break;
                     if (gameBoard.getBoard()[currentX - i][currentY - i].getChess() != null)
                         return false;
+                }
 
         }
 
