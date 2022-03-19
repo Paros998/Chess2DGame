@@ -265,7 +265,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         whiteChesses[ChessPiecesInArray.Queen.ordinal()] = new Queen(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_QUEEN.ordinal()],Texture.class),
-                D1,
+                E4,
                 manager
         );
 
@@ -295,7 +295,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         whiteChesses[ChessPiecesInArray.FstRook.ordinal()] = new Rook(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_ROOK.ordinal()],Texture.class),
-                A1,
+                D4,
                 manager
         );
 
@@ -307,7 +307,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         whiteChesses[ChessPiecesInArray.Pawn1.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()],Texture.class),
-                A6,
+                A2,
                 manager
         );
         whiteChesses[ChessPiecesInArray.Pawn2.ordinal()] = new Pawn(
@@ -367,7 +367,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         blackChesses[ChessPiecesInArray.SndBishop.ordinal()] = new Bishop(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_BISHOP.ordinal()],Texture.class),
-                F8,
+                F6,
                 manager
         );
 
@@ -385,7 +385,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         blackChesses[ChessPiecesInArray.FstRook.ordinal()] = new Rook(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_ROOK.ordinal()],Texture.class),
-                A8,
+                B6,
                 manager
         );
 

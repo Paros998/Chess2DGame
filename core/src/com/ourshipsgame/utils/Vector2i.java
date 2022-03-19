@@ -26,7 +26,7 @@ public class Vector2i extends Vector2 {
     }
 
     public int getY() {
-        return y;
+         return y;
     }
 
     public Vector2i setY(int y) {

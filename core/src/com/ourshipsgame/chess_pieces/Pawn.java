@@ -20,18 +20,20 @@ public class Pawn extends Chess {
     }
 
     @Override
+    public void moveChess(GameBoard.BoardLocations newPos) {
+        super.moveChess(newPos);
+        if(firstMove)
+            firstMove = false;
+    }
+
+    @Override
     protected void filterMoves(GameBoard gameBoard) {
         super.filterMoves(gameBoard);
 
-        GameBoard.BoardLocations[][] board = gameBoard.getBoard();
-
-        int checkingDirection = player.getColor().equals(Player.PlayerColor.WHITE) ? -1 : 1;
-
-        Predicate<? super Vector2i> jumpOverPredicate = vector2i ->
-                board[vector2i.getX()][vector2i.getY() + checkingDirection].getChess() != null;
+        Predicate<? super Vector2i> cannotJumpVerticallyOver = vector2i -> checkIfNotCrossedWithChessVertically(vector2i,gameBoard,currentLocation);
 
         possibleMovesVectors = (ArrayList<Vector2i>) possibleMovesVectors.stream()
-                .dropWhile(jumpOverPredicate)
+                .filter(cannotJumpVerticallyOver)
                 .collect(Collectors.toList());
 
         possibleMovesAndAttacksAsVectors.clear();

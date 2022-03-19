@@ -18,12 +18,18 @@ public class Rook extends Chess{
     protected void filterMoves(GameBoard gameBoard) {
         super.filterMoves(gameBoard);
 
-        GameBoard.BoardLocations[][] board = gameBoard.getBoard();
+        Predicate<? super Vector2i> cannotMoveHorizontallyOver = vector2i -> checkIfNotCrossedWithChessHorizontally(vector2i,gameBoard,currentLocation);
+        Predicate<? super Vector2i> cannotMoveVerticallyOver = vector2i -> checkIfNotCrossedWithChessVertically(vector2i,gameBoard,currentLocation);
 
-        Predicate<? super Vector2i> jumpOverPredicate;
+        possibleMovesVectors = (ArrayList<Vector2i>) possibleMovesVectors.stream()
+                .filter(cannotMoveHorizontallyOver)
+                .filter(cannotMoveVerticallyOver)
+                .collect(Collectors.toList());
 
-//        possibleMovesVectors = (ArrayList<Vector2i>) possibleMovesVectors.stream()
-//                .collect(Collectors.toList());
+        possibleAttackVectors = (ArrayList<Vector2i>) possibleAttackVectors.stream()
+                .filter(cannotMoveHorizontallyOver)
+                .filter(cannotMoveVerticallyOver)
+                .collect(Collectors.toList());
 
         possibleMovesAndAttacksAsVectors.clear();
         possibleMovesAndAttacksAsVectors.addAll(possibleAttackVectors);
@@ -31,9 +37,10 @@ public class Rook extends Chess{
 
     }
 
+
+
     @Override
     protected void calculatePossibleMoves(GameBoard gameBoard) {
-        GameBoard.BoardLocations[][] board = gameBoard.getBoard();
         Vector2i currentArrayPosition = currentLocation.getArrayPosition();
 
         for (int i = 0; i < 8; i++) {
@@ -43,6 +50,7 @@ public class Rook extends Chess{
             possibleMovesVectors.add(new Vector2i(currentArrayPosition.getX(), currentArrayPosition.getY() - i));
         }
 
+        possibleAttackVectors.addAll(possibleMovesVectors);
     }
 
 }
