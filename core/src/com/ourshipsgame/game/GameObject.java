@@ -168,6 +168,14 @@ public class GameObject extends Rectangle implements Constant {
         this.y = vector2.y;
     }
 
+   public void setSpritePos(Vector2f vector2) {
+        this.sprite.setPosition(vector2.x, vector2.y);
+        if (alignmentRectangle != null)
+            this.alignmentRectangle.setPosition(new Vector2(vector2.getX(),vector2.getY()));
+        this.x = vector2.x;
+        this.y = vector2.y;
+    }
+
     /**
      * Metoda do ruszenia statku i jego elementów wg osi X i Y
      * 

@@ -26,7 +26,7 @@ public abstract class Chess {
     protected ArrayList<Vector2i> possibleAttackVectors;
     protected AssetManager manager;
 
-    protected Chess(Texture chessTexture, GameBoard.BoardLocations location,AssetManager manager){
+    protected Chess(Texture chessTexture, GameBoard.BoardLocations location, AssetManager manager) {
         this.manager = manager;
         gameObject = new GameObject(
                 chessTexture,
@@ -34,7 +34,7 @@ public abstract class Chess {
                 location.getPosition().getY(),
                 true,
                 false,
-                new Vector2(1,1));
+                new Vector2(1, 1));
         location.setChess(this);
         currentLocation = location;
         possibleMovesAndAttacksAsVectors = new ArrayList<>();
@@ -43,35 +43,44 @@ public abstract class Chess {
     }
 
     //newPos like A7
-    public void moveChess(GameBoard.BoardLocations newPos){
-        if(canMove(newPos)){
+    public void moveChess(GameBoard.BoardLocations newPos) {
+        if (canMove(newPos)) {
             currentLocation.setChess(null);
             newPos.setChess(this);
-            gameObject.setSpritePos(newPos.getArrayPosition());
+            gameObject.setSpritePos(newPos.getPosition());
+            currentLocation = newPos;
         }
     }
 
-    public void drawAvailableMovesAndAttacks(SpriteBatch spriteBatch,GameBoard gameBoard){
-        for (GameObject move: possibleMovesAndAttacks)
-            move.drawSprite(spriteBatch);
+    public void drawAvailableMovesAndAttacks(SpriteBatch spriteBatch, GameBoard gameBoard) {
+        for (GameObject move : possibleMovesAndAttacks)
+            move.getSprite().draw(spriteBatch, 0.75f);
     }
 
-    private boolean canMove(GameBoard.BoardLocations position){
+    private boolean canMove(GameBoard.BoardLocations position) {
         return possibleMovesAndAttacksAsVectors.stream()
                 .anyMatch(vector2i -> vector2i.epsilonEquals(position.getArrayPosition()));
     }
 
-    public boolean clickedOnThisChess(int xPos,int yPos,GameBoard gameBoard){
-        if(gameObject.spriteContains(new Vector2(xPos,yPos))){
-            possibleMovesAndAttacksAsVectors.clear();
-            possibleMovesVectors.clear();
-            possibleAttackVectors.clear();
-            calculatePossibleMoves(gameBoard);
-            filterMoves(gameBoard);
-            createMovesObjects(gameBoard);
+    public GameObject[] getPossibleMovesAndAttacks() {
+        return possibleMovesAndAttacks;
+    }
+
+    public boolean clickedOnThisChess(int xPos, int yPos, GameBoard gameBoard) {
+        if (gameObject.spriteContains(new Vector2(xPos, yPos))) {
+            evaluateMoves(gameBoard);
             return true;
         }
         return false;
+    }
+
+    public void evaluateMoves(GameBoard gameBoard){
+        possibleMovesAndAttacksAsVectors.clear();
+        possibleMovesVectors.clear();
+        possibleAttackVectors.clear();
+        calculatePossibleMoves(gameBoard);
+        filterMoves(gameBoard);
+        createMovesObjects(gameBoard);
     }
 
     private void createMovesObjects(GameBoard gameBoard) {
@@ -86,7 +95,7 @@ public abstract class Chess {
             texturePath = location.getChess() == null ? "core/assets/moves/move.png" : "core/assets/moves/attack.png";
 
             possibleMovesAndAttacks[i] = new GameObject(
-                    manager.get(texturePath,Texture.class),
+                    manager.get(texturePath, Texture.class),
                     location.getPosition().getX(),
                     location.getPosition().getY(),
                     true,
@@ -96,7 +105,7 @@ public abstract class Chess {
         }
     }
 
-    protected void filterMoves(GameBoard gameBoard){
+    protected void filterMoves(GameBoard gameBoard) {
         GameBoard.BoardLocations[][] board = gameBoard.getBoard();
 
         Predicate<Vector2i> movePredicate = vector2i ->
@@ -130,19 +139,102 @@ public abstract class Chess {
         return gameObject;
     }
 
-    public Chess setGameObject(GameObject gameObject) {
+    public void setGameObject(GameObject gameObject) {
         this.gameObject = gameObject;
-        return this;
     }
 
     public Player getPlayer() {
         return player;
     }
 
-    public Chess setPlayer(Player player) {
+    public void setPlayer(Player player) {
         this.player = player;
-        return this;
     }
 
     protected abstract void calculatePossibleMoves(GameBoard gameBoard);
+
+    protected static boolean checkIfNotCrossedWithChessHorizontally(Vector2i vector2i, GameBoard gameBoard, GameBoard.BoardLocations currentLocation) {
+        int currentX = currentLocation.getArrayPosition().getX();
+        boolean checkRight = vector2i.getX() > currentX;
+
+        if (currentLocation.getArrayPosition().getY() != vector2i.getY())
+            return true;
+
+        if (checkRight) {
+            int difference = vector2i.getX() - currentX;
+            for (int i = 1; i < difference; i++)
+                if (gameBoard.getBoard()[currentX + i][vector2i.getY()].getChess() != null)
+                    return false;
+
+        } else {
+            int difference = currentX - vector2i.getX();
+            for (int i = 1; i < difference; i++)
+                if (gameBoard.getBoard()[currentX - i][vector2i.getY()].getChess() != null)
+                    return false;
+
+        }
+        return true;
+    }
+
+    protected static boolean checkIfNotCrossedWithChessVertically(Vector2i vector2i, GameBoard gameBoard, GameBoard.BoardLocations currentLocation) {
+        int currentY = currentLocation.getArrayPosition().getY();
+        boolean checkTop = vector2i.getY() > currentY;
+
+        if (currentLocation.getArrayPosition().getX() != vector2i.getX())
+            return true;
+
+        if (checkTop) {
+            int difference = vector2i.getY() - currentY;
+            for (int i = 1; i < difference; i++)
+                if (gameBoard.getBoard()[vector2i.getX()][currentY + i].getChess() != null)
+                    return false;
+
+        } else {
+            int difference = currentY - vector2i.getY();
+            for (int i = 1; i < difference; i++)
+                if (gameBoard.getBoard()[vector2i.getX()][currentY - i].getChess() != null)
+                    return false;
+
+        }
+        return true;
+    }
+
+    protected static boolean checkIfNotCrossedWithChessDiagonally(Vector2i vector2i, GameBoard gameBoard, GameBoard.BoardLocations currentLocation) {
+
+        int currentX = currentLocation.getArrayPosition().getX();
+        boolean checkRight = vector2i.getX() > currentX;
+
+        int currentY = currentLocation.getArrayPosition().getY();
+        boolean checkTop = vector2i.getY() > currentY;
+        int differenceX;
+
+        if (checkRight) {
+            differenceX = vector2i.getX() - currentX;
+
+            if (checkTop) {
+                for (int i = 1; i < differenceX; i++)
+                    if (gameBoard.getBoard()[currentX + i][currentY + i].getChess() != null)
+                        return false;
+
+            } else
+                for (int i = 1; i < differenceX; i++)
+                    if (gameBoard.getBoard()[currentX + i][currentY - i].getChess() != null)
+                        return false;
+
+        } else {
+            differenceX = currentX - vector2i.getX();
+
+            if (checkTop) {
+                for (int i = 1; i < differenceX; i++)
+                    if (gameBoard.getBoard()[currentX - i][currentY + i].getChess() != null)
+                        return false;
+            } else
+                for (int i = 1; i < differenceX; i++)
+                    if (gameBoard.getBoard()[currentX - i][currentY - i].getChess() != null)
+                        return false;
+
+        }
+
+        return true;
+    }
 }

@@ -26,6 +26,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.NumberFormat;
 
+import static com.ourshipsgame.game.GameBoard.BoardLocations.getEnumByPosition;
+
 /**
  * Klasa ekranu głównego gry
  */
@@ -533,15 +535,12 @@ public class GameScreen extends GameEngine implements InputProcessor {
      */
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        screenY = 1080 - screenY;
         switch (button) {
             case Buttons.LEFT:
                 if (gameStage == 3) {
-                        for (int i = 0; i < 16; i++){
-                            if(whiteChesses[i].clickedOnThisChess(screenX,1080 - screenY,gameBoard))
-                                currentChessClicked = whiteChesses[i];
-                            if(blackChesses[i].clickedOnThisChess(screenX,1080 - screenY,gameBoard))
-                                currentChessClicked = blackChesses[i];
-                        }
+                    checkForMoveClicked(screenX, screenY);
+                    checkForChessClicked(screenX, screenY);
                 }
                 break;
             case Buttons.RIGHT:
@@ -551,6 +550,33 @@ public class GameScreen extends GameEngine implements InputProcessor {
                 break;
         }
         return false;
+    }
+
+    private void checkForMoveClicked(int screenX, int screenY) {
+        if (currentChessClicked != null) {
+            GameObject[] possibleMovesAndAttacks = currentChessClicked.getPossibleMovesAndAttacks();
+            for (GameObject move: possibleMovesAndAttacks)
+                if(move.contains(screenX,screenY)){
+                    currentChessClicked.moveChess(getEnumByPosition(move.getPosition()));
+                    //later here will be some kind of changeTurn method called instead
+                    currentChessClicked.evaluateMoves(gameBoard);
+                    currentChessClicked = null;
+                    break;
+                }
+        }
+    }
+
+    private void checkForChessClicked(int screenX, int screenY) {
+        for (int i = 0; i < 16; i++){
+            if(whiteChesses[i].clickedOnThisChess(screenX, screenY,gameBoard)){
+                currentChessClicked = whiteChesses[i];
+                return;
+            }
+            if(blackChesses[i].clickedOnThisChess(screenX, screenY,gameBoard)){
+                currentChessClicked = blackChesses[i];
+                return;
+            }
+        }
     }
 
     /**
