@@ -1,18 +1,13 @@
 package com.ourshipsgame.inteligentSystems;
 
-import java.util.Random;
-
-import com.badlogic.gdx.math.Vector2;
-import com.ourshipsgame.game.GameObject;
-
-import org.lwjgl.util.vector.Vector2f;
+import com.ourshipsgame.game.Player;
 
 /**
  * Klasa odpowiadająca za podejmowanie decyzji przez komputer
  */
 public class ComputerPlayerAi {
 
-
+    private Player player;
     /**
      * Metoda do aktualizowania danych i logiki komputera
      * 
@@ -28,5 +23,13 @@ public class ComputerPlayerAi {
 
      */
     public ComputerPlayerAi() {
+    }
+
+    public void setPlayer(Player myPlayer) {
+        this.player = myPlayer;
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 }

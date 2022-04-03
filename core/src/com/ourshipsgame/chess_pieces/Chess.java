@@ -47,7 +47,6 @@ public abstract class Chess {
     //newPos like A7
     public void moveChess(GameBoard.BoardLocations newPos, float soundVolume) {
         if (canMove(newPos)) {
-
             if(newPos.getChess() != null)
                 attackSound.play(soundVolume);
             else moveSound.play(soundVolume);
@@ -56,7 +55,9 @@ public abstract class Chess {
             newPos.setChess(this);
             gameObject.setSpritePos(newPos.getPosition());
             currentLocation = newPos;
+
         }
+
     }
 
     public void drawAvailableMovesAndAttacks(SpriteBatch spriteBatch) {
