@@ -30,11 +30,6 @@ public class Hud implements Constant {
     private GameImageButton gameMenuButton;
 
     /**
-     * Przycisk do generowania losowego ustawienia statków na planszy.
-     */
-    private GameImageButton repeatButton;
-
-    /**
      * Przycisk zatwierdzenia ustawienia statków.
      * Gdy świeci na czerwono nie można przejść do rozgrywki po jego naciśnięciu.
      * Gdy świeci na zielono można przejść do rozgrywki po jego naciśnięciu.
@@ -130,13 +125,7 @@ public class Hud implements Constant {
         gameMenuButton = new GameImageButton(GAME_WIDTH - 10, GAME_HEIGHT - 3, this, buttonStylesSprites);
         gameMenuButton.setOptionsListener();
 
-        // Repeat button
-        buttonStyles[0] = manager.get("core/assets/ui/reverse-button.png", Texture.class);
-        buttonStyles[1] = manager.get("core/assets/ui/reverse-button-pressed.png", Texture.class);
-
         setButtonsSprites(buttonStyles, buttonStylesSprites, 6.5f);
-
-        repeatButton = new GameImageButton(buttonStylesSprites);
 
         // Play button
         buttonStyles[0] = manager.get("core/assets/ui/ready-button.png", Texture.class);
@@ -166,20 +155,19 @@ public class Hud implements Constant {
             protected void result(final Object act) {
                 playersName = playerNameTextField.getText();
                 playerNameTextField = null;
+                stage.addActor(layoutTable);
             }
         };
 
-        playersSetNameDialog.show(stage).setPosition(GAME_WIDTH / 2 + 150, 150);
+        playersSetNameDialog.show(stage);
 
         // Table for play, repeat buttons
         layoutTable = new Table();
-        layoutTable.bottom();
+        layoutTable.right();
         layoutTable.setFillParent(true);
-        layoutTable.add(playButton).expandX().padLeft(830f).padBottom(8);
-        layoutTable.add(repeatButton).expandX().padRight(830f).padBottom(8);
+        layoutTable.add(playButton).expandX().padLeft(1420);
 
         stage.addActor(gameMenuButton);
-        stage.addActor(layoutTable);
     }
 
     // Methods
@@ -216,15 +204,6 @@ public class Hud implements Constant {
 
     /**
      * Metoda typu get, zwraca przycisk.
-     * @return Przycisk do generowania losowego ustawienia statków.
-     */
-    // Getters
-    public GameImageButton getRepeatButton() {
-        return repeatButton;
-    }
-
-    /**
-     * Metoda typu get, zwraca przycisk.
      * @return Przycisk do przejścia do rozgrywki.
      */
     public GameImageButton getPlayButton() {
@@ -237,14 +216,6 @@ public class Hud implements Constant {
      */
     public String getPlayersName() {
         return playersName;
-    }
-
-    /**
-     * Metoda typu get, zwraca Sprite.
-     * @return Styl przycisku Play.
-     */
-    public Sprite getPlayButtonGreenStyle() {
-        return playButtonGreenStyle;
     }
 
     /**

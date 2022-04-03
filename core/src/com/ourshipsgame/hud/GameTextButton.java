@@ -6,7 +6,8 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.ourshipsgame.Main;
-import com.ourshipsgame.game.GameScreen;
+import com.ourshipsgame.game.MultiPlayerGameScreen;
+import com.ourshipsgame.game.SinglePlayerGameScreen;
 import com.ourshipsgame.mainmenu.*;
 
 /**
@@ -87,10 +88,14 @@ public class GameTextButton extends TextButton {
             // Game mode selection screen
             case 7 -> {
                 game.menuElements.disposeMenu();
-                game.setScreen(new GameScreen(game));
+                game.setScreen(new SinglePlayerGameScreen(game));
             }
             case 8 -> {
-                // Play multi
+                // Load existing game
+            }
+            case 9 -> {
+                game.menuElements.disposeMenu();
+                game.setScreen(new MultiPlayerGameScreen(game));
             }
         }
     }
