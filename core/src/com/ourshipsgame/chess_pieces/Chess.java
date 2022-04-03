@@ -200,12 +200,18 @@ public abstract class Chess {
     }
 
     protected static boolean checkIfNotCrossedWithChessDiagonally(Vector2i vector2i, GameBoard gameBoard, GameBoard.BoardLocations currentLocation) {
-
         int currentX = currentLocation.getArrayPosition().getX();
-        boolean checkRight = vector2i.getX() > currentX;
-
         int currentY = currentLocation.getArrayPosition().getY();
+
+        if(currentX == vector2i.getX())
+            return true;
+
+        if(currentY == vector2i.getY())
+            return true;
+
+        boolean checkRight = vector2i.getX() > currentX;
         boolean checkTop = vector2i.getY() > currentY;
+
         int differenceX;
 
         if (checkRight) {
@@ -232,7 +238,7 @@ public abstract class Chess {
 
             if (checkTop) {
                 for (int i = 1; i < differenceX; i++){
-                    if(currentX - i < 0 || currentY + i < 7)
+                    if(currentX - i < 0 || currentY + i > 7)
                         break;
                     if (gameBoard.getBoard()[currentX - i][currentY + i].getChess() != null)
                         return false;
