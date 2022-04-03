@@ -629,10 +629,10 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      * @param batch SpriteBatch do rysowania na ekranie
      */
     protected void drawStage2Text(BitmapFont font, SpriteBatch batch) {
-        String text = "Lets draw who starts first!";
+        String text = "You are " + MyPlayer.getColor().name() + " Player";
         int len = text.length();
         font.draw(batch, text, (gameWidth_f - 200 - (43 * (len / 2))), gameHeight_f / 2 + 200);
-        text = "Confirm it by clicking READY button !";
+        text = "Click Ready to start the game!";
         len = text.length();
         font.draw(batch, text, (gameWidth_f - 180 - (43 * (len / 2))), gameHeight_f / 2 + 100);
     }
