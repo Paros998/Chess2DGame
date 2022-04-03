@@ -16,7 +16,8 @@ public class GameHistory {
 
     Float whiteTimer;
     Float blackTimer;
-    Player currentPlayer;
+    Player myPlayer;
+    Player playerTurn;
 
 
     public void historySave() {
@@ -30,10 +31,12 @@ public class GameHistory {
             }
         try {
             FileWriter writer = new FileWriter(file, true);
-            writer.write(currentPlayer.getPlayerName() + "\n");
-            writer.write(currentPlayer.getColor() + "\n");
+            writer.write(myPlayer.getColor() + "\n");
+            writer.write(myPlayer.getPlayerName() + "\n");
+            writer.write(playerTurn.getColor() + "\n");
             writer.write(whiteTimer + "\n");
             writer.write(blackTimer + "\n");
+
             for (ChessMove move : historyList
             ) {
                 writer.write(move.write() + "\n");
@@ -98,12 +101,12 @@ public class GameHistory {
     }
 
     public Player getCurrentPlayer() {
-        return currentPlayer;
+        return myPlayer;
     }
 
 
     public void setCurrentPlayer(Player currentPlayer) {
-        this.currentPlayer = currentPlayer;
+        this.myPlayer = currentPlayer;
 
     }
 }
