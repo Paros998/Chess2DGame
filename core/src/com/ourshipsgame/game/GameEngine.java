@@ -2,6 +2,8 @@ package com.ourshipsgame.game;
 
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
@@ -15,11 +17,16 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGeneratorLoader;
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.ourshipsgame.Main;
 import com.ourshipsgame.chess_pieces.*;
 import com.ourshipsgame.handlers.Constant;
 import com.ourshipsgame.handlers.Score;
+import com.ourshipsgame.hud.Hud;
 import com.ourshipsgame.inteligentSystems.ComputerPlayerAi;
+
+import java.text.NumberFormat;
 
 import static com.ourshipsgame.game.GameBoard.BoardLocations.*;
 
@@ -30,6 +37,56 @@ import static com.ourshipsgame.game.GameBoard.BoardLocations.*;
 public abstract class GameEngine extends ScreenAdapter implements Constant {
 
     // Important vars
+    /**
+     * AssetManager do ładowania zasobów gry
+     */
+    protected AssetManager manager;
+    /**
+     * Obiekt aplikacji
+     */
+    protected Main game;
+    /**
+     * Multiplekser do obsługi wejścia (klawisze/myszka etc)
+     */
+    protected InputMultiplexer inputMultiplexer;
+    /**
+     * Obiekt głowny interfejsu
+     */
+    protected Hud hud;
+    /**
+     * Obiekt do rysowania na ekranie
+     */
+    protected SpriteBatch sb;
+    /**
+     * Obiekt do rysowania kształtów na ekranie
+     */
+    protected ShapeRenderer sr;
+    /**
+     * Zmienna przechowująca progres ładowania zasobów
+     */
+    protected float progress;
+
+    /**
+     * Zmienna określająca ,który to stopień gry do obliczeń logiki gry
+     */
+    protected int gameStage = 1;
+    /**
+     * Tło do ekranu ładowania
+     */
+    protected Texture loadingTexture;
+    /**
+     * Zmienna określająca czy utworzono tekstury
+     */
+    protected boolean createdTextures = false;
+    /**
+     * Zmienna określająca czy należy stworzyć okno dialogowe z użytkownikiem
+     */
+    protected boolean createDialog = false;
+    // other vars
+    /**
+     * Czcionka do ekranu ładowania
+     */
+    protected BitmapFont font;
     /*
     * Map of the background
     * */
@@ -440,6 +497,8 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
             blackChesses[i].setPlayer(blackPlayer);
         }
 
+        //TODO move next lines do actual screen constructor
+
         PlayerOne.setPlayerName("TemplateName");
 
         if (computerEnemy) {
@@ -459,29 +518,85 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
     }
 
     /**
-     * Metoda do określania na który szach kliknięto
-     * myszki
-     *
-     * @param screenX Pozycja x na ekranie
-     * @param screenY Pozycja y na ekranie
+     * Metoda do renderowania ekranu ładowania
      */
-    // Stage 3 methods to click on a chess
-    protected void touchDownSprite(int screenX, int screenY) {
-//        for (int i = 0; i < sum; i++) {
-//            if (FirstBoardShipsSprites[i].spriteContains(new Vector2(screenX, gameHeight_f - screenY))) {
-//                activeSpriteDrag = i;
-//            }
-//        }
+    protected void drawLoadingScreen() {
+        progress = manager.getProgress();
+        sb.begin();
+        sb.draw(loadingTexture, 0, 0);
+        String load = "Loading " + NumberFormat.getPercentInstance().format(progress);
+        font.draw(sb, load, (gameWidth_f / 2f) - 175, (gameHeight_f / 2f) + 43);
+        sb.end();
     }
 
     /**
-     * Metoda do poruszania spriteów na planszy click n drop
-     *
-     * @param screenX Nowa pozycja X na ekranie
-     * @param screenY Nowa pozycja Y na ekranie
+     * Metoda do renderowania wiadomości po bitwie
      */
-    protected void moveChess(int screenX, int screenY, Chess chess) {
+    protected void drawExitScreen() {
+        String msg;
+        if (PlayerOneLost) {
+            msg = "You 've Lost!! Better luck next time!";
+            font.draw(sb, msg, (gameWidth_f / 2) - 350, gameHeight_f / 2 + 400);
+        } else if (PlayerTwoLost) {
+            msg = "You 've Won!! Keep it up!!";
+            font.draw(sb, msg, (gameWidth_f / 2) - 250, gameHeight_f / 2 + 400);
+        }
+    }
 
+    // Create methods
+    /**
+     * Metoda do utworzenia czcionek
+     */
+    protected void createFonts() {
+        font = new BitmapFont();
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(
+                Gdx.files.internal("core/assets/fonts/Raleway-ExtraLightItalic.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        parameter.size = 43;
+        parameter.borderWidth = 2;
+        parameter.borderColor = Color.WHITE;
+        parameter.color = Color.RED;
+        font = generator.generateFont(parameter);
+        parameter.size = 16;
+        parameter.borderWidth = 0;
+        parameter.borderColor = Color.BLACK;
+        parameter.color = Color.GOLD;
+        hudFont = generator.generateFont(parameter);
+        generator.dispose();
+    }
+
+    /**
+     * Metoda do ładowania wszystkich zasobów gry
+     */
+    protected void loadAssets() {
+        loadGameEngine(manager);
+        loadHudAssets(manager);
+    }
+
+
+    /**
+     * Metoda do renderowania mapy
+     */
+    protected void drawMap() {
+        gameBackground.getSprite().draw(sb);
+        gameBoard.gameBoardObject.getSprite().draw(sb);
+    }
+
+    /**
+     * Metoda do renderowania statków i ich elementów
+     */
+    protected void drawChessPieces() {
+        for (int i = 0; i < 16; i++) {
+            whiteChesses[i].getGameObject().getSprite().draw(sb);
+//            Rectangle alignmentRectangle = whiteChesses[i].getGameObject().alignmentRectangle;
+//            sr.rect(alignmentRectangle.x, alignmentRectangle.y, alignmentRectangle.width, alignmentRectangle.height,
+//                    Color.GREEN,  Color.GREEN,  Color.GREEN,  Color.GREEN);
+
+            blackChesses[i].getGameObject().getSprite().draw(sb);
+//            alignmentRectangle = blackChesses[i].getGameObject().alignmentRectangle;
+//            sr.rect(alignmentRectangle.x, alignmentRectangle.y, alignmentRectangle.width, alignmentRectangle.height,
+//                    Color.GREEN,  Color.GREEN,  Color.GREEN,  Color.GREEN);
+        }
     }
 
     /**
@@ -499,12 +614,86 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         font.draw(batch, text, (gameWidth_f - 180 - (43 * (len / 2))), gameHeight_f / 2 + 100);
     }
 
+    protected void drawCurrentClickedChessAvailableMoves(){
+        if(currentChessClicked != null)
+            currentChessClicked.drawAvailableMovesAndAttacks(sb);
+    }
+
+    protected void createAndDisplay(float deltaTime, InputProcessor processor) {
+        if (manager.update()) {
+            // When loading screen disappers
+            if (!createdTextures) {
+                loadingTexture.dispose();
+                createGraphics();
+                inputMultiplexer = new InputMultiplexer();
+                inputMultiplexer.addProcessor(processor);
+                inputMultiplexer.addProcessor(hud.getStage());
+                Gdx.input.setInputProcessor(inputMultiplexer);
+                // tmp
+            }
+            if (hud.isPasued())
+                Gdx.input.setInputProcessor(hud.getStage());
+            else
+                Gdx.input.setInputProcessor(inputMultiplexer);
+
+
+            // update
+            update(deltaTime);
+            // render things below
+            sb.begin();
+            sr.setAutoShapeType(true);
+            sr.begin();
+            // Do not place any drawings up!!
+
+            // Texts
+            switch (gameStage) {
+                case 2 -> {
+                    drawMap();
+                    drawChessPieces();
+                    drawStage2Text(font, sb);
+                }
+                case 3 -> {
+                    drawMap();
+                    drawCurrentClickedChessAvailableMoves();
+                    drawChessPieces();
+                    drawTurnInfo(sb);
+                }
+                case 4 -> {
+                    drawMap();
+                    drawExitScreen();
+                }
+            }
+
+            sb.end();
+            sr.end();
+            hud.update();
+        } else {
+            // While loading the game assets
+            drawLoadingScreen();
+        }
+    }
+
+    protected abstract void drawTurnInfo(SpriteBatch sb);
+
+    protected abstract void update(float deltaTime);
+
+    protected abstract void createGraphics();
+
 
     /**
      * Metoda do zwalniania zasobów wykorzystywanych przez klasę
      */
     @Override
     public void dispose() {
+        inputMultiplexer.clear();
+        sb.dispose();
+        sr.dispose();
+        manager.dispose();
+        loadingTexture.dispose();
+        font.dispose();
+        hud.gameSettings.dispose();
+        hud.dispose();
+        hudFont.dispose();
         super.dispose();
     }
 }

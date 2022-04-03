@@ -6,7 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.ourshipsgame.Main;
-import com.ourshipsgame.game.GameScreen;
+import com.ourshipsgame.game.SinglePlayerGameScreen;
 import com.ourshipsgame.mainmenu.HelpScreen;
 import com.ourshipsgame.mainmenu.MenuScreen;
 import com.ourshipsgame.mainmenu.OptionScreen;
@@ -80,7 +80,7 @@ public class GameTextButton extends TextButton {
         switch (option) {
         case 1: // Enters to the game
             game.menuElements.disposeMenu();
-            game.setScreen(new GameScreen(game));
+            game.setScreen(new SinglePlayerGameScreen(game));
             break;
 
         case 2: // Enters to a help screen
