@@ -35,6 +35,8 @@ public abstract class Chess {
                 true,
                 false,
                 new Vector2(1, 1));
+        moveSound = manager.get("core/assets/sounds/move_sound.wav", Sound.class);
+        attackSound = manager.get("core/assets/sounds/attack_sound.wav", Sound.class);
         location.setChess(this);
         currentLocation = location;
         possibleMovesAndAttacksAsVectors = new ArrayList<>();
@@ -43,8 +45,13 @@ public abstract class Chess {
     }
 
     //newPos like A7
-    public void moveChess(GameBoard.BoardLocations newPos) {
+    public void moveChess(GameBoard.BoardLocations newPos, float soundVolume) {
         if (canMove(newPos)) {
+
+            if(newPos.getChess() != null)
+                attackSound.play(soundVolume);
+            else moveSound.play(soundVolume);
+
             currentLocation.setChess(null);
             newPos.setChess(this);
             gameObject.setSpritePos(newPos.getPosition());
@@ -52,7 +59,7 @@ public abstract class Chess {
         }
     }
 
-    public void drawAvailableMovesAndAttacks(SpriteBatch spriteBatch, GameBoard gameBoard) {
+    public void drawAvailableMovesAndAttacks(SpriteBatch spriteBatch) {
         for (GameObject move : possibleMovesAndAttacks)
             move.getSprite().draw(spriteBatch, 0.75f);
     }
@@ -200,38 +207,56 @@ public abstract class Chess {
     }
 
     protected static boolean checkIfNotCrossedWithChessDiagonally(Vector2i vector2i, GameBoard gameBoard, GameBoard.BoardLocations currentLocation) {
-
         int currentX = currentLocation.getArrayPosition().getX();
-        boolean checkRight = vector2i.getX() > currentX;
-
         int currentY = currentLocation.getArrayPosition().getY();
+
+        if(currentX == vector2i.getX())
+            return true;
+
+        if(currentY == vector2i.getY())
+            return true;
+
+        boolean checkRight = vector2i.getX() > currentX;
         boolean checkTop = vector2i.getY() > currentY;
+
         int differenceX;
 
         if (checkRight) {
             differenceX = vector2i.getX() - currentX;
 
             if (checkTop) {
-                for (int i = 1; i < differenceX; i++)
+                for (int i = 1; i < differenceX; i++){
+                    if(currentX + i > 7 || currentY + i > 7)
+                        break;
                     if (gameBoard.getBoard()[currentX + i][currentY + i].getChess() != null)
                         return false;
+                }
 
             } else
-                for (int i = 1; i < differenceX; i++)
+                for (int i = 1; i < differenceX; i++){
+                    if(currentX + i > 7 || currentY - i < 0)
+                        break;
                     if (gameBoard.getBoard()[currentX + i][currentY - i].getChess() != null)
                         return false;
+                }
 
         } else {
             differenceX = currentX - vector2i.getX();
 
             if (checkTop) {
-                for (int i = 1; i < differenceX; i++)
+                for (int i = 1; i < differenceX; i++){
+                    if(currentX - i < 0 || currentY + i > 7)
+                        break;
                     if (gameBoard.getBoard()[currentX - i][currentY + i].getChess() != null)
                         return false;
+                }
             } else
-                for (int i = 1; i < differenceX; i++)
+                for (int i = 1; i < differenceX; i++){
+                    if(currentX - i < 0 || currentY - i < 0)
+                        break;
                     if (gameBoard.getBoard()[currentX - i][currentY - i].getChess() != null)
                         return false;
+                }
 
         }
 
