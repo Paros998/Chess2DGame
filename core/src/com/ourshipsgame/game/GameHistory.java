@@ -8,7 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Flow;
+import java.util.Scanner;
 
 
 public class GameHistory {
@@ -46,8 +46,30 @@ public class GameHistory {
     }
 
 
-    public void historyLoad() {
+    public void historyLoad(Player whitePlayer, Player blackPlayer, SinglePlayerGameScreen gameScreen) {
 
+        Scanner scanner = new Scanner("gameSave.txt");
+
+        Player.PlayerColor playerColor = Player.PlayerColor.valueOf(scanner.nextLine());
+
+        if(playerColor.equals(Player.PlayerColor.WHITE))
+            myPlayer = whitePlayer;
+        else myPlayer = blackPlayer;
+
+        myPlayer.setPlayerName(scanner.nextLine());
+
+
+        Player.PlayerColor currentTurnPlayerColor = Player.PlayerColor.valueOf(scanner.nextLine());
+
+        if(currentTurnPlayerColor.equals(Player.PlayerColor.WHITE))
+            playerTurn = whitePlayer;
+        else playerTurn = blackPlayer;
+
+        whitePlayer.setTimeLeft(Float.parseFloat(scanner.nextLine()));
+
+        blackPlayer.setTimeLeft(Float.parseFloat(scanner.nextLine()));
+
+        //TODO create loading with game chesses changes
     }
 
 
