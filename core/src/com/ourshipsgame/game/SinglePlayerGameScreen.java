@@ -31,112 +31,31 @@ import static com.ourshipsgame.game.GameBoard.BoardLocations.getEnumByPosition;
 /**
  * Klasa ekranu głównego gry
  */
-public class GameScreen extends GameEngine implements InputProcessor {
+public class SinglePlayerGameScreen extends GameEngine implements InputProcessor {
 
     /**
      * Identyfikator klasy
      */
     private final String id = getClass().getName();
-    /**
-     * AssetManager do ładowania zasobów gry
-     */
-    public AssetManager manager;
-    /**
-     * Obiekt aplikacji
-     */
-    private Main game;
+
     /**
      * Obiekt ekranu głównego
      */
-    private GameScreen GameScreen;
-    /**
-     * Multiplekser do obsługi wejścia (klawisze/myszka etc)
-     */
-    private InputMultiplexer inputMultiplexer;
-    /**
-     * Obiekt głowny interfejsu
-     */
-    private Hud hud;
-    /**
-     * Obiekt do rysowania na ekranie
-     */
-    private SpriteBatch sb;
-    /**
-     * Obiekt do rysowania kształtów na ekranie
-     */
-    private ShapeRenderer sr;
-    /**
-     * Zmienna przechowująca progres ładowania zasobów
-     */
-    private float progress;
-
-    /**
-     * Zmienna określająca ,który to stopień gry do obliczeń logiki gry
-     */
-    private int gameStage = 1;
-    /**
-     * Tło do ekranu ładowania
-     */
-    private Texture loadingTexture;
-    /**
-     * Zmienna określająca czy utworzono tekstury
-     */
-    private boolean createdTextures = false;
-    /**
-     * Zmienna określająca czy należy stworzyć okno dialogowe z użytkownikiem
-     */
-    private boolean createDialog = false;
-    // other vars
-    /**
-     * Czcionka do ekranu ładowania
-     */
-    private BitmapFont font;
-
-    // constructor
+    private final SinglePlayerGameScreen SinglePlayerGameScreen;
 
     /**
      * Konstruktor ekranu głównego
      *
      * @param game Obiekt aplikacji
      */
-    public GameScreen(Main game) {
-        this.GameScreen = this;
+    public SinglePlayerGameScreen(Main game) {
+        this.SinglePlayerGameScreen = this;
         this.game = game;
         Gdx.app.log(id, "This class is loaded!");
         System.out.println(Gdx.app.getJavaHeap() / 1000000);
     }
 
     // Draw methods
-
-    /**
-     * Metoda do renderowania mapy
-     */
-    private void drawMap() {
-        gameBackground.getSprite().draw(sb);
-        gameBoard.gameBoardObject.getSprite().draw(sb);
-    }
-
-    /**
-     * Metoda do renderowania statków i ich elementów
-     */
-    private void drawChessPieces() {
-        for (int i = 0; i < 16; i++) {
-            whiteChesses[i].getGameObject().getSprite().draw(sb);
-//            Rectangle alignmentRectangle = whiteChesses[i].getGameObject().alignmentRectangle;
-//            sr.rect(alignmentRectangle.x, alignmentRectangle.y, alignmentRectangle.width, alignmentRectangle.height,
-//                    Color.GREEN,  Color.GREEN,  Color.GREEN,  Color.GREEN);
-
-            blackChesses[i].getGameObject().getSprite().draw(sb);
-//            alignmentRectangle = blackChesses[i].getGameObject().alignmentRectangle;
-//            sr.rect(alignmentRectangle.x, alignmentRectangle.y, alignmentRectangle.width, alignmentRectangle.height,
-//                    Color.GREEN,  Color.GREEN,  Color.GREEN,  Color.GREEN);
-        }
-    }
-
-    private void drawCurrentClickedChessAvailableMoves(){
-        if(currentChessClicked != null)
-            currentChessClicked.drawAvailableMovesAndAttacks(sb);
-    }
 
 
     /**
@@ -182,7 +101,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
                         protected void result(Object object) {
                             switch (object.toString()) {
                                 case "menu" -> {
-                                    GameScreen.dispose();
+                                    SinglePlayerGameScreen.dispose();
                                     game.menuElements = new MenuGlobalElements(game);
                                     game.setScreen(new MenuScreen(game));
                                 }
@@ -200,7 +119,8 @@ public class GameScreen extends GameEngine implements InputProcessor {
      *
      * @param batch SpriteBatch do renderowania
      */
-    private void drawTurnInfo(SpriteBatch batch) {
+    @Override
+    protected void drawTurnInfo(SpriteBatch batch) {
         switch (PlayerTurn) {
             case 1 -> {
                 turnFontActive.draw(batch, "Your Turn!", gameWidth_f / 2 - 250, gameHeight_f - 140);
@@ -214,63 +134,14 @@ public class GameScreen extends GameEngine implements InputProcessor {
     }
 
     /**
-     * Metoda do renderowania ekranu ładowania
-     */
-    private void drawLoadingScreen() {
-        progress = manager.getProgress();
-        sb.begin();
-        sb.draw(loadingTexture, 0, 0);
-        String load = "Loading " + NumberFormat.getPercentInstance().format(progress);
-        font.draw(sb, load, (gameWidth_f / 2f) - 175, (gameHeight_f / 2f) + 43);
-        sb.end();
-    }
-
-    /**
-     * Metoda do renderowania wiadomości po bitwie
-     */
-    private void drawExitScreen() {
-        String msg;
-        if (PlayerOneLost) {
-            msg = "You 've Lost!! Better luck next time!";
-            font.draw(sb, msg, (gameWidth_f / 2) - 350, gameHeight_f / 2 + 400);
-        } else if (PlayerTwoLost) {
-            msg = "You 've Won!! Keep it up!!";
-            font.draw(sb, msg, (gameWidth_f / 2) - 250, gameHeight_f / 2 + 400);
-        }
-    }
-
-    // Create methods
-    /**
-     * Metoda do utworzenia czcionek
-     */
-    private void createFonts() {
-        font = new BitmapFont();
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(
-                Gdx.files.internal("core/assets/fonts/Raleway-ExtraLightItalic.ttf"));
-        FreeTypeFontParameter parameter = new FreeTypeFontParameter();
-        parameter.size = 43;
-        parameter.borderWidth = 2;
-        parameter.borderColor = Color.WHITE;
-        parameter.color = Color.RED;
-        font = generator.generateFont(parameter);
-        parameter.size = 16;
-        parameter.borderWidth = 0;
-        parameter.borderColor = Color.BLACK;
-        parameter.color = Color.GOLD;
-        hudFont = generator.generateFont(parameter);
-        generator.dispose();
-    }
-
-    // method to create elements
-
-    /**
      * Metoda do tworzenia wszystkich elementów graficznych gry
      */
-    private void createGraphics() {
+    @Override
+    protected void createGraphics() {
         // changing game stage from loading to playing
         if (preparation(true, manager)) {
             gameStage = 2;
-            hud = new Hud(manager, game, GameScreen, cursor);
+            hud = new Hud(manager, game, SinglePlayerGameScreen, cursor);
             createdTextures = true;
         }
 
@@ -307,23 +178,14 @@ public class GameScreen extends GameEngine implements InputProcessor {
         });
     }
 
-    // loading method
-
-    /**
-     * Metoda do ładowania wszystkich zasobów gry
-     */
-    private void loadAssets() {
-        loadGameEngine(manager);
-        loadHudAssets(manager);
-    }
-
     /**
      * Metoda do aktualizacji logiki gry
      *
      * @param deltaTime czas między klatkami
      */
     // update logics of game
-    private void update(float deltaTime) {
+    @Override
+    protected void update(float deltaTime) {
         switch (gameStage){
             case 2 -> {
 
@@ -369,57 +231,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
         Gdx.gl20.glClearColor(1, 1, 1, 1);
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        if (manager.update()) {
-            // When loading screen disappers
-            if (!createdTextures) {
-                loadingTexture.dispose();
-                createGraphics();
-                inputMultiplexer = new InputMultiplexer();
-                inputMultiplexer.addProcessor(this);
-                inputMultiplexer.addProcessor(hud.getStage());
-                Gdx.input.setInputProcessor(inputMultiplexer);
-                // tmp
-            }
-            if (hud.isPasued())
-                Gdx.input.setInputProcessor(hud.getStage());
-            else
-                Gdx.input.setInputProcessor(inputMultiplexer);
-
-
-            // update
-            update(deltaTime);
-            // render things below
-            sb.begin();
-            sr.setAutoShapeType(true);
-            sr.begin();
-            // Do not place any drawings up!!
-
-            // Texts
-            switch (gameStage) {
-                case 2 -> {
-                    drawMap();
-                    drawChessPieces();
-                    drawStage2Text(font, sb);
-                }
-                case 3 -> {
-                    drawMap();
-                    drawCurrentClickedChessAvailableMoves();
-                    drawChessPieces();
-                    drawTurnInfo(sb);
-                }
-                case 4 -> {
-                    drawMap();
-                    drawExitScreen();
-                }
-            }
-
-            sb.end();
-            sr.end();
-            hud.update();
-        } else {
-            // While loading the game assets
-            drawLoadingScreen();
-        }
+        createAndDisplay(deltaTime, this);
     }
 
     /**
@@ -471,15 +283,6 @@ public class GameScreen extends GameEngine implements InputProcessor {
      */
     @Override
     public void dispose() {
-        inputMultiplexer.clear();
-        sb.dispose();
-        sr.dispose();
-        manager.dispose();
-        loadingTexture.dispose();
-        font.dispose();
-        hud.gameSettings.dispose();
-        hud.dispose();
-        hudFont.dispose();
         super.dispose();
     }
 

@@ -11,7 +11,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.ourshipsgame.Main;
-import com.ourshipsgame.game.GameScreen;
+import com.ourshipsgame.game.GameEngine;
+import com.ourshipsgame.game.SinglePlayerGameScreen;
 import com.ourshipsgame.game.GameSettings;
 import com.ourshipsgame.handlers.Constant;
 
@@ -87,7 +88,7 @@ public class Hud implements Constant {
      * Obiekt klasy GameScreen. 
      * W tej klasie odpowiedzialny za niszczenie elementów Hud.
      */
-    public GameScreen gameScreen;
+    public GameEngine gameEngineScreen;
 
     /**
      * Obiekt klasy Main. 
@@ -104,18 +105,18 @@ public class Hud implements Constant {
      * Główny i jedyny konstruktor klasy Hud.
      * @param manager Pobierane są z niego tekstury.
      * @param game Przełącza ekrany. Powrót do menu.
-     * @param gameScreen Niszczy elementy Hud.
+     * @param gameEngineScreen Niszczy elementy Hud.
      * @param kCursor Referencja do kursora myszki.
      */
     // Constructor
-    public Hud(AssetManager manager, Main game, GameScreen gameScreen, Cursor kCursor) {
+    public Hud(AssetManager manager, Main game, GameEngine gameEngineScreen, Cursor kCursor) {
         skin = new Skin();
         skin = manager.get("core/assets/buttons/skins/golden-spiral/skin/golden-ui-skin.json", Skin.class);
         cursor = kCursor;
         stage = new Stage(new ScreenViewport());
 
         this.game = game;
-        this.gameScreen = gameScreen;
+        this.gameEngineScreen = gameEngineScreen;
 
         // Close button
         Texture[] buttonStyles = new Texture[2];

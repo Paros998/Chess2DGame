@@ -107,7 +107,7 @@ public class MenuScreen implements Screen, Constant {
         ChessLogo.drawSprite(batch);
 
         game.menuElements.font.draw(batch, game.menuElements.layout,
-                GAME_WIDTH / 2 - game.menuElements.layout.width / 2, GAME_HEIGHT - 50);
+                GAME_WIDTH_F / 2 - game.menuElements.layout.width / 2, GAME_HEIGHT - 50);
 
         batch.end();
         stage.draw();
@@ -130,21 +130,21 @@ public class MenuScreen implements Screen, Constant {
                 null);
         ChessLogo.getSprite().setSize(ChessLogo.width / 2, ChessLogo.height / 2);
         ChessLogo.getSprite().setScale(2.f,2.f);
-        ChessLogo.getSprite().setX(GAME_WIDTH / 2 - ChessLogo.getSprite().getWidth() / 2 + 50);
-        ChessLogo.getSprite().setY(GAME_HEIGHT / 2 - ChessLogo.getSprite().getHeight() / 2 + 370);
+        ChessLogo.getSprite().setX(GAME_WIDTH_F / 2 - ChessLogo.getSprite().getWidth() / 2 + 50);
+        ChessLogo.getSprite().setY(GAME_HEIGHT_F / 2 - ChessLogo.getSprite().getHeight() / 2 + 370);
 
         // Creating buttons
-        playButton = new GameTextButton("Play", GAME_WIDTH / 2, GAME_HEIGHT / 2 , game.menuElements.skin, 1, game);
+        playButton = new GameTextButton("Play", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 , game.menuElements.skin, 1, game);
 
-        helpButon = new GameTextButton("Help", GAME_WIDTH / 2, GAME_HEIGHT / 2 - 100, game.menuElements.skin, 2, game);
+        helpButon = new GameTextButton("Help", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 100, game.menuElements.skin, 2, game);
 
-        scoreButton = new GameTextButton("Score", GAME_WIDTH / 2, GAME_HEIGHT / 2 - 200, game.menuElements.skin, 3,
+        scoreButton = new GameTextButton("Score", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 200, game.menuElements.skin, 3,
                 game);
 
-        optionsButton = new GameTextButton("Options", GAME_WIDTH / 2, GAME_HEIGHT / 2 - 300, game.menuElements.skin, 4,
+        optionsButton = new GameTextButton("Options", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 300, game.menuElements.skin, 4,
                 game);
 
-        quitButton = new GameTextButton("Exit", GAME_WIDTH / 2, GAME_HEIGHT / 2 - 400, game.menuElements.skin, 5, game);
+        quitButton = new GameTextButton("Exit", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 400, game.menuElements.skin, 5, game);
 
         // Adding actors to scene
         stage.addActor(playButton);

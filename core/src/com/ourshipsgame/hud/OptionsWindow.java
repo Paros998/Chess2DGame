@@ -158,9 +158,9 @@ public class OptionsWindow extends Dialog implements Constant {
                     protected void result(final Object act) {
                         if (act.toString() == "Yes") {
                             hud.game.menuElements = new MenuGlobalElements(hud.game);
-                            hud.gameScreen.dispose();
+                            hud.gameEngineScreen.dispose();
                             hud.gameSettings = null;
-                            hud.gameScreen = null;
+                            hud.gameEngineScreen = null;
                             hud.game.setScreen(new MenuScreen(hud.game));
                         } else {
                             hud.gameSettings.playSound();
