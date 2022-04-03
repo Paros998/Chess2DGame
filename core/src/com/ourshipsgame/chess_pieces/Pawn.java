@@ -21,9 +21,9 @@ public class Pawn extends Chess {
 
     @Override
     public void moveChess(GameBoard.BoardLocations newPos, float soundVolume) {
-        super.moveChess(newPos, soundVolume);
         if(firstMove)
             firstMove = false;
+        super.moveChess(newPos, soundVolume);
     }
 
     @Override

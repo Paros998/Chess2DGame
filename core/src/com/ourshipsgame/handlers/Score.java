@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 /**
  * Klasa przechowująca wyniki gracza i komputera w czasie bitwy
  */
+//TODO do wyjebania
 public class Score {
     /**
      * Zmienna przechowująca wynik

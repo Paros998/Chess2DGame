@@ -2,21 +2,17 @@ package com.ourshipsgame.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.ourshipsgame.Main;
+import com.ourshipsgame.chess_pieces.Chess;
 import com.ourshipsgame.hud.Hud;
 import com.ourshipsgame.mainmenu.MenuGlobalElements;
 import com.ourshipsgame.mainmenu.MenuScreen;
@@ -24,7 +20,7 @@ import com.ourshipsgame.mainmenu.MenuScreen;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.NumberFormat;
+import java.util.Random;
 
 import static com.ourshipsgame.game.GameBoard.BoardLocations.getEnumByPosition;
 
@@ -114,23 +110,20 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
         }.show(hud.getStage());
     }
 
-    /**
-     * Metoda do renderowania informacji o wynikach gracza i komputera
-     *
-     * @param batch SpriteBatch do renderowania
-     */
-    @Override
-    protected void drawTurnInfo(SpriteBatch batch) {
-        switch (PlayerTurn) {
-            case 1 -> {
-                turnFontActive.draw(batch, "Your Turn!", gameWidth_f / 2 - 250, gameHeight_f - 140);
-                turnFont.draw(batch, "Enemy Turn!", gameWidth_f / 2 + 90, gameHeight_f - 140);
-            }
-            case 2 -> {
-                turnFont.draw(batch, "Your Turn!", gameWidth_f / 2 - 250, gameHeight_f - 140);
-                turnFontActive.draw(batch, "Enemy Turn!", gameWidth_f / 2 + 90, gameHeight_f - 140);
-            }
+    private void randomizeStart() {
+        Random random = new Random(0);
+
+        if (random.nextInt(9) % 2 == 0) {
+            MyPlayer = whitePlayer;
+            EnemyPlayer = blackPlayer;
+        } else {
+            MyPlayer = blackPlayer;
+            EnemyPlayer = whitePlayer;
         }
+
+        MyPlayer.setPlayerName("TemplateName");
+        EnemyPlayer.setPlayerName("Bot Clark");
+        enemyComputerPlayerAi.setPlayer(EnemyPlayer);
     }
 
     /**
@@ -139,7 +132,10 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
     @Override
     protected void createGraphics() {
         // changing game stage from loading to playing
-        if (preparation(true, manager)) {
+        if (preparation(manager)) {
+
+            randomizeStart();
+
             gameStage = 2;
             hud = new Hud(manager, game, SinglePlayerGameScreen, cursor);
             createdTextures = true;
@@ -148,13 +144,14 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
         hud.gameSettings = game.menuElements.gameSettings;
         // Deleting GlobalMenuElements object
         game.menuElements = null;
+
         hud.getPlayButton().addListener(new InputListener() {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 if (gameStage == 2) {
                     hud.getStage().getActors().pop();
                     hud.getPlayersSetNameDialog().hide();
-                    PlayerOne.setPlayerName(hud.getPlayersName());
+                    MyPlayer.setPlayerName(hud.getPlayersName());
                     gameStage = 3;
                 }
             }
@@ -174,24 +171,25 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
     // update logics of game
     @Override
     protected void update(float deltaTime) {
-        switch (gameStage){
+        switch (gameStage) {
             case 2 -> {
 
             }
+
             case 3 -> {
-                if (PlayerTurn == 1)
-                    PlayerOne.updateTime(deltaTime);
-                else
-                    PlayerTwo.updateTime(deltaTime);
+                if (PlayerTurn.equals(MyPlayer))
+                    MyPlayer.updateTime(deltaTime);
+                else {
+                    EnemyPlayer.updateTime(deltaTime);
 
-                // Update AI info
-
-                if (PlayerTurn == 2) {
+                    //Update AI info
                     if (enemyComputerPlayerAi != null) {
 
                     }
                 }
+
             }
+
             case 4 -> {
                 if (!createDialog) {
                     if (PlayerOneLost)
@@ -330,13 +328,14 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
         switch (button) {
             case Buttons.LEFT:
                 if (gameStage == 3) {
-                    if(!checkForMoveClicked(screenX, screenY))
-                        checkForChessClicked(screenX, screenY);
+                    if (PlayerTurn.equals(MyPlayer))
+                        if (!checkForMoveClicked(screenX, screenY))
+                            checkForChessClicked(screenX, screenY);
                 }
                 break;
             case Buttons.RIGHT:
                 if (gameStage == 3) {
-                        currentChessClicked = null;
+                    currentChessClicked = null;
                 }
                 break;
         }
@@ -346,10 +345,10 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
     private boolean checkForMoveClicked(int screenX, int screenY) {
         if (currentChessClicked != null) {
             GameObject[] possibleMovesAndAttacks = currentChessClicked.getPossibleMovesAndAttacks();
-            for (GameObject move: possibleMovesAndAttacks)
-                if(move.contains(screenX,screenY)){
+            for (GameObject move : possibleMovesAndAttacks)
+                if (move.contains(screenX, screenY)) {
                     currentChessClicked.moveChess(getEnumByPosition(move.getPosition()), hud.gameSettings.soundVolume);
-                    //later here will be some kind of changeTurn method called instead
+                    switchTurn();
                     currentChessClicked = null;
                     return true;
                 }
@@ -359,16 +358,18 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
     }
 
     private void checkForChessClicked(int screenX, int screenY) {
-        for (int i = 0; i < 16; i++){
-            if(whiteChesses[i].clickedOnThisChess(screenX, screenY,gameBoard)){
-                currentChessClicked = whiteChesses[i];
+        Chess[] cheesesToCheck;
+
+        if (MyPlayer.equals(whitePlayer))
+            cheesesToCheck = whiteChesses;
+        else cheesesToCheck = blackChesses;
+
+        for (int i = 0; i < 16; i++)
+            if (cheesesToCheck[i].clickedOnThisChess(screenX, screenY, gameBoard)) {
+                currentChessClicked = cheesesToCheck[i];
                 return;
             }
-            if(blackChesses[i].clickedOnThisChess(screenX, screenY,gameBoard)){
-                currentChessClicked = blackChesses[i];
-                return;
-            }
-        }
+
     }
 
     /**

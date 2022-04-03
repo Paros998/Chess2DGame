@@ -112,31 +112,13 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
         }.show(hud.getStage());
     }
 
-    /**
-     * Metoda do renderowania informacji o wynikach gracza i komputera
-     *
-     * @param batch SpriteBatch do renderowania
-     */
-    @Override
-    protected void drawTurnInfo(SpriteBatch batch) {
-        switch (PlayerTurn) {
-            case 1 -> {
-                turnFontActive.draw(batch, "Your Turn!", gameWidth_f / 2 - 250, gameHeight_f - 140);
-                turnFont.draw(batch, "Enemy Turn!", gameWidth_f / 2 + 90, gameHeight_f - 140);
-            }
-            case 2 -> {
-                turnFont.draw(batch, "Your Turn!", gameWidth_f / 2 - 250, gameHeight_f - 140);
-                turnFontActive.draw(batch, "Enemy Turn!", gameWidth_f / 2 + 90, gameHeight_f - 140);
-            }
-        }
-    }
 
     /**
      * Metoda do tworzenia wszystkich elementów graficznych gry
      */
     protected void createGraphics() {
         // changing game stage from loading to playing
-        if (preparation(true, manager)) {
+        if (preparation( manager)) {
             gameStage = 2;
             hud = new Hud(manager, game, multiPlayerGameScreen, cursor);
             createdTextures = true;
@@ -176,14 +158,14 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
 
             }
             case 3 -> {
-                if (PlayerTurn == 1)
-                    PlayerOne.updateTime(deltaTime);
+                if (PlayerTurn == MyPlayer)
+                    MyPlayer.updateTime(deltaTime);
                 else
-                    PlayerTwo.updateTime(deltaTime);
+                    EnemyPlayer.updateTime(deltaTime);
 
                 // Update AI info
 
-                if (PlayerTurn == 2) {
+                if (PlayerTurn == EnemyPlayer) {
 
                 }
             }

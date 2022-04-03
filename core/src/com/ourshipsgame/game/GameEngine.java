@@ -25,6 +25,7 @@ import com.ourshipsgame.handlers.Constant;
 import com.ourshipsgame.handlers.Score;
 import com.ourshipsgame.hud.Hud;
 import com.ourshipsgame.inteligentSystems.ComputerPlayerAi;
+import org.lwjgl.util.vector.Vector2f;
 
 import java.text.NumberFormat;
 
@@ -88,15 +89,16 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      */
     protected BitmapFont font;
     /*
-    * Map of the background
-    * */
+     * Map of the background
+     * */
     protected GameObject gameBackground;
 
     protected Player whitePlayer = new Player(Player.PlayerColor.WHITE);
+
     protected Player blackPlayer = new Player(Player.PlayerColor.BLACK);
     /*
-    * Board of the game
-    * */
+     * Board of the game
+     * */
     protected GameBoard gameBoard = new GameBoard();
     /**
      * Obiekt przechowujący informacje o wynikach gracza
@@ -113,7 +115,13 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
     /**
      * Zmienna okreslająca czyja tura jest aktualnie
      */
-    protected int PlayerTurn;
+    protected Player PlayerTurn = whitePlayer;
+
+    protected Player MyPlayer;
+
+    protected Player EnemyPlayer;
+
+    protected GameObject[] TurnInfos = new GameObject[2];
     /**
      * Kursor
      */
@@ -171,7 +179,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
     /**
      * Zmienna do logiki click n drop statku w czasie ustawiania statków na planszy
      */
-    protected Chess currentChessClicked ;
+    protected Chess currentChessClicked;
     /**
      * Zmienna przechowująca pozycje x sprite'a
      */
@@ -201,10 +209,10 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      * Metoda do zmiany tury
      */
     protected void switchTurn() {
-        if (PlayerTurn == 1)
-            PlayerTurn = 2;
+        if (PlayerTurn == MyPlayer)
+            PlayerTurn = EnemyPlayer;
         else
-            PlayerTurn = 1;
+            PlayerTurn = MyPlayer;
     }
 
     /**
@@ -226,13 +234,14 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         //Board Textures
         manager.load("core/assets/backgroundtextures/ChessMenuBg.png", Texture.class);
         manager.load("core/assets/backgroundtextures/chessBoard.jpg", Texture.class);
+        manager.load("core/assets/backgroundtextures/turn-info-texture.png", Texture.class);
 
         //Chess pieces Textures
         for (int i = 0; i < 12; i++)
-            manager.load(ChessPiecesTexturesPaths[i],Texture.class);
+            manager.load(ChessPiecesTexturesPaths[i], Texture.class);
 
-        manager.load("core/assets/moves/attack.png",Texture.class);
-        manager.load("core/assets/moves/move.png",Texture.class);
+        manager.load("core/assets/moves/attack.png", Texture.class);
+        manager.load("core/assets/moves/move.png", Texture.class);
     }
 
     /**
@@ -277,13 +286,12 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
     /**
      * Metoda do utworzenia faktycznych obiektów i zmiennych do gry
      *
-     * @param computerEnemy Określa czy przeciwnik to komputer
-     * @param manager       AssetManager przechowuje zasoby załadowane
+     * @param manager AssetManager przechowuje zasoby załadowane
      * @return boolean Zwraca true po zakończeniu
      */
     // game methods below
     // Stage 1
-    protected boolean preparation(boolean computerEnemy, AssetManager manager) {
+    protected boolean preparation(AssetManager manager) {
 
         boolean done = false;
 
@@ -296,7 +304,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         turnFontActive = manager.get("core/assets/fonts/nunito.light2.ttf", BitmapFont.class);
 
         gameBackground = new GameObject(
-                manager.get("core/assets/backgroundtextures/ChessMenuBg.png",Texture.class),
+                manager.get("core/assets/backgroundtextures/ChessMenuBg.png", Texture.class),
                 0,
                 0,
                 true,
@@ -305,7 +313,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         );
 
         gameBoard.gameBoardObject = new GameObject(
-                manager.get("core/assets/backgroundtextures/chessBoard.jpg",Texture.class),
+                manager.get("core/assets/backgroundtextures/chessBoard.jpg", Texture.class),
                 Constant.X_AXIS_BOARD_START,
                 Constant.Y_AXIS_BOARD_START,
                 true,
@@ -313,181 +321,204 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
                 null
         );
 
+        TurnInfos[0] = new GameObject(
+                manager.get("core/assets/backgroundtextures/turn-info-texture.png", Texture.class),
+                new Vector2f(400, 140),
+                Constant.X_AXIS_BOARD_START - 400,
+                gameHeight_f - 140,
+                true,
+                false,
+                null
+
+        );
+
+        TurnInfos[1] = new GameObject(
+                manager.get("core/assets/backgroundtextures/turn-info-texture.png", Texture.class),
+                new Vector2f(400, 140),
+                Constant.X_AXIS_BOARD_START + (9 * 122),
+                gameHeight_f - 140,
+                true,
+                false,
+                null
+
+        );
+
+
         whiteChesses[ChessPiecesInArray.King.ordinal()] = new King(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_KING.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_KING.ordinal()], Texture.class),
                 E1,
                 manager
         );
 
         whiteChesses[ChessPiecesInArray.Queen.ordinal()] = new Queen(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_QUEEN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_QUEEN.ordinal()], Texture.class),
                 E4,
                 manager
         );
 
         whiteChesses[ChessPiecesInArray.FstBishop.ordinal()] = new Bishop(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_BISHOP.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_BISHOP.ordinal()], Texture.class),
                 C1,
                 manager
         );
 
         whiteChesses[ChessPiecesInArray.SndBishop.ordinal()] = new Bishop(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_BISHOP.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_BISHOP.ordinal()], Texture.class),
                 F1,
                 manager
         );
 
         whiteChesses[ChessPiecesInArray.FstKnight.ordinal()] = new Knight(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_KNIGHT.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_KNIGHT.ordinal()], Texture.class),
                 B1,
                 manager
         );
 
         whiteChesses[ChessPiecesInArray.SndKnight.ordinal()] = new Knight(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_KNIGHT.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_KNIGHT.ordinal()], Texture.class),
                 G1,
                 manager
         );
 
         whiteChesses[ChessPiecesInArray.FstRook.ordinal()] = new Rook(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_ROOK.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_ROOK.ordinal()], Texture.class),
                 D4,
                 manager
         );
 
         whiteChesses[ChessPiecesInArray.SndRook.ordinal()] = new Rook(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_ROOK.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_ROOK.ordinal()], Texture.class),
                 H1,
                 manager
         );
 
         whiteChesses[ChessPiecesInArray.Pawn1.ordinal()] = new Pawn(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
                 A2,
                 manager
         );
         whiteChesses[ChessPiecesInArray.Pawn2.ordinal()] = new Pawn(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
                 B2,
                 manager
         );
         whiteChesses[ChessPiecesInArray.Pawn3.ordinal()] = new Pawn(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
                 C2,
                 manager
         );
         whiteChesses[ChessPiecesInArray.Pawn4.ordinal()] = new Pawn(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
                 D2,
                 manager
         );
         whiteChesses[ChessPiecesInArray.Pawn5.ordinal()] = new Pawn(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
                 E2,
                 manager
         );
         whiteChesses[ChessPiecesInArray.Pawn6.ordinal()] = new Pawn(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
                 F2,
                 manager
         );
         whiteChesses[ChessPiecesInArray.Pawn7.ordinal()] = new Pawn(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
                 G2,
                 manager
         );
         whiteChesses[ChessPiecesInArray.Pawn8.ordinal()] = new Pawn(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
                 H2,
                 manager
         );
 
         ////////////////////////////////////////
         blackChesses[ChessPiecesInArray.King.ordinal()] = new King(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_KING.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_KING.ordinal()], Texture.class),
                 E8,
                 manager
         );
 
         blackChesses[ChessPiecesInArray.Queen.ordinal()] = new Queen(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_QUEEN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_QUEEN.ordinal()], Texture.class),
                 D8,
                 manager
         );
 
         blackChesses[ChessPiecesInArray.FstBishop.ordinal()] = new Bishop(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_BISHOP.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_BISHOP.ordinal()], Texture.class),
                 C8,
                 manager
         );
 
         blackChesses[ChessPiecesInArray.SndBishop.ordinal()] = new Bishop(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_BISHOP.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_BISHOP.ordinal()], Texture.class),
                 F6,
                 manager
         );
 
         blackChesses[ChessPiecesInArray.FstKnight.ordinal()] = new Knight(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_KNIGHT.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_KNIGHT.ordinal()], Texture.class),
                 B8,
                 manager
         );
 
         blackChesses[ChessPiecesInArray.SndKnight.ordinal()] = new Knight(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_KNIGHT.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_KNIGHT.ordinal()], Texture.class),
                 G8,
                 manager
         );
 
         blackChesses[ChessPiecesInArray.FstRook.ordinal()] = new Rook(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_ROOK.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_ROOK.ordinal()], Texture.class),
                 B6,
                 manager
         );
 
         blackChesses[ChessPiecesInArray.SndRook.ordinal()] = new Rook(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_ROOK.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_ROOK.ordinal()], Texture.class),
                 H8,
                 manager
         );
 
         blackChesses[ChessPiecesInArray.Pawn1.ordinal()] = new Pawn(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
                 A7,
                 manager
         );
         blackChesses[ChessPiecesInArray.Pawn2.ordinal()] = new Pawn(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
                 B7,
                 manager
         );
         blackChesses[ChessPiecesInArray.Pawn3.ordinal()] = new Pawn(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
                 C7,
                 manager
         );
         blackChesses[ChessPiecesInArray.Pawn4.ordinal()] = new Pawn(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
                 D7,
                 manager
         );
         blackChesses[ChessPiecesInArray.Pawn5.ordinal()] = new Pawn(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
                 E7,
                 manager
         );
         blackChesses[ChessPiecesInArray.Pawn6.ordinal()] = new Pawn(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
                 F7,
                 manager
         );
         blackChesses[ChessPiecesInArray.Pawn7.ordinal()] = new Pawn(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
                 G7,
                 manager
         );
         blackChesses[ChessPiecesInArray.Pawn8.ordinal()] = new Pawn(
-                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()],Texture.class),
+                manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
                 H7,
                 manager
         );
@@ -497,22 +528,13 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
             blackChesses[i].setPlayer(blackPlayer);
         }
 
-        //TODO move next lines do actual screen constructor
-
-        PlayerOne.setPlayerName("TemplateName");
-
-        if (computerEnemy) {
-            PlayerOne.setPlayerName("Bot Clark");
-        } else {
-            PlayerTwo.setPlayerName("TemplateName");
-        }
-
-
         int xHot = 0;
         int yHot = 0;
         cursor = Gdx.graphics.newCursor(crosshairPixmap, xHot, yHot);
 
         Gdx.graphics.setCursor(cursor);
+
+        enemyComputerPlayerAi = new ComputerPlayerAi();
 
         return true;
     }
@@ -544,6 +566,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
     }
 
     // Create methods
+
     /**
      * Metoda do utworzenia czcionek
      */
@@ -614,8 +637,8 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         font.draw(batch, text, (gameWidth_f - 180 - (43 * (len / 2))), gameHeight_f / 2 + 100);
     }
 
-    protected void drawCurrentClickedChessAvailableMoves(){
-        if(currentChessClicked != null)
+    protected void drawCurrentClickedChessAvailableMoves() {
+        if (currentChessClicked != null)
             currentChessClicked.drawAvailableMovesAndAttacks(sb);
     }
 
@@ -673,7 +696,60 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         }
     }
 
-    protected abstract void drawTurnInfo(SpriteBatch sb);
+    private String formattedTimeLeft(Float time) {
+        int minutes = (int) (time / 60);
+        int seconds = (int) (time - (minutes * 60));
+
+        return String.format("%s.%s", minutes, seconds);
+    }
+
+    protected void drawTurnInfo(SpriteBatch batch) {
+        int fontSize = 8;
+        Player player;
+        for (int i = 0; i < 2; i++) {
+            TurnInfos[i].drawSprite(batch);
+
+            if (i == 0)
+                player = MyPlayer;
+            else player = EnemyPlayer;
+
+            turnFontActive.draw(batch,
+                    player.getPlayerName(),
+                    TurnInfos[i].getPosition().getX() + 64,
+                    TurnInfos[i].getPosition().getY() + 96);
+            turnFont.draw(batch,
+                    "Score:" + player.getScore().toString(),
+                    TurnInfos[i].getPosition().getX() + TurnInfos[i].getWidth() - (("Score:" + player.getScore().toString()).length() * fontSize + fontSize) - 96,
+                    TurnInfos[i].getPosition().getY() + 96);
+            turnFont.draw(batch,
+                    formattedTimeLeft(player.getTimeLeft()),
+                    TurnInfos[i].getPosition().getX() + 64,
+                    TurnInfos[i].getPosition().getY() + 48);
+
+
+        }
+
+        if (PlayerTurn == MyPlayer) {
+            turnFontActive.draw(batch,
+                    "Your Turn!",
+                    TurnInfos[0].getPosition().getX() + TurnInfos[0].getSprite().getWidth() / 2 - ("Your Turn!".length() * fontSize),
+                    TurnInfos[0].getPosition().getY() - 32);
+            turnFont.draw(batch,
+                    "Enemy Turn!",
+                    TurnInfos[1].getPosition().getX() + TurnInfos[1].getSprite().getWidth() / 2 - ("Enemy Turn!".length() * fontSize),
+                    TurnInfos[1].getPosition().getY() - 32);
+        } else {
+            turnFont.draw(batch,
+                    "Your Turn!",
+                    TurnInfos[0].getPosition().getX() + TurnInfos[0].getSprite().getWidth() / 2 - ("Your Turn!".length() * fontSize),
+                    TurnInfos[0].getPosition().getY() - 32);
+            turnFontActive.draw(batch,
+                    "Enemy Turn!",
+                    TurnInfos[1].getPosition().getX() + TurnInfos[1].getSprite().getWidth() / 2 - ("Enemy Turn!".length() * fontSize),
+                    TurnInfos[1].getPosition().getY() - 32);
+        }
+
+    }
 
     protected abstract void update(float deltaTime);
 

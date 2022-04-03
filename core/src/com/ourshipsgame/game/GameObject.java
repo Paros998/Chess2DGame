@@ -69,6 +69,33 @@ public class GameObject extends Rectangle implements Constant {
             createSprite(texture);
     }
 
+    // Constructor for object with a texture ,sprite and animation for this sprite
+    /**
+     * Kontruktor obiektu z teksturą ,spritem i animacją sprite'a
+     *
+     * @param texture        Tekstura statku.
+     * @param size           Vektor wielkości
+     * @param x              Nowa pozycja X na ekranie.
+     * @param y              Nowa pozycja Y na ekranie.
+     * @param createSprite   Czy ma tworzyć sprite'a.
+     * @param createAnimator Czy ma tworzyć animator do sprite'a.
+     * @param vector         Ilość klatek do animatora.
+     */
+    public GameObject(Texture texture,Vector2f size, float x, float y, boolean createSprite, boolean createAnimator, Vector2 vector) {
+        this.texture = texture;
+        this.setX(x);
+        this.setY(y);
+        this.width = size.getX();
+        this.height = size.getY();
+
+        if (createAnimator)
+            animator = new Animator(texture, vector, 0.25f);
+        if (createSprite)
+            createSprite(texture);
+
+        sprite.setSize(width, height);
+    }
+
     // Method to update simple sprite animation
     /**
      * Metoda do aktualizacji animacji statku
