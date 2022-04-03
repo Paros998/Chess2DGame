@@ -35,6 +35,8 @@ public abstract class Chess {
                 true,
                 false,
                 new Vector2(1, 1));
+        moveSound = manager.get("core/assets/sounds/move_sound.wav", Sound.class);
+        attackSound = manager.get("core/assets/sounds/attack_sound.wav", Sound.class);
         location.setChess(this);
         currentLocation = location;
         possibleMovesAndAttacksAsVectors = new ArrayList<>();
@@ -43,8 +45,13 @@ public abstract class Chess {
     }
 
     //newPos like A7
-    public void moveChess(GameBoard.BoardLocations newPos) {
+    public void moveChess(GameBoard.BoardLocations newPos, float soundVolume) {
         if (canMove(newPos)) {
+
+            if(newPos.getChess() != null)
+                attackSound.play(soundVolume);
+            else moveSound.play(soundVolume);
+
             currentLocation.setChess(null);
             newPos.setChess(this);
             gameObject.setSpritePos(newPos.getPosition());
@@ -52,7 +59,7 @@ public abstract class Chess {
         }
     }
 
-    public void drawAvailableMovesAndAttacks(SpriteBatch spriteBatch, GameBoard gameBoard) {
+    public void drawAvailableMovesAndAttacks(SpriteBatch spriteBatch) {
         for (GameObject move : possibleMovesAndAttacks)
             move.getSprite().draw(spriteBatch, 0.75f);
     }

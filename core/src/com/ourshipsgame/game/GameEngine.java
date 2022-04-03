@@ -99,10 +99,6 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      * Tablica dźwięków końcowych
      */
     protected Sound[] endSounds = new Sound[2];
-    /**
-     * Dźwięk ruchu pionków
-     */
-    protected Sound moveSound;
 
     // Important Objects
     /**
@@ -167,6 +163,8 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         // Sound effects
         manager.load("core/assets/sounds/won.mp3", Sound.class);
         manager.load("core/assets/sounds/lose.mp3", Sound.class);
+        manager.load("core/assets/sounds/attack_sound.wav", Sound.class);
+        manager.load("core/assets/sounds/move_sound.wav", Sound.class);
 
         //Board Textures
         manager.load("core/assets/backgroundtextures/ChessMenuBg.png", Texture.class);
@@ -229,6 +227,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
     // game methods below
     // Stage 1
     protected boolean preparation(boolean computerEnemy, AssetManager manager) {
+
         boolean done = false;
 
         crosshairPixmap = manager.get("core/assets/ui/ui.hud/cursors/test.png", Pixmap.class);

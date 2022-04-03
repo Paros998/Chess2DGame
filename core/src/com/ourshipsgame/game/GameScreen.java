@@ -135,7 +135,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
 
     private void drawCurrentClickedChessAvailableMoves(){
         if(currentChessClicked != null)
-            currentChessClicked.drawAvailableMovesAndAttacks(sb,gameBoard);
+            currentChessClicked.drawAvailableMovesAndAttacks(sb);
     }
 
 
@@ -557,7 +557,7 @@ public class GameScreen extends GameEngine implements InputProcessor {
             GameObject[] possibleMovesAndAttacks = currentChessClicked.getPossibleMovesAndAttacks();
             for (GameObject move: possibleMovesAndAttacks)
                 if(move.contains(screenX,screenY)){
-                    currentChessClicked.moveChess(getEnumByPosition(move.getPosition()));
+                    currentChessClicked.moveChess(getEnumByPosition(move.getPosition()), hud.gameSettings.soundVolume);
                     //later here will be some kind of changeTurn method called instead
                     currentChessClicked = null;
                     return true;
