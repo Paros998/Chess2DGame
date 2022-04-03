@@ -102,7 +102,7 @@ public class HelpScreen implements Screen, Constant {
                 Gdx.files.internal("core/assets/fonts/Raleway-ExtraLightItalic.ttf"));
         parameter.color = Color.GOLD;
         parameter.borderColor = Color.BROWN;
-        parameter.size = 25;
+        parameter.size = 20;
         parameter.borderWidth = 2;
         font = generator.generateFont(parameter);
 
@@ -110,69 +110,144 @@ public class HelpScreen implements Screen, Constant {
 
         backButton = new GameTextButton("Back", 0, 0, game.menuElements.skin, 6, game);
 
+        // Loading chess items
+        Sprite king = new Sprite(new Texture("core/assets/chess-pieces/w_king_png_shadow_128px.png"));
+        Sprite queen = new Sprite(new Texture("core/assets/chess-pieces/w_queen_png_shadow_128px.png"));
+        Sprite rook = new Sprite(new Texture("core/assets/chess-pieces/w_rook_png_shadow_128px.png"));
+        Sprite bishop = new Sprite(new Texture("core/assets/chess-pieces/w_bishop_png_shadow_128px.png"));
+        Sprite knight = new Sprite(new Texture("core/assets/chess-pieces/w_knight_png_shadow_128px.png"));
+        Sprite pawn = new Sprite(new Texture("core/assets/chess-pieces/w_pawn_png_shadow_128px.png"));
 
+        float scaleFactorial = 1.5f;
+
+        king.setSize(king.getWidth() / scaleFactorial, king.getHeight() / scaleFactorial);
+        queen.setSize(queen.getWidth() / scaleFactorial, queen.getHeight() / scaleFactorial);
+        rook.setSize(rook.getWidth() / scaleFactorial, rook.getHeight() / scaleFactorial);
+        bishop.setSize(bishop.getWidth() / scaleFactorial, bishop.getHeight() / scaleFactorial);
+        knight.setSize(knight.getWidth() / scaleFactorial, knight.getHeight() / scaleFactorial);
+        pawn.setSize(pawn.getWidth() / scaleFactorial, pawn.getHeight() / scaleFactorial);
+
+        cursor = new Sprite(new Texture("core/assets/ui/ui.hud/cursors/test.png"));
 
         // Creating main Table for buttons and child Table
         mainTable = new Table();
         mainTable.setFillParent(true);
         mainTable.left();
 
-//        // Creating Table for descriptions and icons
-//        childTable = new Table();
-//        // childTable.setFillParent(true);
-//
-//        // Adding elements to child Table
-//        Label label;
-//
-//        // Small Ship expand
-//        childTable.add(new Image(new SpriteDrawable())).expandX();
-//        label = new Label("- small ship. Has 1 life.", style);
-//        childTable.add(label).expandX().padRight(50);
-//
-//        // Green Crosshair expand
-//        childTable.add(new Image(new SpriteDrawable())).expandX().padLeft(20);
-//        label = new Label("- means that you are able to shoot.", style);
-//        childTable.add(label).expandX().padRight(120);
-//
-//        // Black X symbol expand
-//        childTable.add(new Image(new SpriteDrawable())).expandX().padLeft(20);
-//        label = new Label("- means that you have missed your shot.", style);
-//        childTable.add(label).expandX().padRight(190);
-//
-//        childTable.row();
-//
-//        // Medium Ship expand
-//        childTable.add(new Image(new SpriteDrawable())).expandX();
-//        label = new Label("- medium ship. Has 2 lifes.", style);
-//        childTable.add(label).expandX();
-//
-//        // Red Crosshair expand
-//        childTable.add(new Image(new SpriteDrawable())).expandX().padLeft(20);
-//        label = new Label("- means that you aren't able to shoot.", style);
-//        childTable.add(label).expandX().padRight(90);
-//
-//        // Red X symbol expand
-//        childTable.add(new Image(new SpriteDrawable())).expandX().padLeft(20);
-//        label = new Label("- means that you have hit enemy's ship.", style);
-//        childTable.add(label).expandX().padRight(200);
-//
-//        childTable.row();
-//
-//        // Large Ship expand
-//        childTable.add(new Image(new SpriteDrawable())).expandX();
-//        label = new Label("- large ship. Has 3 lifes.", style);
-//        childTable.add(label).expandX().padRight(30);
-//
-//        // Cursor expand
-//        childTable.add(new Image(new SpriteDrawable(cursor))).expandX().padLeft(20);
-//        label = new Label("- mouse cursor. You can press buttons with it.", style);
-//        childTable.add(label).expandX();
-//
-//        // Destroyed Ship expand
-//        childTable.add(new Image(new SpriteDrawable())).expandX().padLeft(20);
-//        label = new Label("- black stains on ship means that it has been destroyed.", style);
-//        childTable.add(label).expandX();
-//
+        // Creating Table for descriptions and icons
+        childTable = new Table();
+        // childTable.setFillParent(true);
+
+        // Adding elements to child Table
+        Label label;
+
+        childTable.add(new Image(new SpriteDrawable(king))).expandX();
+        childTable.row();
+        label = new Label(
+                "Kings move one square in any direction, so long as that square is not attacked by an enemy piece.",
+                style
+        );
+        childTable.add(label).expandX();
+        childTable.row();
+        label = new Label(
+                "Additionally, kings are able to make a special move, known as castling.",
+                style
+        );
+        childTable.add(label).expandX();
+
+        childTable.row().padTop(30);
+
+        childTable.add(new Image(new SpriteDrawable(queen))).expandX();
+        childTable.row();
+        label = new Label(
+                "Queens move diagonally, horizontally, or vertically any number of squares.",
+                style
+        );
+        childTable.add(label).expandX();
+        childTable.row();
+        label = new Label(
+                "They are unable to jump over pieces.",
+                style
+        );
+        childTable.add(label).expandX();
+
+        childTable.row().padTop(30);
+
+        childTable.add(new Image(new SpriteDrawable(rook))).expandX();
+        childTable.row();
+        label = new Label(
+                "Rooks move horizontally or vertically any number of squares",
+                style
+        );
+        childTable.add(label).expandX();
+        childTable.row();
+        label = new Label(
+                "They are unable to jump over pieces. Rooks move when the king castles.",
+                style
+        );
+        childTable.add(label).expandX();
+
+        childTable.row().padTop(30);
+
+        childTable.add(new Image(new SpriteDrawable(bishop))).expandX();
+        childTable.row();
+        label = new Label(
+                "Bishops move diagonally any number of squares.",
+                style
+        );
+        childTable.add(label).expandX();
+        childTable.row();
+        label = new Label(
+                "They are unable to jump over pieces.",
+                style
+        );
+        childTable.add(label).expandX();
+
+        childTable.row().padTop(30);
+
+        childTable.add(new Image(new SpriteDrawable(knight))).expandX();
+        childTable.row();
+        label = new Label(
+                "Knights move in an ‘L’ shape’: two squares in a horizontal or vertical direction,",
+                style
+        );
+        childTable.add(label).expandX();
+        childTable.row();
+        label = new Label(
+                " then move one square horizontally or vertically.",
+                style
+        );
+        childTable.add(label).expandX();
+        childTable.row();
+        label = new Label(
+                "They are the only piece able to jump over other pieces.",
+                style
+        );
+        childTable.add(label).expandX();
+
+        childTable.row().padTop(30);
+
+        childTable.add(new Image(new SpriteDrawable(pawn))).expandX();
+        childTable.row();
+        label = new Label(
+                "Pawns move vertically forward one square, with the option to move two squares if they have not yet moved.",
+                style
+        );
+        childTable.add(label).expandX();
+        childTable.row();
+        label = new Label(
+                "Pawns are the only piece to capture different to how they move.",
+                style
+        );
+        childTable.add(label).expandX();
+        childTable.row();
+        label = new Label(
+                "The pawns capture one square diagonally in a forward direction.",
+                style
+        );
+        childTable.add(label).expandX();
+        childTable.row();
+
         // Adding elements to main Table
         mainTable.add(childTable).expandX();// .padRight(200);
         mainTable.row();

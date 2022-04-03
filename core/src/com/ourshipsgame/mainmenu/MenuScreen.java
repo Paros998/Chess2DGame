@@ -85,6 +85,8 @@ public class MenuScreen implements Screen, Constant {
         game.menuElements.moveMenu(deltaTime);
     }
 
+    private int currentMenuStage = 1;
+
     /**
      * Metoda odpowiedzialna za renderowanie menu gry (libGDX).
      * 
