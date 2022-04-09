@@ -112,10 +112,11 @@ public class GameTextButton extends TextButton {
             // Game mode selection screen
             case 7 -> {
                 game.menuElements.disposeMenu();
-                game.setScreen(new SinglePlayerGameScreen(game));
+                game.setScreen(new SinglePlayerGameScreen(game, false));
             }
             case 8 -> {
-                // Load existing game
+                game.menuElements.disposeMenu();
+                game.setScreen(new SinglePlayerGameScreen(game, true));
             }
             case 9 -> {
                 game.menuElements.disposeMenu();

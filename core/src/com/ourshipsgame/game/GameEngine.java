@@ -25,6 +25,7 @@ import com.ourshipsgame.handlers.Constant;
 import com.ourshipsgame.handlers.Score;
 import com.ourshipsgame.hud.Hud;
 import com.ourshipsgame.inteligentSystems.ComputerPlayerAi;
+import com.ourshipsgame.utils.ChessMove;
 import org.lwjgl.util.vector.Vector2f;
 
 import java.text.NumberFormat;
@@ -68,6 +69,10 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
     protected float progress;
 
     /**
+     * Zmienna przechowująca historię gry
+     */
+    protected GameHistory gameHistory;
+    /**
      * Zmienna określająca ,który to stopień gry do obliczeń logiki gry
      */
     protected int gameStage = 1;
@@ -92,6 +97,8 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      * Map of the background
      * */
     protected GameObject gameBackground;
+
+    protected boolean loadGameFromFile;
 
     protected GameObject stage2MessageBackground;
 
@@ -215,6 +222,23 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
             PlayerTurn = EnemyPlayer;
         else
             PlayerTurn = MyPlayer;
+    }
+
+    protected void loadGameFromFile() {
+        gameHistory.historyLoad()
+                .forEach(this::loadMove);
+
+        PlayerTurn = gameHistory.getPlayerTurn();
+
+        MyPlayer = gameHistory.getCurrentPlayer();
+
+        EnemyPlayer = MyPlayer == whitePlayer ? blackPlayer : whitePlayer;
+    }
+
+    private void loadMove(ChessMove move) {
+        move.getMoveLocation()
+                .getChess()
+                .moveChessWhileLoading(move.getMoveDestination());
     }
 
     /**
@@ -618,19 +642,13 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
     }
 
     /**
-     * Metoda do renderowania statków i ich elementów
+     * Metoda do renderowania szachów
      */
     protected void drawChessPieces() {
         for (int i = 0; i < 16; i++) {
             whiteChesses[i].getGameObject().getSprite().draw(sb);
-//            Rectangle alignmentRectangle = whiteChesses[i].getGameObject().alignmentRectangle;
-//            sr.rect(alignmentRectangle.x, alignmentRectangle.y, alignmentRectangle.width, alignmentRectangle.height,
-//                    Color.GREEN,  Color.GREEN,  Color.GREEN,  Color.GREEN);
 
             blackChesses[i].getGameObject().getSprite().draw(sb);
-//            alignmentRectangle = blackChesses[i].getGameObject().alignmentRectangle;
-//            sr.rect(alignmentRectangle.x, alignmentRectangle.y, alignmentRectangle.width, alignmentRectangle.height,
-//                    Color.GREEN,  Color.GREEN,  Color.GREEN,  Color.GREEN);
         }
     }
 

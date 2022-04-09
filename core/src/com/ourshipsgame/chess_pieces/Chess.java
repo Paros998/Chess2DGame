@@ -44,10 +44,10 @@ public abstract class Chess {
         possibleAttackVectors = new ArrayList<>();
     }
 
-    //newPos like A7
+
     public void moveChess(GameBoard.BoardLocations newPos, float soundVolume) {
         if (canMove(newPos)) {
-            if(newPos.getChess() != null)
+            if (newPos.getChess() != null)
                 attackSound.play(soundVolume);
             else moveSound.play(soundVolume);
 
@@ -57,6 +57,14 @@ public abstract class Chess {
             currentLocation = newPos;
 
         }
+
+    }
+
+    public void moveChessWhileLoading(GameBoard.BoardLocations newPos) {
+        currentLocation.setChess(null);
+        newPos.setChess(this);
+        gameObject.setSpritePos(newPos.getPosition());
+        currentLocation = newPos;
 
     }
 
@@ -82,7 +90,7 @@ public abstract class Chess {
         return false;
     }
 
-    public void evaluateMoves(GameBoard gameBoard){
+    public void evaluateMoves(GameBoard gameBoard) {
         possibleMovesAndAttacksAsVectors.clear();
         possibleMovesVectors.clear();
         possibleAttackVectors.clear();
@@ -157,6 +165,10 @@ public abstract class Chess {
         this.player = player;
     }
 
+    public GameBoard.BoardLocations getCurrentLocation() {
+        return currentLocation;
+    }
+
     protected abstract void calculatePossibleMoves(GameBoard gameBoard);
 
     protected static boolean checkIfNotCrossedWithChessHorizontally(Vector2i vector2i, GameBoard gameBoard, GameBoard.BoardLocations currentLocation) {
@@ -209,10 +221,10 @@ public abstract class Chess {
         int currentX = currentLocation.getArrayPosition().getX();
         int currentY = currentLocation.getArrayPosition().getY();
 
-        if(currentX == vector2i.getX())
+        if (currentX == vector2i.getX())
             return true;
 
-        if(currentY == vector2i.getY())
+        if (currentY == vector2i.getY())
             return true;
 
         boolean checkRight = vector2i.getX() > currentX;
@@ -224,16 +236,16 @@ public abstract class Chess {
             differenceX = vector2i.getX() - currentX;
 
             if (checkTop) {
-                for (int i = 1; i < differenceX; i++){
-                    if(currentX + i > 7 || currentY + i > 7)
+                for (int i = 1; i < differenceX; i++) {
+                    if (currentX + i > 7 || currentY + i > 7)
                         break;
                     if (gameBoard.getBoard()[currentX + i][currentY + i].getChess() != null)
                         return false;
                 }
 
             } else
-                for (int i = 1; i < differenceX; i++){
-                    if(currentX + i > 7 || currentY - i < 0)
+                for (int i = 1; i < differenceX; i++) {
+                    if (currentX + i > 7 || currentY - i < 0)
                         break;
                     if (gameBoard.getBoard()[currentX + i][currentY - i].getChess() != null)
                         return false;
@@ -243,15 +255,15 @@ public abstract class Chess {
             differenceX = currentX - vector2i.getX();
 
             if (checkTop) {
-                for (int i = 1; i < differenceX; i++){
-                    if(currentX - i < 0 || currentY + i > 7)
+                for (int i = 1; i < differenceX; i++) {
+                    if (currentX - i < 0 || currentY + i > 7)
                         break;
                     if (gameBoard.getBoard()[currentX - i][currentY + i].getChess() != null)
                         return false;
                 }
             } else
-                for (int i = 1; i < differenceX; i++){
-                    if(currentX - i < 0 || currentY - i < 0)
+                for (int i = 1; i < differenceX; i++) {
+                    if (currentX - i < 0 || currentY - i < 0)
                         break;
                     if (gameBoard.getBoard()[currentX - i][currentY - i].getChess() != null)
                         return false;
