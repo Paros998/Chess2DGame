@@ -38,6 +38,10 @@ public class Player {
         return timeLeft;
     }
 
+    public void setTimeLeft(Float timeLeft) {
+        this.timeLeft = timeLeft;
+    }
+
     public void addScore(Integer addition) {
         score += addition;
     }
