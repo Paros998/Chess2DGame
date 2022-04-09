@@ -1,6 +1,5 @@
 package com.ourshipsgame.game;
 
-
 import com.ourshipsgame.utils.ChessMove;
 
 import java.io.File;
@@ -10,15 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-
 public class GameHistory {
-    List<ChessMove> historyList = new ArrayList<ChessMove>();
+    List<ChessMove> historyList = new ArrayList<>();
 
     Float whiteTimer;
     Float blackTimer;
     Player myPlayer;
     Player playerTurn;
-
 
     public void historySave() {
         File file = new File("gameSave.txt");

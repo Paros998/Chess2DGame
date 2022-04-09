@@ -37,6 +37,14 @@ public class GameSlider extends Slider implements Constant {
         this.setX(x - this.getWidth() / 2);
         this.setY(y);
     }
+    public GameSlider(float x, float y, float min, float max, float stepSize, boolean vertical, Skin skin,
+            final Main game, float scale) {
+        super(min, max, stepSize, vertical, skin);
+        this.game = game;
+        this.setWidth(this.getWidth() * scale);
+        this.setX(x - this.getWidth() / 2);
+        this.setY(y);
+    }
 
     /**
      * Drugi konstruktor klasy GameSlider.
@@ -97,30 +105,28 @@ public class GameSlider extends Slider implements Constant {
         final Slider sliderTmp = this;
 
         switch (option) {
+            case 1 -> {
+                this.setVisualPercent(game.menuElements.gameSettings.sliderMusicPercent);
+                this.addListener(new ChangeListener() {
 
-        case 1:
-            this.setVisualPercent(game.menuElements.gameSettings.sliderMusicPercent);
-            this.addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        game.menuElements.gameSettings.sliderMusicPercent = sliderTmp.getPercent();
+                        game.menuElements.gameSettings.music.setVolume(sliderTmp.getPercent() / 5.0f);
+                    }
+                });
+            }
+            case 2 -> {
+                this.setVisualPercent(game.menuElements.gameSettings.sliderSoundPercent);
+                this.addListener(new ChangeListener() {
 
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    game.menuElements.gameSettings.sliderMusicPercent = sliderTmp.getPercent();
-                    game.menuElements.gameSettings.music.setVolume(sliderTmp.getPercent() / 5.0f);
-                }
-            });
-            break;
-
-        case 2:
-            this.setVisualPercent(game.menuElements.gameSettings.sliderSoundPercent);
-            this.addListener(new ChangeListener() {
-
-                @Override
-                public void changed(ChangeEvent event, Actor actor) {
-                    game.menuElements.gameSettings.sliderSoundPercent = sliderTmp.getPercent();
-                    game.menuElements.gameSettings.soundVolume = sliderTmp.getPercent() / 5.0f;
-                }
-            });
-            break;
+                    @Override
+                    public void changed(ChangeEvent event, Actor actor) {
+                        game.menuElements.gameSettings.sliderSoundPercent = sliderTmp.getPercent();
+                        game.menuElements.gameSettings.soundVolume = sliderTmp.getPercent() / 5.0f;
+                    }
+                });
+            }
         }
     }
 

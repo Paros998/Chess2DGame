@@ -257,11 +257,11 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         manager.load("core/assets/buttons/skins/golden-spiral/skin/golden-ui-skin.json", Skin.class);
 
         // Options button
-        manager.load("core/assets/ui/ui.hud/ui/global/modern/gear.png", Texture.class);
-        manager.load("core/assets/ui/ui.hud/ui/global/modern/gear-press.png", Texture.class);
+        manager.load("core/assets/buttons/options-button.png", Texture.class);
+        manager.load("core/assets/buttons/options-button-pressed.png", Texture.class);
         // Play button
-        manager.load("core/assets/ui/ready-button.png", Texture.class);
-        manager.load("core/assets/ui/ready-button-pressed.png", Texture.class);
+        manager.load("core/assets/buttons/ready-button.png", Texture.class);
+        manager.load("core/assets/buttons/ready-button-active.png", Texture.class);
         manager.load("core/assets/ui/ready-button-go.png", Texture.class);
         // Repeat button
         manager.load("core/assets/ui/reverse-button-pressed.png", Texture.class);

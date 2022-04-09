@@ -115,21 +115,21 @@ public class Hud implements Constant {
 
         // Close button
         Texture[] buttonStyles = new Texture[2];
-        buttonStyles[0] = manager.get("core/assets/ui/ui.hud/ui/global/modern/gear.png", Texture.class);
-        buttonStyles[1] = manager.get("core/assets/ui/ui.hud/ui/global/modern/gear-press.png", Texture.class);
+        buttonStyles[0] = manager.get("core/assets/buttons/options-button.png", Texture.class);
+        buttonStyles[1] = manager.get("core/assets/buttons/options-button-pressed.png", Texture.class);
 
         Sprite[] buttonStylesSprites = new Sprite[2];
 
-        setButtonsSprites(buttonStyles, buttonStylesSprites, 1.55f);
+        setButtonsSprites(buttonStyles, buttonStylesSprites, 5.f);
 
-        gameMenuButton = new GameImageButton(GAME_WIDTH - 10, GAME_HEIGHT - 3, this, buttonStylesSprites);
+        gameMenuButton = new GameImageButton(GAME_WIDTH - 10, 100, this, buttonStylesSprites);
         gameMenuButton.setOptionsListener();
 
         setButtonsSprites(buttonStyles, buttonStylesSprites, 6.5f);
 
         // Play button
-        buttonStyles[0] = manager.get("core/assets/ui/ready-button.png", Texture.class);
-        buttonStyles[1] = manager.get("core/assets/ui/ready-button-pressed.png", Texture.class);
+        buttonStyles[0] = manager.get("core/assets/buttons/ready-button.png", Texture.class);
+        buttonStyles[1] = manager.get("core/assets/buttons/ready-button-active.png", Texture.class);
         playButtonGreenStyle = new Sprite(manager.get("core/assets/ui/ready-button-go.png", Texture.class));
 
         setButtonsSprites(buttonStyles, buttonStylesSprites, 6.5f);
@@ -138,11 +138,11 @@ public class Hud implements Constant {
 
         // Player Name textfield
         playersName = "Player";
-        playersSetNameDialog = new Dialog("Enter Your Name", skin) {
+        playersSetNameDialog = new Dialog("", skin) {
 
             {
                 playerNameTextField = new TextField(playersName, skin);
-                this.text("");
+                this.text("Enter Your Name");
                 this.row();
                 this.add(playerNameTextField);
                 this.row();

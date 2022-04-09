@@ -50,52 +50,58 @@ public class SelectGameModeScreen implements Screen, Constant {
         batch = new SpriteBatch();
         Gdx.input.setInputProcessor(stage);
 
-        /**
+        float scale = 1.3f;
+
+        /*
          * Przycisk z libGDX. Włącza tryb grania z komputerem.
          */
         GameTextButton playSingleButton = new GameTextButton(
                 "New game",
-                GAME_WIDTH / 2,
-                GAME_HEIGHT / 2,
+                GAME_WIDTH_F / 2,
+                GAME_HEIGHT_F / 2,
                 game.menuElements.skin,
                 7,
-                game
+                game,
+                scale
         );
 
-        /**
+        /*
          * Przycisk z libGDX. Włącza tryb grania z drugim graczem.
          */
         GameTextButton loadExistingGameButton = new GameTextButton(
                 "Load game",
-                GAME_WIDTH / 2,
-                GAME_HEIGHT / 2 - 100,
+                GAME_WIDTH_F / 2,
+                GAME_HEIGHT_F / 2 - 100,
                 game.menuElements.skin,
                 8,
-                game
+                game,
+                scale
         );
 
-        /**
+        /*
          * Przycisk z libGDX. Włącza tryb grania z drugim graczem.
          */
         GameTextButton playMultiButton = new GameTextButton(
                 "Multi player",
-                GAME_WIDTH / 2,
-                GAME_HEIGHT / 2 - 200,
+                GAME_WIDTH_F / 2,
+                GAME_HEIGHT_F / 2 - 200,
                 game.menuElements.skin,
                 9,
-                game
+                game,
+                scale
         );
 
-        /**
+        /*
          * Przycisk z libGDX. Wraca do głównego okna menu gry.
          */
         GameTextButton backButton = new GameTextButton(
                 "Back",
-                GAME_WIDTH / 2,
-                GAME_HEIGHT / 2 - 300,
+                GAME_WIDTH_F / 2,
+                GAME_HEIGHT_F / 2 - 300,
                 game.menuElements.skin,
                 6,
-                game
+                game,
+                scale
         );
 
         stage.addActor(playSingleButton);
