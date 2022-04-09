@@ -165,7 +165,7 @@ public class Hud implements Constant {
         layoutTable = new Table();
         layoutTable.right();
         layoutTable.setFillParent(true);
-        layoutTable.add(playButton).expandX().padLeft(1420);
+        layoutTable.add(playButton).expandX().padTop(400);
 
         stage.addActor(gameMenuButton);
     }

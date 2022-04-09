@@ -22,7 +22,7 @@ public class Player {
         timeLeft -= deltaTime;
     }
 
-    public void setPlayerName(String playerName) {
+    public void setPlayerName(String playerName){
         this.playerName = playerName;
     }
 
@@ -36,10 +36,6 @@ public class Player {
 
     public Float getTimeLeft() {
         return timeLeft;
-    }
-
-    public void setTimeLeft(Float timeLeft) {
-        this.timeLeft = timeLeft;
     }
 
     public void addScore(Integer addition) {

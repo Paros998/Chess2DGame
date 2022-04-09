@@ -93,6 +93,8 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      * */
     protected GameObject gameBackground;
 
+    protected GameObject stage2MessageBackground;
+
     protected Player whitePlayer = new Player(Player.PlayerColor.WHITE);
 
     protected Player blackPlayer = new Player(Player.PlayerColor.BLACK);
@@ -235,6 +237,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         manager.load("core/assets/backgroundtextures/ChessMenuBg.png", Texture.class);
         manager.load("core/assets/backgroundtextures/chessBoard.jpg", Texture.class);
         manager.load("core/assets/backgroundtextures/turn-info-texture.png", Texture.class);
+        manager.load("core/assets/backgroundtextures/message_bg.png", Texture.class);
 
         //Chess pieces Textures
         for (int i = 0; i < 12; i++)
@@ -302,6 +305,15 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         turnFont = manager.get("core/assets/fonts/nunito.light.ttf", BitmapFont.class);
         turnFontActive = manager.get("core/assets/fonts/nunito.light2.ttf", BitmapFont.class);
+
+        stage2MessageBackground = new GameObject(
+                manager.get("core/assets/backgroundtextures/message_bg.png", Texture.class),
+                Constant.GAME_WIDTH_F / 2 - 400,
+                Constant.GAME_HEIGHT_F / 2 - 165,
+                true,
+                false,
+                null
+        );
 
         gameBackground = new GameObject(
                 manager.get("core/assets/backgroundtextures/ChessMenuBg.png", Texture.class),
@@ -629,12 +641,24 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      * @param batch SpriteBatch do rysowania na ekranie
      */
     protected void drawStage2Text(BitmapFont font, SpriteBatch batch) {
-        String text = "Lets draw who starts first!";
+        int fontSize = 20;
+        stage2MessageBackground.drawSprite(batch);
+        Vector2f stage2MessageBackgroundPosition = stage2MessageBackground.getPosition();
+
+        String text = "You are " + MyPlayer.getColor().name() + " Player";
         int len = text.length();
-        font.draw(batch, text, (gameWidth_f - 200 - (43 * (len / 2))), gameHeight_f / 2 + 200);
-        text = "Confirm it by clicking READY button !";
+        font.draw(batch,
+                text,
+                (stage2MessageBackgroundPosition.getX() + (stage2MessageBackground.getWidth() / 2) - (fontSize * (len / 2.f))),
+                stage2MessageBackgroundPosition.getY() + 165 + 25);
+
+
+        text = "Click Ready to start the game!";
         len = text.length();
-        font.draw(batch, text, (gameWidth_f - 180 - (43 * (len / 2))), gameHeight_f / 2 + 100);
+        font.draw(batch,
+                text,
+                (stage2MessageBackgroundPosition.getX() + (stage2MessageBackground.getWidth() / 2) - (fontSize * (len / 2.f))),
+                stage2MessageBackgroundPosition.getY() + 165 - 35);
     }
 
     protected void drawCurrentClickedChessAvailableMoves() {

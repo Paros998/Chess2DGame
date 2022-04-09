@@ -126,16 +126,14 @@ public abstract class Chess {
         Predicate<Vector2i> xOffsetPredicate = vector2i -> vector2i.getX() >= 0 && vector2i.getX() <= 7;
         Predicate<Vector2i> yOffsetPredicate = vector2i -> vector2i.getY() >= 0 && vector2i.getY() <= 7;
 
+        Predicate<Vector2i> vector2iPredicate = xOffsetPredicate.and(yOffsetPredicate);
+
         possibleMovesVectors = (ArrayList<Vector2i>) possibleMovesVectors.stream()
-                .filter(xOffsetPredicate)
-                .filter(yOffsetPredicate)
-                .filter(movePredicate)
+                .filter(vector2iPredicate.and(movePredicate))
                 .collect(Collectors.toList());
 
         possibleAttackVectors = (ArrayList<Vector2i>) possibleAttackVectors.stream()
-                .filter(xOffsetPredicate)
-                .filter(yOffsetPredicate)
-                .filter(attackPredicate)
+                .filter(vector2iPredicate.and(attackPredicate))
                 .collect(Collectors.toList());
 
         possibleMovesAndAttacksAsVectors.addAll(possibleMovesVectors);
