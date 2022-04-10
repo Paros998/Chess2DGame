@@ -25,11 +25,13 @@ public class ChessMove {
     }
 
     public static ChessMove readFromLine(String line){
-        String[] stringMove = line.split("[A-H]+[1-8]",2);
+        String[] stringMove = new String[2];
+        stringMove[0] = line.substring(0, 2);
+        stringMove[1] = line.substring(3, 5);
 
         return new ChessMove(
-               GameBoard.BoardLocations.valueOf(stringMove[0]),
-               GameBoard.BoardLocations.valueOf(stringMove[1])
+               GameBoard.BoardLocations.valueOf(stringMove[0].trim()),
+               GameBoard.BoardLocations.valueOf(stringMove[1].trim())
         );
     }
 
