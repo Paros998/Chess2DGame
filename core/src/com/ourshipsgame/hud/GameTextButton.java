@@ -9,6 +9,7 @@ import com.ourshipsgame.Main;
 import com.ourshipsgame.game.MultiPlayerGameScreen;
 import com.ourshipsgame.game.SinglePlayerGameScreen;
 import com.ourshipsgame.mainmenu.*;
+import org.lwjgl.util.vector.Vector2f;
 
 /**
  * Klasa reprezentująca przycisk tekstowy.
@@ -72,6 +73,29 @@ public class GameTextButton extends TextButton {
         });
     }
 
+    public GameTextButton(String nameTag, float x, float y, Skin skin, final int buttonNumber, final Main game, float scale) {
+        super(nameTag, skin);
+        this.game = game;
+
+        this.setWidth(this.getWidth() * scale);
+
+        this.setX(x - this.getWidth() / 2);
+        this.setY(y);
+
+        this.addListener(new InputListener() {
+            @Override
+            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                menuOptions(buttonNumber);
+                game.menuElements.gameSettings.clickSound.play(game.menuElements.gameSettings.soundVolume);
+            }
+
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+        });
+    }
+
     /**
      * Metoda określa numer przycisku i na jego podstawie przełączany jest ekran.
      *
@@ -88,10 +112,11 @@ public class GameTextButton extends TextButton {
             // Game mode selection screen
             case 7 -> {
                 game.menuElements.disposeMenu();
-                game.setScreen(new SinglePlayerGameScreen(game));
+                game.setScreen(new SinglePlayerGameScreen(game, false));
             }
             case 8 -> {
-                // Load existing game
+                game.menuElements.disposeMenu();
+                game.setScreen(new SinglePlayerGameScreen(game, true));
             }
             case 9 -> {
                 game.menuElements.disposeMenu();

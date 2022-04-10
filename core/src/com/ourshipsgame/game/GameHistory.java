@@ -1,6 +1,5 @@
 package com.ourshipsgame.game;
 
-
 import com.ourshipsgame.utils.ChessMove;
 
 import java.io.File;
@@ -10,15 +9,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-
 public class GameHistory {
-    List<ChessMove> historyList = new ArrayList<ChessMove>();
+    private final List<ChessMove> historyList = new ArrayList<>();
 
-    Float whiteTimer;
-    Float blackTimer;
-    Player myPlayer;
-    Player playerTurn;
+    private final Player whitePlayer;
+    private final Player blackPlayer;
+    private Player myPlayer;
+    private Player playerTurn;
 
+    //Basic Constructor
+    GameHistory (Player myPlayer, Player whitePlayer, Player blackPlayer){
+        this.myPlayer = myPlayer;
+        this.whitePlayer = whitePlayer;
+        this.blackPlayer = blackPlayer;
+    }
+
+    //Load Constructor
+    GameHistory (Player whitePlayer, Player blackPlayer){
+        this.whitePlayer = whitePlayer;
+        this.blackPlayer = blackPlayer;
+    }
 
     public void historySave() {
         File file = new File("gameSave.txt");
@@ -34,8 +44,10 @@ public class GameHistory {
             writer.write(myPlayer.getColor() + "\n");
             writer.write(myPlayer.getPlayerName() + "\n");
             writer.write(playerTurn.getColor() + "\n");
-            writer.write(whiteTimer + "\n");
-            writer.write(blackTimer + "\n");
+            writer.write(whitePlayer.getTimeLeft() + "\n");
+            writer.write(whitePlayer.getScore() + "\n");
+            writer.write(blackPlayer.getTimeLeft()+ "\n");
+            writer.write(blackPlayer.getScore()+ "\n");
 
             for (ChessMove move : historyList
             ) {
@@ -49,7 +61,7 @@ public class GameHistory {
     }
 
 
-    public void historyLoad(Player whitePlayer, Player blackPlayer, SinglePlayerGameScreen gameScreen) {
+    public List<ChessMove> historyLoad() {
 
         Scanner scanner = new Scanner("gameSave.txt");
 
@@ -61,6 +73,9 @@ public class GameHistory {
 
         myPlayer.setPlayerName(scanner.nextLine());
 
+        if(myPlayer.equals(whitePlayer))
+            blackPlayer.setPlayerName("Bot Clark");
+        else whitePlayer.setPlayerName("Bot Clark");
 
         Player.PlayerColor currentTurnPlayerColor = Player.PlayerColor.valueOf(scanner.nextLine());
 
@@ -72,41 +87,22 @@ public class GameHistory {
 
         blackPlayer.setTimeLeft(Float.parseFloat(scanner.nextLine()));
 
-        //TODO create loading with game chesses changes
+        if(scanner.hasNextLine())
+            historyList.add(ChessMove.readFromLine(scanner.nextLine()));
+
+        return historyList;
     }
 
 
-    public void appendMove(ChessMove move) {
+    public void updateHistoryAfterTurn(ChessMove move) {
         historyList.add(move);
-    }
-
-
-    public Float getWhiteTimer() {
-        return whiteTimer;
-    }
-
-
-    public void setWhiteTimer(Float whiteTimer) {
-        this.whiteTimer = whiteTimer;
-    }
-
-
-    public Float getBlackTimer() {
-        return blackTimer;
-    }
-
-
-    public void setBlackTimer(Float blackTimer) {
-        this.blackTimer = blackTimer;
     }
 
     public Player getCurrentPlayer() {
         return myPlayer;
     }
 
-
-    public void setCurrentPlayer(Player currentPlayer) {
-        this.myPlayer = currentPlayer;
-
+    public Player getPlayerTurn() {
+        return playerTurn;
     }
 }

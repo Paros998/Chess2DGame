@@ -87,26 +87,32 @@ public class OptionScreen implements Screen, Constant {
         batch = new SpriteBatch();
         Gdx.input.setInputProcessor(stage);
 
+        float scale = 1.3f;
+
         // Texts
         soundsVolumeText = new TextField("SFX Volume", game.menuElements.skin);
         soundsVolumeText.clearListeners();
-        soundsVolumeText.setPosition(GAME_WIDTH / 2 - soundsVolumeText.getWidth() / 2, GAME_HEIGHT / 2 + 180);
+        soundsVolumeText.setWidth(soundsVolumeText.getWidth() * scale);
+        soundsVolumeText.setAlignment(1);
+        soundsVolumeText.setPosition(GAME_WIDTH_F / 2 - soundsVolumeText.getWidth() / 2, GAME_HEIGHT_F / 2 + 180);
 
         musicVolumeText = new TextField("Music Volume", game.menuElements.skin);
         musicVolumeText.clearListeners();
-        musicVolumeText.setPosition(GAME_WIDTH / 2 - soundsVolumeText.getWidth() / 2, GAME_HEIGHT / 2 - 20);
+        musicVolumeText.setWidth(musicVolumeText.getWidth() * scale);
+        musicVolumeText.setAlignment(1);
+        musicVolumeText.setPosition(GAME_WIDTH_F / 2 - soundsVolumeText.getWidth() / 2, GAME_HEIGHT_F / 2 - 20);
 
         // Sliders
-        musicSliderVolume = new GameSlider(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 100, 0, 100, 1, false,
-                game.menuElements.skin, game);
+        musicSliderVolume = new GameSlider(GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 100, 0, 100, 1, false,
+                game.menuElements.skin, game, scale);
         musicSliderVolume.setSliderType(1);
 
-        soundSilderVolume = new GameSlider(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 100, 0, 100, 1, false,
-                game.menuElements.skin, game);
+        soundSilderVolume = new GameSlider(GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 + 100, 0, 100, 1, false,
+                game.menuElements.skin, game, scale);
         soundSilderVolume.setSliderType(2);
 
         // Buttons
-        backButton = new GameTextButton("Back", GAME_WIDTH / 2, GAME_HEIGHT / 2 - 300, game.menuElements.skin, 6, game);
+        backButton = new GameTextButton("Back", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 300, game.menuElements.skin, 6, game, scale);
 
         stage.addActor(backButton);
         stage.addActor(musicSliderVolume);

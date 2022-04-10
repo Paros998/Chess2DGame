@@ -108,7 +108,7 @@ public class HelpScreen implements Screen, Constant {
 
         LabelStyle style = new LabelStyle(font, Color.GOLD);
 
-        backButton = new GameTextButton("Back", 0, 0, game.menuElements.skin, 6, game);
+        backButton = new GameTextButton("Back", 0, 0, game.menuElements.skin, 6, game, 1.3f);
 
         // Loading chess items
         Sprite king = new Sprite(new Texture("core/assets/chess-pieces/w_king_png_shadow_128px.png"));
@@ -251,7 +251,7 @@ public class HelpScreen implements Screen, Constant {
         // Adding elements to main Table
         mainTable.add(childTable).expandX();// .padRight(200);
         mainTable.row();
-        mainTable.add(backButton).expandX().padLeft(backButton.getWidth() / 2 - 50);
+        mainTable.add(backButton);
 
         stage.addActor(mainTable);
     }

@@ -114,7 +114,7 @@ public class ScoreScreen implements Screen, Constant {
         font = generator.generateFont(parameter);
 
         // Creating screen elements
-        backButton = new GameTextButton("Back", 0, 0, game.menuElements.skin, 6, game);
+        backButton = new GameTextButton("Back", 0, 0, game.menuElements.skin, 6, game, 1.3f);
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
