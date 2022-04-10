@@ -108,7 +108,7 @@ public class HelpScreen implements Screen, Constant {
 
         LabelStyle style = new LabelStyle(font, Color.GOLD);
 
-        backButton = new GameTextButton("Back", 0, 0, game.menuElements.skin, 6, game, 1.3f);
+        backButton = new GameTextButton("BACK", 0, 0, game.menuElements.skin, 6, game, 1.3f);
 
         // Loading chess items
         Sprite king = new Sprite(new Texture("core/assets/chess-pieces/w_king_png_shadow_128px.png"));

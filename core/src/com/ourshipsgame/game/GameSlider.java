@@ -37,6 +37,7 @@ public class GameSlider extends Slider implements Constant {
         this.setX(x - this.getWidth() / 2);
         this.setY(y);
     }
+
     public GameSlider(float x, float y, float min, float max, float stepSize, boolean vertical, Skin skin,
             final Main game, float scale) {
         super(min, max, stepSize, vertical, skin);

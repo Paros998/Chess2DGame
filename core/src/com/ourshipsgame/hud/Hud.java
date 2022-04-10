@@ -4,6 +4,8 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -12,7 +14,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.ourshipsgame.Main;
 import com.ourshipsgame.game.GameEngine;
-import com.ourshipsgame.game.SinglePlayerGameScreen;
 import com.ourshipsgame.game.GameSettings;
 import com.ourshipsgame.handlers.Constant;
 
@@ -50,7 +51,12 @@ public class Hud implements Constant {
     /**
      * Okno dialogowe do ustawienia nazwy gracza.
      */
-    private Dialog playersSetNameDialog;
+    private final Dialog playersSetNameDialog;
+
+    /**
+     * Okno dialogowe do ustawienia nowego pionka
+     */
+    public final Dialog pawnChangeDialog;
 
     /**
      * Nazwa gracza przekazywana do GameScreen.
@@ -80,13 +86,16 @@ public class Hud implements Constant {
     public GameSettings gameSettings;
 
     /**
-     * Obiekt klasy GameScreen. 
+     * Obiekt klasy GameScreen.
      * W tej klasie odpowiedzialny za niszczenie elementów Hud.
      */
     public GameEngine gameEngineScreen;
 
+    public final AssetManager manager;
+
+
     /**
-     * Obiekt klasy Main. 
+     * Obiekt klasy Main.
      * Odpowiedzialny głównie za zarządzanie ekranami.
      */
     public Main game;
@@ -98,10 +107,11 @@ public class Hud implements Constant {
 
     /**
      * Główny i jedyny konstruktor klasy Hud.
-     * @param manager Pobierane są z niego tekstury.
-     * @param game Przełącza ekrany. Powrót do menu.
+     *
+     * @param manager          Pobierane są z niego tekstury.
+     * @param game             Przełącza ekrany. Powrót do menu.
      * @param gameEngineScreen Niszczy elementy Hud.
-     * @param kCursor Referencja do kursora myszki.
+     * @param kCursor          Referencja do kursora myszki.
      */
     // Constructor
     public Hud(AssetManager manager, Main game, GameEngine gameEngineScreen, Cursor kCursor) {
@@ -112,6 +122,7 @@ public class Hud implements Constant {
 
         this.game = game;
         this.gameEngineScreen = gameEngineScreen;
+        this.manager = manager;
 
         // Close button
         Texture[] buttonStyles = new Texture[2];
@@ -138,23 +149,73 @@ public class Hud implements Constant {
 
         // Player Name textfield
         playersName = "Player";
-        playersSetNameDialog = new Dialog("", skin) {
+        playersSetNameDialog = new Dialog("ENTER YOUR NAME", skin) {
 
             {
                 playerNameTextField = new TextField(playersName, skin);
-                this.text("Enter Your Name");
+                this.text("");
                 this.row();
                 this.add(playerNameTextField);
                 this.row();
                 this.getCells().removeIndex(1);
                 this.add(this.getButtonTable());
-                this.button("Accept");
+                this.button("ACCEPT");
             }
 
             @Override
             protected void result(final Object act) {
                 playersName = playerNameTextField.getText();
                 playerNameTextField = null;
+                stage.addActor(layoutTable);
+            }
+
+        };
+
+        buttonStyles[0] = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_QUEEN.ordinal()], Texture.class);
+        buttonStyles[1] = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_QUEEN.ordinal()], Texture.class);
+
+        setButtonsSprites(buttonStyles, buttonStylesSprites, 1.f);
+
+        GameImageButton Queen = new GameImageButton(buttonStylesSprites, this);
+        Queen.setOptionsListener("B_QUEEN");
+
+        buttonStyles[0] = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_ROOK.ordinal()], Texture.class);
+        buttonStyles[1] = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_ROOK.ordinal()], Texture.class);
+
+        setButtonsSprites(buttonStyles, buttonStylesSprites, 1.f);
+        GameImageButton Rook = new GameImageButton(buttonStylesSprites, this);
+        Rook.setOptionsListener("B_ROOK");
+
+        buttonStyles[0] = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_BISHOP.ordinal()], Texture.class);
+        buttonStyles[1] = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_BISHOP.ordinal()], Texture.class);
+
+        setButtonsSprites(buttonStyles, buttonStylesSprites, 1.f);
+        GameImageButton Bishop = new GameImageButton(buttonStylesSprites, this);
+        Bishop.setOptionsListener("B_BISHOP");
+
+        buttonStyles[0] = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_KNIGHT.ordinal()], Texture.class);
+        buttonStyles[1] = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_KNIGHT.ordinal()], Texture.class);
+
+        setButtonsSprites(buttonStyles, buttonStylesSprites, 1.f);
+        GameImageButton Knight = new GameImageButton(buttonStylesSprites, this);
+        Knight.setOptionsListener("B_KNIGHT");
+
+
+        pawnChangeDialog = new Dialog("CHOOSE REPLACEMENT FOR PAWN", skin) {
+
+            {
+                this.add(this.getButtonTable());
+                this.button(Queen);
+                this.button(Rook);
+                this.button(Bishop);
+                this.button(Knight);
+                this.row();
+                this.getCells().removeIndex(1);
+
+            }
+
+            @Override
+            protected void result(final Object act) {
                 stage.addActor(layoutTable);
             }
         };
@@ -174,9 +235,10 @@ public class Hud implements Constant {
 
     /**
      * Metoda ustawiająca sprite'y przycisków.
+     *
      * @param textures Tablica tekstur.
-     * @param sprites Tablica sprite'ów.
-     * @param factor Współczynnik rozmiaru.
+     * @param sprites  Tablica sprite'ów.
+     * @param factor   Współczynnik rozmiaru.
      */
     private void setButtonsSprites(Texture[] textures, Sprite[] sprites, float factor) {
         for (int i = 0; i < sprites.length; i++) {
@@ -204,6 +266,7 @@ public class Hud implements Constant {
 
     /**
      * Metoda typu get, zwraca przycisk.
+     *
      * @return Przycisk do przejścia do rozgrywki.
      */
     public GameImageButton getPlayButton() {
@@ -212,6 +275,7 @@ public class Hud implements Constant {
 
     /**
      * Metoda typu get, zwraca String.
+     *
      * @return Nazwa gracza.
      */
     public String getPlayersName() {
@@ -220,6 +284,7 @@ public class Hud implements Constant {
 
     /**
      * Metoda typu get, zwraca okno dialogowe.
+     *
      * @return Okno dialogowe.
      */
     public Dialog getPlayersSetNameDialog() {
@@ -228,6 +293,7 @@ public class Hud implements Constant {
 
     /**
      * Metoda typu get, zwraca Stage.
+     *
      * @return Scena elementów hud.
      */
     public Stage getStage() {
@@ -236,6 +302,7 @@ public class Hud implements Constant {
 
     /**
      * Metoda typu get, zwraca Skin.
+     *
      * @return Skórka elementów gry.
      */
     public Skin getSkin() {
@@ -244,9 +311,10 @@ public class Hud implements Constant {
 
     /**
      * Metoda typu get, zwraca boolean.
+     *
      * @return Czy włączone są opcje gry.
      */
-    public boolean isPasued() {
+    public boolean isPaused() {
         return gameMenuButton.getGameMenuState();
     }
 }

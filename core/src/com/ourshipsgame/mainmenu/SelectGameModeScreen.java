@@ -56,7 +56,7 @@ public class SelectGameModeScreen implements Screen, Constant {
          * Przycisk z libGDX. Włącza tryb grania z komputerem.
          */
         GameTextButton playSingleButton = new GameTextButton(
-                "New game",
+                "NEW GAME",
                 GAME_WIDTH_F / 2,
                 GAME_HEIGHT_F / 2,
                 game.menuElements.skin,
@@ -69,7 +69,7 @@ public class SelectGameModeScreen implements Screen, Constant {
          * Przycisk z libGDX. Włącza tryb grania z drugim graczem.
          */
         GameTextButton loadExistingGameButton = new GameTextButton(
-                "Load game",
+                "LOAD GAME",
                 GAME_WIDTH_F / 2,
                 GAME_HEIGHT_F / 2 - 100,
                 game.menuElements.skin,
@@ -82,7 +82,7 @@ public class SelectGameModeScreen implements Screen, Constant {
          * Przycisk z libGDX. Włącza tryb grania z drugim graczem.
          */
         GameTextButton playMultiButton = new GameTextButton(
-                "Multi player",
+                "MULTIPLAYER",
                 GAME_WIDTH_F / 2,
                 GAME_HEIGHT_F / 2 - 200,
                 game.menuElements.skin,
@@ -95,7 +95,7 @@ public class SelectGameModeScreen implements Screen, Constant {
          * Przycisk z libGDX. Wraca do głównego okna menu gry.
          */
         GameTextButton backButton = new GameTextButton(
-                "Back",
+                "BACK",
                 GAME_WIDTH_F / 2,
                 GAME_HEIGHT_F / 2 - 300,
                 game.menuElements.skin,

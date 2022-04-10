@@ -29,6 +29,7 @@ import com.ourshipsgame.utils.ChessMove;
 import org.lwjgl.util.vector.Vector2f;
 
 import java.text.NumberFormat;
+import java.util.Arrays;
 
 import static com.ourshipsgame.game.GameBoard.BoardLocations.*;
 
@@ -75,7 +76,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
     /**
      * Zmienna określająca ,który to stopień gry do obliczeń logiki gry
      */
-    protected int gameStage = 1;
+    public int gameStage = 1;
     /**
      * Tło do ekranu ładowania
      */
@@ -99,6 +100,8 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
     protected GameObject gameBackground;
 
     protected boolean loadGameFromFile;
+
+    protected boolean pause;
 
     protected GameObject stage2MessageBackground;
 
@@ -178,17 +181,19 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
     /**
      * Tablica obiektów przechowujących białe szachy
      */
-    protected Chess[] whiteChesses = new Chess[16];
+    protected Chess[] whiteCheeses = new Chess[16];
     /**
      * Tablica obiektów przechowujących czarne szachy
      */
-    protected Chess[] blackChesses = new Chess[16];
+    protected Chess[] blackCheeses = new Chess[16];
 
     // more other vars
     /**
      * Zmienna do logiki click n drop statku w czasie ustawiania statków na planszy
      */
     protected Chess currentChessClicked;
+
+    protected Chess pawnToChange;
     /**
      * Zmienna przechowująca pozycje x sprite'a
      */
@@ -224,6 +229,10 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
             PlayerTurn = MyPlayer;
     }
 
+    public void saveGame() {
+        gameHistory.historySave();
+    }
+
     protected void loadGameFromFile() {
         gameHistory.historyLoad()
                 .forEach(this::loadMove);
@@ -239,6 +248,72 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         move.getMoveLocation()
                 .getChess()
                 .moveChessWhileLoading(move.getMoveDestination());
+    }
+
+    public void changePawn(String Clazz) {
+
+        if (pawnToChange == null)
+            return;
+
+        Texture texture;
+        boolean isBlackPlayer = pawnToChange.getPlayer().getColor().equals(Player.PlayerColor.BLACK);
+        Player pawnPlayer = pawnToChange.getPlayer();
+
+        Chess[] cheeses = isBlackPlayer ? blackCheeses : whiteCheeses;
+
+        int index = Arrays.stream(cheeses).toList().indexOf(pawnToChange);
+
+        switch (Clazz) {
+
+            case "B_BISHOP" -> {
+                Clazz = isBlackPlayer ? Clazz : "W_BISHOP";
+                texture = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.valueOf(Clazz).ordinal()], Texture.class);
+
+                pawnToChange = new Bishop(
+                        texture,
+                        pawnToChange.getCurrentLocation(),
+                        manager
+                );
+            }
+
+            case "B_ROOK" -> {
+                Clazz = isBlackPlayer ? Clazz : "W_ROOK";
+                texture = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.valueOf(Clazz).ordinal()], Texture.class);
+
+                pawnToChange = new Rook(
+                        texture,
+                        pawnToChange.getCurrentLocation(),
+                        manager
+                );
+            }
+
+            case "B_QUEEN" -> {
+                Clazz = isBlackPlayer ? Clazz : "W_QUEEN";
+                texture = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.valueOf(Clazz).ordinal()], Texture.class);
+
+                pawnToChange = new Queen(
+                        texture,
+                        pawnToChange.getCurrentLocation(),
+                        manager
+                );
+            }
+
+            case "B_KNIGHT" -> {
+                Clazz = isBlackPlayer ? Clazz : "W_KNIGHT";
+                texture = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.valueOf(Clazz).ordinal()], Texture.class);
+
+                pawnToChange = new Knight(
+                        texture,
+                        pawnToChange.getCurrentLocation(),
+                        manager
+                );
+            }
+
+        }
+
+        pawnToChange.setPlayer(pawnPlayer);
+        cheeses[index] = pawnToChange;
+
     }
 
     /**
@@ -287,9 +362,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         manager.load("core/assets/buttons/ready-button.png", Texture.class);
         manager.load("core/assets/buttons/ready-button-active.png", Texture.class);
         manager.load("core/assets/ui/ready-button-go.png", Texture.class);
-        // Repeat button
-        manager.load("core/assets/ui/reverse-button-pressed.png", Texture.class);
-        manager.load("core/assets/ui/reverse-button.png", Texture.class);
+
         // TTF Font
         manager.setLoader(FreeTypeFontGenerator.class,
                 new FreeTypeFontGeneratorLoader(new InternalFileHandleResolver()));
@@ -380,188 +453,188 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         );
 
 
-        whiteChesses[ChessPiecesInArray.King.ordinal()] = new King(
+        whiteCheeses[ChessPiecesInArray.King.ordinal()] = new King(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_KING.ordinal()], Texture.class),
                 E1,
                 manager
         );
 
-        whiteChesses[ChessPiecesInArray.Queen.ordinal()] = new Queen(
+        whiteCheeses[ChessPiecesInArray.Queen.ordinal()] = new Queen(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_QUEEN.ordinal()], Texture.class),
                 E4,
                 manager
         );
 
-        whiteChesses[ChessPiecesInArray.FstBishop.ordinal()] = new Bishop(
+        whiteCheeses[ChessPiecesInArray.FstBishop.ordinal()] = new Bishop(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_BISHOP.ordinal()], Texture.class),
                 C1,
                 manager
         );
 
-        whiteChesses[ChessPiecesInArray.SndBishop.ordinal()] = new Bishop(
+        whiteCheeses[ChessPiecesInArray.SndBishop.ordinal()] = new Bishop(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_BISHOP.ordinal()], Texture.class),
                 F1,
                 manager
         );
 
-        whiteChesses[ChessPiecesInArray.FstKnight.ordinal()] = new Knight(
+        whiteCheeses[ChessPiecesInArray.FstKnight.ordinal()] = new Knight(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_KNIGHT.ordinal()], Texture.class),
                 B1,
                 manager
         );
 
-        whiteChesses[ChessPiecesInArray.SndKnight.ordinal()] = new Knight(
+        whiteCheeses[ChessPiecesInArray.SndKnight.ordinal()] = new Knight(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_KNIGHT.ordinal()], Texture.class),
                 G1,
                 manager
         );
 
-        whiteChesses[ChessPiecesInArray.FstRook.ordinal()] = new Rook(
+        whiteCheeses[ChessPiecesInArray.FstRook.ordinal()] = new Rook(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_ROOK.ordinal()], Texture.class),
                 D4,
                 manager
         );
 
-        whiteChesses[ChessPiecesInArray.SndRook.ordinal()] = new Rook(
+        whiteCheeses[ChessPiecesInArray.SndRook.ordinal()] = new Rook(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_ROOK.ordinal()], Texture.class),
                 H1,
                 manager
         );
 
-        whiteChesses[ChessPiecesInArray.Pawn1.ordinal()] = new Pawn(
+        whiteCheeses[ChessPiecesInArray.Pawn1.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
-                A2,
+                A7,
                 manager
         );
-        whiteChesses[ChessPiecesInArray.Pawn2.ordinal()] = new Pawn(
+        whiteCheeses[ChessPiecesInArray.Pawn2.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
                 B2,
                 manager
         );
-        whiteChesses[ChessPiecesInArray.Pawn3.ordinal()] = new Pawn(
+        whiteCheeses[ChessPiecesInArray.Pawn3.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
                 C2,
                 manager
         );
-        whiteChesses[ChessPiecesInArray.Pawn4.ordinal()] = new Pawn(
+        whiteCheeses[ChessPiecesInArray.Pawn4.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
                 D2,
                 manager
         );
-        whiteChesses[ChessPiecesInArray.Pawn5.ordinal()] = new Pawn(
+        whiteCheeses[ChessPiecesInArray.Pawn5.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
                 E2,
                 manager
         );
-        whiteChesses[ChessPiecesInArray.Pawn6.ordinal()] = new Pawn(
+        whiteCheeses[ChessPiecesInArray.Pawn6.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
                 F2,
                 manager
         );
-        whiteChesses[ChessPiecesInArray.Pawn7.ordinal()] = new Pawn(
+        whiteCheeses[ChessPiecesInArray.Pawn7.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
                 G2,
                 manager
         );
-        whiteChesses[ChessPiecesInArray.Pawn8.ordinal()] = new Pawn(
+        whiteCheeses[ChessPiecesInArray.Pawn8.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
                 H2,
                 manager
         );
 
         ////////////////////////////////////////
-        blackChesses[ChessPiecesInArray.King.ordinal()] = new King(
+        blackCheeses[ChessPiecesInArray.King.ordinal()] = new King(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_KING.ordinal()], Texture.class),
                 E8,
                 manager
         );
 
-        blackChesses[ChessPiecesInArray.Queen.ordinal()] = new Queen(
+        blackCheeses[ChessPiecesInArray.Queen.ordinal()] = new Queen(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_QUEEN.ordinal()], Texture.class),
                 D8,
                 manager
         );
 
-        blackChesses[ChessPiecesInArray.FstBishop.ordinal()] = new Bishop(
+        blackCheeses[ChessPiecesInArray.FstBishop.ordinal()] = new Bishop(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_BISHOP.ordinal()], Texture.class),
                 C8,
                 manager
         );
 
-        blackChesses[ChessPiecesInArray.SndBishop.ordinal()] = new Bishop(
+        blackCheeses[ChessPiecesInArray.SndBishop.ordinal()] = new Bishop(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_BISHOP.ordinal()], Texture.class),
                 F6,
                 manager
         );
 
-        blackChesses[ChessPiecesInArray.FstKnight.ordinal()] = new Knight(
+        blackCheeses[ChessPiecesInArray.FstKnight.ordinal()] = new Knight(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_KNIGHT.ordinal()], Texture.class),
                 B8,
                 manager
         );
 
-        blackChesses[ChessPiecesInArray.SndKnight.ordinal()] = new Knight(
+        blackCheeses[ChessPiecesInArray.SndKnight.ordinal()] = new Knight(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_KNIGHT.ordinal()], Texture.class),
                 G8,
                 manager
         );
 
-        blackChesses[ChessPiecesInArray.FstRook.ordinal()] = new Rook(
+        blackCheeses[ChessPiecesInArray.FstRook.ordinal()] = new Rook(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_ROOK.ordinal()], Texture.class),
                 B6,
                 manager
         );
 
-        blackChesses[ChessPiecesInArray.SndRook.ordinal()] = new Rook(
+        blackCheeses[ChessPiecesInArray.SndRook.ordinal()] = new Rook(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_ROOK.ordinal()], Texture.class),
                 H8,
                 manager
         );
 
-        blackChesses[ChessPiecesInArray.Pawn1.ordinal()] = new Pawn(
+        blackCheeses[ChessPiecesInArray.Pawn1.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
-                A7,
+                A5,
                 manager
         );
-        blackChesses[ChessPiecesInArray.Pawn2.ordinal()] = new Pawn(
+        blackCheeses[ChessPiecesInArray.Pawn2.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
                 B7,
                 manager
         );
-        blackChesses[ChessPiecesInArray.Pawn3.ordinal()] = new Pawn(
+        blackCheeses[ChessPiecesInArray.Pawn3.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
                 C7,
                 manager
         );
-        blackChesses[ChessPiecesInArray.Pawn4.ordinal()] = new Pawn(
+        blackCheeses[ChessPiecesInArray.Pawn4.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
                 D7,
                 manager
         );
-        blackChesses[ChessPiecesInArray.Pawn5.ordinal()] = new Pawn(
+        blackCheeses[ChessPiecesInArray.Pawn5.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
                 E7,
                 manager
         );
-        blackChesses[ChessPiecesInArray.Pawn6.ordinal()] = new Pawn(
+        blackCheeses[ChessPiecesInArray.Pawn6.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
                 F7,
                 manager
         );
-        blackChesses[ChessPiecesInArray.Pawn7.ordinal()] = new Pawn(
+        blackCheeses[ChessPiecesInArray.Pawn7.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
                 G7,
                 manager
         );
-        blackChesses[ChessPiecesInArray.Pawn8.ordinal()] = new Pawn(
+        blackCheeses[ChessPiecesInArray.Pawn8.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
                 H7,
                 manager
         );
 
         for (int i = 0; i < 16; i++) {
-            whiteChesses[i].setPlayer(whitePlayer);
-            blackChesses[i].setPlayer(blackPlayer);
+            whiteCheeses[i].setPlayer(whitePlayer);
+            blackCheeses[i].setPlayer(blackPlayer);
         }
 
         int xHot = 0;
@@ -646,9 +719,9 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      */
     protected void drawChessPieces() {
         for (int i = 0; i < 16; i++) {
-            whiteChesses[i].getGameObject().getSprite().draw(sb);
+            whiteCheeses[i].getGameObject().getSprite().draw(sb);
 
-            blackChesses[i].getGameObject().getSprite().draw(sb);
+            blackCheeses[i].getGameObject().getSprite().draw(sb);
         }
     }
 
@@ -696,7 +769,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
                 Gdx.input.setInputProcessor(inputMultiplexer);
                 // tmp
             }
-            if (hud.isPasued())
+            if (hud.isPaused())
                 Gdx.input.setInputProcessor(hud.getStage());
             else
                 Gdx.input.setInputProcessor(inputMultiplexer);
@@ -813,5 +886,17 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         hud.dispose();
         hudFont.dispose();
         super.dispose();
+    }
+
+    @Override
+    public void pause() {
+        super.pause();
+        pause = true;
+    }
+
+    @Override
+    public void resume() {
+        super.resume();
+        pause = false;
     }
 }

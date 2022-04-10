@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.ourshipsgame.Main;
 import com.ourshipsgame.chess_pieces.Chess;
+import com.ourshipsgame.chess_pieces.Pawn;
 import com.ourshipsgame.hud.Hud;
 import com.ourshipsgame.mainmenu.MenuGlobalElements;
 import com.ourshipsgame.mainmenu.MenuScreen;
@@ -21,6 +22,7 @@ import com.ourshipsgame.utils.ChessMove;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.Clock;
 import java.util.Random;
 
 import static com.ourshipsgame.game.GameBoard.BoardLocations.getEnumByPosition;
@@ -116,9 +118,9 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
     }
 
     private void randomizeStart() {
-        Random random = new Random(0);
+        Random random = new Random(System.currentTimeMillis());
 
-        if (random.nextInt(9) % 2 == 0) {
+        if (random.nextInt(2) == 1) {
             MyPlayer = whitePlayer;
             EnemyPlayer = blackPlayer;
         } else {
@@ -142,12 +144,14 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
             if(!loadGameFromFile || !new File("gameSave.txt").exists()){
                 randomizeStart();
                 gameHistory = new GameHistory(MyPlayer, whitePlayer, blackPlayer);
+                loadGameFromFile = false;
+                gameStage = 2;
             }else{
                 gameHistory = new GameHistory(whitePlayer, blackPlayer);
                 loadGameFromFile();
+                gameStage = 3;
             }
 
-            gameStage = 2;
             hud = new Hud(manager, game, SinglePlayerGameScreen, cursor);
             createdTextures = true;
         }
@@ -186,21 +190,19 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
     @Override
     protected void update(float deltaTime) {
         switch (gameStage) {
-            case 2 -> {
-
-            }
 
             case 3 -> {
-                if (PlayerTurn.equals(MyPlayer))
-                    MyPlayer.updateTime(deltaTime);
-                else {
-                    EnemyPlayer.updateTime(deltaTime);
+                if(!pause)
+                    if (PlayerTurn.equals(MyPlayer))
+                        MyPlayer.updateTime(deltaTime);
+                    else {
+                        EnemyPlayer.updateTime(deltaTime);
 
-                    //Update AI info
-                    if (enemyComputerPlayerAi != null) {
+                        //Update AI info
+                        if (enemyComputerPlayerAi != null) {
 
+                        }
                     }
-                }
 
             }
 
@@ -363,14 +365,20 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
                 if (move.contains(screenX, screenY)) {
                     GameBoard.BoardLocations currentLocation = currentChessClicked.getCurrentLocation();
                     currentChessClicked.moveChess(getEnumByPosition(move.getPosition()), hud.gameSettings.soundVolume);
-                    switchTurn();
 
                     addHistory(
                             currentLocation,
                             getEnumByPosition(move.getPosition())
                     );
 
+                    if(currentChessClicked.getClass().equals(Pawn.class))
+                        if(((Pawn) currentChessClicked).checkIfReachedEnd()){
+                            pawnToChange = currentChessClicked;
+                            hud.pawnChangeDialog.show(hud.getStage());
+                        }
+
                     currentChessClicked = null;
+                    switchTurn();
                     return true;
                 }
             return false;
@@ -382,8 +390,8 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
         Chess[] cheesesToCheck;
 
         if (MyPlayer.equals(whitePlayer))
-            cheesesToCheck = whiteChesses;
-        else cheesesToCheck = blackChesses;
+            cheesesToCheck = whiteCheeses;
+        else cheesesToCheck = blackCheeses;
 
         for (int i = 0; i < 16; i++)
             if (cheesesToCheck[i].clickedOnThisChess(screenX, screenY, gameBoard)) {
