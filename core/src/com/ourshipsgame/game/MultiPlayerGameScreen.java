@@ -2,7 +2,6 @@ package com.ourshipsgame.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
-import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
@@ -337,12 +336,12 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
 
     private void checkForChessClicked(int screenX, int screenY) {
         for (int i = 0; i < 16; i++){
-            if(whiteChesses[i].clickedOnThisChess(screenX, screenY,gameBoard)){
-                currentChessClicked = whiteChesses[i];
+            if(whiteCheeses[i].clickedOnThisChess(screenX, screenY,gameBoard)){
+                currentChessClicked = whiteCheeses[i];
                 return;
             }
-            if(blackChesses[i].clickedOnThisChess(screenX, screenY,gameBoard)){
-                currentChessClicked = blackChesses[i];
+            if(blackCheeses[i].clickedOnThisChess(screenX, screenY,gameBoard)){
+                currentChessClicked = blackCheeses[i];
                 return;
             }
         }

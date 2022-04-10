@@ -90,17 +90,17 @@ public class OptionScreen implements Screen, Constant {
         float scale = 1.3f;
 
         // Texts
-        soundsVolumeText = new TextField("SFX Volume", game.menuElements.skin);
+        soundsVolumeText = new TextField("SFX VOLUME", game.menuElements.skin);
         soundsVolumeText.clearListeners();
         soundsVolumeText.setWidth(soundsVolumeText.getWidth() * scale);
         soundsVolumeText.setAlignment(1);
         soundsVolumeText.setPosition(GAME_WIDTH_F / 2 - soundsVolumeText.getWidth() / 2, GAME_HEIGHT_F / 2 + 180);
 
-        musicVolumeText = new TextField("Music Volume", game.menuElements.skin);
+        musicVolumeText = new TextField("MUSIC VOLUME", game.menuElements.skin);
         musicVolumeText.clearListeners();
-        musicVolumeText.setWidth(musicVolumeText.getWidth() * scale);
+        musicVolumeText.setWidth(musicVolumeText.getWidth() * scale * 1.2f);
         musicVolumeText.setAlignment(1);
-        musicVolumeText.setPosition(GAME_WIDTH_F / 2 - soundsVolumeText.getWidth() / 2, GAME_HEIGHT_F / 2 - 20);
+        musicVolumeText.setPosition(GAME_WIDTH_F / 2 - musicVolumeText.getWidth() / 2, GAME_HEIGHT_F / 2 - 20);
 
         // Sliders
         musicSliderVolume = new GameSlider(GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 100, 0, 100, 1, false,
@@ -112,7 +112,7 @@ public class OptionScreen implements Screen, Constant {
         soundSilderVolume.setSliderType(2);
 
         // Buttons
-        backButton = new GameTextButton("Back", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 300, game.menuElements.skin, 6, game, scale);
+        backButton = new GameTextButton("BACK", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 300, game.menuElements.skin, 6, game, scale);
 
         stage.addActor(backButton);
         stage.addActor(musicSliderVolume);

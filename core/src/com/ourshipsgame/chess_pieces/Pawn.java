@@ -3,27 +3,67 @@ package com.ourshipsgame.chess_pieces;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.ourshipsgame.game.GameBoard;
+import com.ourshipsgame.game.GameBoard.BoardLocations;
 import com.ourshipsgame.game.Player;
 import com.ourshipsgame.utils.Vector2i;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 
 public class Pawn extends Chess {
     private boolean firstMove;
+    private static final List<BoardLocations> whiteChangeLocations = populateList(false);
+    private static final List<BoardLocations> blackChangeLocations = populateList(true);
 
-    public Pawn(Texture chessTexture, GameBoard.BoardLocations location, AssetManager manager) {
+    private static List<BoardLocations> populateList(boolean color) {
+        ArrayList<BoardLocations> boardLocations = new ArrayList<>();
+
+        if(color){
+            boardLocations.add(BoardLocations.A1);
+            boardLocations.add(BoardLocations.B1);
+            boardLocations.add(BoardLocations.C1);
+            boardLocations.add(BoardLocations.D1);
+            boardLocations.add(BoardLocations.E1);
+            boardLocations.add(BoardLocations.F1);
+            boardLocations.add(BoardLocations.G1);
+            boardLocations.add(BoardLocations.H1);
+        }
+        boardLocations.add(BoardLocations.A8);
+        boardLocations.add(BoardLocations.B8);
+        boardLocations.add(BoardLocations.C8);
+        boardLocations.add(BoardLocations.D8);
+        boardLocations.add(BoardLocations.E8);
+        boardLocations.add(BoardLocations.F8);
+        boardLocations.add(BoardLocations.G8);
+        boardLocations.add(BoardLocations.H8);
+
+        return boardLocations;
+
+    }
+
+    public Pawn(Texture chessTexture, BoardLocations location, AssetManager manager) {
         super(chessTexture, location, manager);
         firstMove = true;
     }
 
     @Override
-    public void moveChess(GameBoard.BoardLocations newPos, float soundVolume) {
+    public void moveChess(BoardLocations newPos, float soundVolume) {
         if(firstMove)
             firstMove = false;
         super.moveChess(newPos, soundVolume);
+    }
+
+    public boolean checkIfReachedEnd() {
+
+        if(player.getColor().equals(Player.PlayerColor.WHITE))
+            return whiteChangeLocations.stream()
+                    .anyMatch(location -> location.equals(currentLocation));
+
+        return blackChangeLocations.stream()
+                .anyMatch(location -> location.equals(currentLocation));
     }
 
     @Override

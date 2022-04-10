@@ -138,17 +138,17 @@ public class MenuScreen implements Screen, Constant {
 
 
         // Creating buttons
-        playButton = new GameTextButton("Play", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2, game.menuElements.skin, 1, game, scale);
+        playButton = new GameTextButton("PLAY", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2, game.menuElements.skin, 1, game, scale);
 
-        helpButon = new GameTextButton("Help", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 100, game.menuElements.skin, 2, game, scale);
+        helpButon = new GameTextButton("HELP", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 100, game.menuElements.skin, 2, game, scale);
 
-        scoreButton = new GameTextButton("Score", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 200, game.menuElements.skin, 3,
+        scoreButton = new GameTextButton("SCORE", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 200, game.menuElements.skin, 3,
                 game, scale);
 
-        optionsButton = new GameTextButton("Options", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 300, game.menuElements.skin, 4,
+        optionsButton = new GameTextButton("OPTIONS", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 300, game.menuElements.skin, 4,
                 game, scale);
 
-        quitButton = new GameTextButton("Exit", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 400, game.menuElements.skin, 5, game, scale);
+        quitButton = new GameTextButton("EXIT", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 400, game.menuElements.skin, 5, game, scale);
 
         // Adding actors to scene
         stage.addActor(playButton);

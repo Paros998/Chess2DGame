@@ -46,6 +46,7 @@ public class GameSlider extends Slider implements Constant {
         this.setY(y);
     }
 
+
     /**
      * Drugi konstruktor klasy GameSlider.
      * 

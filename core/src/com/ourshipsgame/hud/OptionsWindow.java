@@ -1,14 +1,15 @@
 package com.ourshipsgame.hud;
 
-import java.io.FileWriter;
-import java.io.IOException;
-
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.ourshipsgame.game.GameSlider;
 import com.ourshipsgame.handlers.Constant;
 import com.ourshipsgame.mainmenu.MenuGlobalElements;
 import com.ourshipsgame.mainmenu.MenuScreen;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Objects;
 
 /**
  * Klasa reprezentująca okno dialogowe. Dziedziczy po klasie Dialog.
@@ -21,7 +22,7 @@ public class OptionsWindow extends Dialog implements Constant {
      * Typ wyliczeniowy Actions, określa opcje w oknie dialogowym.
      */
     private enum Actions {
-        RESUME_GAME, OPTIONS, BACK_TO_MAIN_MENU;
+        RESUME_GAME, OPTIONS, BACK_TO_MAIN_MENU, SAVE;
     }
 
     /**
@@ -37,13 +38,13 @@ public class OptionsWindow extends Dialog implements Constant {
     /**
      * Referencja do elementów w klasie Hud.
      */
-    private Hud hud;
+    private final Hud hud;
 
     /**
      * Referencja "do siebie". Jest używany w konstruktorze podokna dialogowego przy
      * wyjściu z gry.
      */
-    private OptionsWindow backReference = this;
+    private final OptionsWindow backReference = this;
 
     /**
      * Ssuwak z libGDX. Służy do regulowania głośności dźwięków.
@@ -59,21 +60,22 @@ public class OptionsWindow extends Dialog implements Constant {
 
     /**
      * Główny i jedyny konstruktor klasy OptionsWindow.
-     * 
+     *
      * @param windowName Nazwa okna.
      * @param hud        Referencja obiektu Hud.
      */
     public OptionsWindow(String windowName, Hud hud) {
-        super(windowName, hud.getSkin());
+        super(windowName.toUpperCase(), hud.getSkin());
         this.hud = hud;
         turnedOn = false;
         layoutTable = new Table();
         layoutTable.center();
         layoutTable.setFillParent(true);
 
-        this.button("Resume Game", Actions.RESUME_GAME);
-        this.button("Options", Actions.OPTIONS);
-        this.button("Back to Main Menu", Actions.BACK_TO_MAIN_MENU);
+        this.button("RESUME GAME", Actions.RESUME_GAME);
+        this.button("OPTIONS", Actions.OPTIONS);
+        this.button("SAVE", Actions.SAVE);
+        this.button("MAIN MENU", Actions.BACK_TO_MAIN_MENU);
         layoutTable.add(this).expandX().padBottom(10);
     }
 
@@ -81,7 +83,7 @@ public class OptionsWindow extends Dialog implements Constant {
 
     /**
      * Metoda zapisująca ustawienia gry do pliku.
-     * 
+     *
      * @throws IOException Wyjątek związany z plikiem.
      */
     private void saveSettings() throws IOException {
@@ -93,22 +95,22 @@ public class OptionsWindow extends Dialog implements Constant {
 
     /**
      * Metoda wynikowa po wciśnięciu przycisku w oknie dialogowym.
-     * 
+     *
      * @param act Obiekt przycisku.
      */
     @Override
     protected void result(final Object act) {
         Actions action = Actions.valueOf(act.toString());
         switch (action) {
-            case RESUME_GAME:
+            case RESUME_GAME -> {
                 hud.gameSettings.playSound();
+                hud.gameEngineScreen.resume();
                 this.hide();
                 turnedOn = false;
-                break;
-
-            case OPTIONS:
+            }
+            case OPTIONS -> {
                 hud.gameSettings.playSound();
-                new Dialog("Options", hud.getSkin()) {
+                new Dialog("OPTIONS", hud.getSkin()) {
 
                     {
                         soundSlider = new GameSlider(0, 100, 1, false, this.getSkin());
@@ -117,16 +119,17 @@ public class OptionsWindow extends Dialog implements Constant {
                         musicSlider.setSliderType(1, hud.gameSettings);
                         soundSlider.setSliderType(2, hud.gameSettings);
 
-                        this.text("Music Volume");
+
                         this.row();
-                        this.add(musicSlider).expandX().padLeft(20);
+                        this.add("MUSIC VOLUME");
+                        this.add("SFX VOLUME");
                         this.row();
-                        this.text("SFX Volume");
-                        this.add(soundSlider).expandX().padLeft(20);
+                        this.add(musicSlider);
+                        this.add(soundSlider);
                         this.row();
                         this.getCells().removeIndex(1);
                         this.add(this.getButtonTable());
-                        this.button("Back");
+                        this.button("BACK");
                     }
 
                     @Override
@@ -143,20 +146,27 @@ public class OptionsWindow extends Dialog implements Constant {
                     }
 
                 }.show(hud.getStage());
-                break;
-
-            case BACK_TO_MAIN_MENU:
+                hud.gameEngineScreen.resume();
+            }
+            case SAVE -> {
                 hud.gameSettings.playSound();
-                new Dialog("Confitm Exit", hud.getSkin()) {
+                hud.gameEngineScreen.saveGame();
+                this.hide();
+                turnedOn = false;
+                hud.gameEngineScreen.resume();
+            }
+            case BACK_TO_MAIN_MENU -> {
+                hud.gameSettings.playSound();
+                new Dialog("CONFIRM EXIT", hud.getSkin()) {
 
                     {
-                        button("Yes", "Yes");
-                        button("No", "No");
+                        button("YES", "Yes");
+                        button("NO", "No");
                     }
 
                     @Override
                     protected void result(final Object act) {
-                        if (act.toString() == "Yes") {
+                        if (Objects.equals(act.toString(), "Yes")) {
                             hud.game.menuElements = new MenuGlobalElements(hud.game);
                             hud.gameEngineScreen.dispose();
                             hud.gameSettings = null;
@@ -169,7 +179,7 @@ public class OptionsWindow extends Dialog implements Constant {
                     }
 
                 }.show(hud.getStage());
-                break;
+            }
         }
     }
 }
