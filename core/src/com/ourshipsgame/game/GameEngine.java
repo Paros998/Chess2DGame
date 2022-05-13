@@ -211,13 +211,21 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      */
     protected float yDiff;
     /**
-     * Zmienna określająca czy Gracz przegrał
+     * Zmienna określająca czy Pierwszy Gracz przegrał
      */
     protected boolean PlayerOneLost = false;
     /**
-     * Zmienna określająca czy Komputer przegrał
+     * Zmienna określająca czy Drugi Gracz przegrał
      */
     protected boolean PlayerTwoLost = false;
+    /*
+     * */
+    protected boolean TieBetweenPlayers = false;
+
+    protected boolean PlayerOneChecked = false;
+
+    protected boolean PlayerTwoChecked = false;
+
 
     /**
      * Metoda do zmiany tury
@@ -227,7 +235,50 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
             PlayerTurn = EnemyPlayer;
         else
             PlayerTurn = MyPlayer;
+
+        calculateChessMoves();
+
+        King whiteKing = (King) whiteCheeses[ChessPiecesInArray.King.ordinal()];
+        whiteKing.checkKingCondition(blackCheeses, gameBoard);
+
+        King blackKing = (King) blackCheeses[ChessPiecesInArray.King.ordinal()];
+        blackKing.checkKingCondition(whiteCheeses, gameBoard);
+
+        PlayerOneChecked = whiteKing.isChecked();
+        PlayerTwoChecked = blackKing.isChecked();
+
+        PlayerOneLost = whiteKing.isMated();
+        PlayerTwoLost = blackKing.isMated();
+
+        TieBetweenPlayers = whiteKing.isTie() | blackKing.isTie() | (PlayerOneLost && PlayerTwoLost);
+
+        if(PlayerOneLost | PlayerTwoLost | TieBetweenPlayers)
+            gameStage = 4;
+
     }
+
+    protected void calculateChessMoves() {
+
+        Arrays.stream(whiteCheeses).forEach(chess -> {
+            if (!chess.isDestroyed()) {
+
+                if (chess instanceof King king)
+                    king.evaluateMoves(gameBoard, blackCheeses);
+                else chess.evaluateMoves(gameBoard);
+            }
+        });
+
+        Arrays.stream(blackCheeses).forEach(chess -> {
+            if (!chess.isDestroyed()) {
+
+                if (chess instanceof King king)
+                    king.evaluateMoves(gameBoard, whiteCheeses);
+                else chess.evaluateMoves(gameBoard);
+
+            }
+        });
+    }
+
 
     public void saveGame() {
         gameHistory.historySave();
@@ -241,7 +292,14 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         MyPlayer = gameHistory.getCurrentPlayer();
 
-        EnemyPlayer = MyPlayer == whitePlayer ? blackPlayer : whitePlayer;
+        EnemyPlayer = (MyPlayer == whitePlayer) ? blackPlayer : whitePlayer;
+
+        if (EnemyPlayer == blackPlayer)
+            enemyComputerPlayerAi = new ComputerPlayerAi(blackCheeses);
+        else
+            enemyComputerPlayerAi = new ComputerPlayerAi(whiteCheeses);
+
+        enemyComputerPlayerAi.setPlayer(EnemyPlayer);
     }
 
     private void loadMove(ChessMove move) {
@@ -643,8 +701,6 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         Gdx.graphics.setCursor(cursor);
 
-        enemyComputerPlayerAi = new ComputerPlayerAi();
-
         return true;
     }
 
@@ -665,13 +721,24 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      */
     protected void drawExitScreen() {
         String msg;
-        if (PlayerOneLost) {
-            msg = "You 've Lost!! Better luck next time!";
-            font.draw(sb, msg, (gameWidth_f / 2) - 350, gameHeight_f / 2 + 400);
-        } else if (PlayerTwoLost) {
-            msg = "You 've Won!! Keep it up!!";
-            font.draw(sb, msg, (gameWidth_f / 2) - 250, gameHeight_f / 2 + 400);
-        }
+        boolean imPlayerOne = MyPlayer == whitePlayer;
+
+        if (PlayerOneLost)
+            if(imPlayerOne){
+                msg = "You 've Lost!! Better luck next time!";
+                font.draw(sb, msg, (gameWidth_f / 2) - 350, gameHeight_f / 2 + 400);
+            }else{
+                msg = "You 've Won!! Keep it up!!";
+                font.draw(sb, msg, (gameWidth_f / 2) - 250, gameHeight_f / 2 + 400);
+            }
+        else if (PlayerTwoLost)
+            if (imPlayerOne){
+                msg = "You 've Won!! Keep it up!!";
+                font.draw(sb, msg, (gameWidth_f / 2) - 250, gameHeight_f / 2 + 400);
+            }else{
+                msg = "You 've Lost!! Better luck next time!";
+                font.draw(sb, msg, (gameWidth_f / 2) - 350, gameHeight_f / 2 + 400);
+            }
     }
 
     // Create methods
@@ -795,9 +862,11 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
                     drawCurrentClickedChessAvailableMoves();
                     drawChessPieces();
                     drawTurnInfo(sb);
+                    drawKingCondition(sb);
                 }
                 case 4 -> {
                     drawMap();
+                    drawChessPieces();
                     drawExitScreen();
                 }
             }
@@ -809,6 +878,42 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
             // While loading the game assets
             drawLoadingScreen();
         }
+    }
+
+    protected void drawKingCondition(SpriteBatch batch) {
+
+        boolean imPlayerOne = MyPlayer == whitePlayer;
+
+        if (PlayerOneChecked) {
+
+            if (imPlayerOne)
+                turnFontActive.draw(batch,
+                        "Your King is Checked!",
+                        TurnInfos[0].getPosition().getX() + 64,
+                        TurnInfos[0].getPosition().getY() - 96);
+
+            else turnFontActive.draw(batch,
+                    "Enemy King is Checked!",
+                    TurnInfos[1].getPosition().getX() + 64,
+                    TurnInfos[1].getPosition().getY() - 96);
+        }
+
+        if (PlayerTwoChecked) {
+
+            if (imPlayerOne)
+                turnFontActive.draw(batch,
+                        "Enemy King is Checked!",
+                        TurnInfos[1].getPosition().getX() + 64,
+                        TurnInfos[1].getPosition().getY() - 96);
+
+            else turnFontActive.draw(batch,
+                    "Your King is Checked!",
+                    TurnInfos[0].getPosition().getX() + 64,
+                    TurnInfos[0].getPosition().getY() - 96);
+
+        }
+
+
     }
 
     private String formattedTimeLeft(Float time) {
@@ -876,6 +981,9 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      */
     @Override
     public void dispose() {
+        //clearing chess objects positons
+        for (int i = 0; i < GameBoard.BoardLocations.values().length; i++)
+            GameBoard.BoardLocations.values()[i].setChess(null, true);
         inputMultiplexer.clear();
         sb.dispose();
         sr.dispose();

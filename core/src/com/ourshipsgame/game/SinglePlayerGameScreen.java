@@ -15,6 +15,7 @@ import com.ourshipsgame.Main;
 import com.ourshipsgame.chess_pieces.Chess;
 import com.ourshipsgame.chess_pieces.Pawn;
 import com.ourshipsgame.hud.Hud;
+import com.ourshipsgame.inteligentSystems.ComputerPlayerAi;
 import com.ourshipsgame.mainmenu.MenuGlobalElements;
 import com.ourshipsgame.mainmenu.MenuScreen;
 import com.ourshipsgame.utils.ChessMove;
@@ -22,7 +23,6 @@ import com.ourshipsgame.utils.ChessMove;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.Clock;
 import java.util.Random;
 
 import static com.ourshipsgame.game.GameBoard.BoardLocations.getEnumByPosition;
@@ -45,7 +45,7 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
     /**
      * Konstruktor ekranu głównego
      *
-     * @param game Obiekt aplikacji
+     * @param game                   Obiekt aplikacji
      * @param shouldLoadGameFromFile should load
      */
     public SinglePlayerGameScreen(Main game, boolean shouldLoadGameFromFile) {
@@ -57,7 +57,7 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
     }
 
     // Draw methods
-    private void addHistory(GameBoard.BoardLocations moveFrom, GameBoard.BoardLocations moveTo){
+    private void addHistory(GameBoard.BoardLocations moveFrom, GameBoard.BoardLocations moveTo) {
         gameHistory.updateHistoryAfterTurn(new ChessMove(moveFrom, moveTo));
     }
 
@@ -95,7 +95,6 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
                     }
                     case "No" -> new Dialog("What now?", hud.getSkin()) {
                         {
-
                             this.button("Main menu!", "menu");
                             this.button("Exit game!", "game");
                         }
@@ -130,6 +129,12 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
 
         MyPlayer.setPlayerName("TemplateName");
         EnemyPlayer.setPlayerName("Bot Clark");
+
+        if (EnemyPlayer == blackPlayer)
+            enemyComputerPlayerAi = new ComputerPlayerAi(blackCheeses);
+        else
+            enemyComputerPlayerAi = new ComputerPlayerAi(whiteCheeses);
+
         enemyComputerPlayerAi.setPlayer(EnemyPlayer);
     }
 
@@ -141,16 +146,18 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
         // changing game stage from loading to playing
         if (preparation(manager)) {
 
-            if(!loadGameFromFile || !new File("gameSave.txt").exists()){
+            if (!loadGameFromFile || !new File("gameSave.txt").exists()) {
                 randomizeStart();
                 gameHistory = new GameHistory(MyPlayer, whitePlayer, blackPlayer);
                 loadGameFromFile = false;
                 gameStage = 2;
-            }else{
+            } else {
                 gameHistory = new GameHistory(whitePlayer, blackPlayer);
                 loadGameFromFile();
                 gameStage = 3;
             }
+
+            calculateChessMoves();
 
             hud = new Hud(manager, game, SinglePlayerGameScreen, cursor);
             createdTextures = true;
@@ -167,7 +174,7 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
                     hud.getStage().getActors().pop();
                     hud.getPlayersSetNameDialog().hide();
 
-                    if(!loadGameFromFile)
+                    if (!loadGameFromFile)
                         MyPlayer.setPlayerName(hud.getPlayersName());
 
                     gameStage = 3;
@@ -192,15 +199,39 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
         switch (gameStage) {
 
             case 3 -> {
-                if(!pause)
+                if (!pause)
                     if (PlayerTurn.equals(MyPlayer))
                         MyPlayer.updateTime(deltaTime);
                     else {
                         EnemyPlayer.updateTime(deltaTime);
 
-                        //Update AI info
                         if (enemyComputerPlayerAi != null) {
 
+                            enemyComputerPlayerAi.update(deltaTime);
+
+                            if(enemyComputerPlayerAi.getReadyToMove()){
+
+                                enemyComputerPlayerAi.calculateMove();
+
+                                enemyComputerPlayerAi.getMovableChess()
+                                        .moveChess(
+                                                enemyComputerPlayerAi.getMoveDestination(),
+                                                hud.gameSettings.soundVolume
+                                        );
+
+                                addHistory(
+                                        enemyComputerPlayerAi.getMoveStart(),
+                                        enemyComputerPlayerAi.getMoveDestination()
+                                );
+
+                                if (enemyComputerPlayerAi.getMovableChess() instanceof Pawn pawn)
+                                    if (pawn.checkIfReachedEnd()) {
+                                        pawnToChange = pawn;
+                                        changePawn(enemyComputerPlayerAi.choosePawn());
+                                    }
+
+                                switchTurn();
+                            }
                         }
                     }
 
@@ -208,10 +239,19 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
 
             case 4 -> {
                 if (!createDialog) {
-                    if (PlayerOneLost)
-                        endSounds[1].play(hud.gameSettings.soundVolume);
-                    else if (PlayerTwoLost)
-                        endSounds[0].play(hud.gameSettings.soundVolume);
+                    boolean imPlayerOne = MyPlayer == whitePlayer;
+
+                    if (PlayerOneLost) {
+                        if(imPlayerOne)
+                            endSounds[1].play(hud.gameSettings.soundVolume);
+                        else endSounds[0].play(hud.gameSettings.soundVolume);
+                    }
+                    else if (PlayerTwoLost) {
+                        if(imPlayerOne)
+                            endSounds[0].play(hud.gameSettings.soundVolume);
+                        else endSounds[1].play(hud.gameSettings.soundVolume);
+                    }
+
                     createDialog();
                     createDialog = true;
                     Gdx.graphics.setCursor(cursor);
@@ -363,18 +403,22 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
             GameObject[] possibleMovesAndAttacks = currentChessClicked.getPossibleMovesAndAttacks();
             for (GameObject move : possibleMovesAndAttacks)
                 if (move.contains(screenX, screenY)) {
+
                     GameBoard.BoardLocations currentLocation = currentChessClicked.getCurrentLocation();
-                    currentChessClicked.moveChess(getEnumByPosition(move.getPosition()), hud.gameSettings.soundVolume);
+
+                    if (!currentChessClicked.moveChess(getEnumByPosition(move.getPosition()), hud.gameSettings.soundVolume))
+                        return false;
 
                     addHistory(
                             currentLocation,
                             getEnumByPosition(move.getPosition())
                     );
 
-                    if(currentChessClicked.getClass().equals(Pawn.class))
-                        if(((Pawn) currentChessClicked).checkIfReachedEnd()){
-                            pawnToChange = currentChessClicked;
+                    if (currentChessClicked instanceof Pawn pawn)
+                        if (pawn.checkIfReachedEnd()) {
+                            pawnToChange = pawn;
                             hud.pawnChangeDialog.show(hud.getStage());
+                            pause();
                         }
 
                     currentChessClicked = null;

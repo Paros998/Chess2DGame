@@ -50,10 +50,10 @@ public class Pawn extends Chess {
     }
 
     @Override
-    public void moveChess(BoardLocations newPos, float soundVolume) {
+    public boolean moveChess(BoardLocations newPos, float soundVolume) {
         if(firstMove)
             firstMove = false;
-        super.moveChess(newPos, soundVolume);
+        return super.moveChess(newPos, soundVolume);
     }
 
     public boolean checkIfReachedEnd() {
@@ -79,6 +79,10 @@ public class Pawn extends Chess {
         possibleMovesAndAttacksAsVectors.clear();
         possibleMovesAndAttacksAsVectors.addAll(possibleAttackVectors);
         possibleMovesAndAttacksAsVectors.addAll(possibleMovesVectors);
+    }
+
+    public Integer getStrength() {
+        return 10;
     }
 
 

@@ -14,6 +14,10 @@ public class Knight extends Chess{
         super(chessTexture, location, manager);
     }
 
+    public Integer getStrength() {
+        return 30;
+    }
+
     @Override
     protected void calculatePossibleMoves(GameBoard gameBoard) {
         Vector2i currentArrayPosition = currentLocation.getArrayPosition();
