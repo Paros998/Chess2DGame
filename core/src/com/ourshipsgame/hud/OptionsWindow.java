@@ -149,8 +149,10 @@ public class OptionsWindow extends Dialog implements Constant {
                 hud.gameEngineScreen.resume();
             }
             case SAVE -> {
-                hud.gameSettings.playSound();
-                hud.gameEngineScreen.saveGame();
+                if(hud.gameEngineScreen.gameStage != 4){
+                    hud.gameSettings.playSound();
+                    hud.gameEngineScreen.saveGame();
+                }
                 this.hide();
                 turnedOn = false;
                 hud.gameEngineScreen.resume();

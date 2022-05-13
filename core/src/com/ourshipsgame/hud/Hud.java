@@ -217,6 +217,7 @@ public class Hud implements Constant {
             @Override
             protected void result(final Object act) {
                 stage.addActor(layoutTable);
+                gameEngineScreen.resume();
             }
         };
 

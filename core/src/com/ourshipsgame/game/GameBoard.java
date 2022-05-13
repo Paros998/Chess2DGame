@@ -184,12 +184,22 @@ public class GameBoard {
         }
 
         public BoardLocations setChess(Chess chess) {
-            if (this.chess != null)
-                this.chess.getGameObject().setSpritePos(new Vector2(-200, -200));
+            if(chess != null)
+                if (this.chess != null) {
+                    this.chess.getGameObject().setSpritePos(new Vector2(-200, -200));
+                    this.chess.setDestroyed(true);
+                    chess.getPlayer().addScore(this.chess.getStrength());
+                }
 
             this.chess = chess;
             return this;
         }
+
+        public BoardLocations setChess(Chess chess, boolean init) {
+            this.chess = chess;
+            return this;
+        }
+
     }
 
     public BoardLocations[][] getBoard() {

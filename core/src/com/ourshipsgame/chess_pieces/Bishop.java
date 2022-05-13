@@ -36,6 +36,10 @@ public class Bishop extends Chess{
 
     }
 
+    public Integer getStrength() {
+        return 30;
+    }
+
     @Override
     protected void calculatePossibleMoves(GameBoard gameBoard) {
         Vector2i currentArrayPosition = currentLocation.getArrayPosition();

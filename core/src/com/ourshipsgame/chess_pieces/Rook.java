@@ -37,6 +37,9 @@ public class Rook extends Chess{
 
     }
 
+    public Integer getStrength() {
+        return 50;
+    }
 
 
     @Override

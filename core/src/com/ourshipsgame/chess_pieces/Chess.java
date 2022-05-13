@@ -25,6 +25,7 @@ public abstract class Chess {
     protected ArrayList<Vector2i> possibleMovesVectors;
     protected ArrayList<Vector2i> possibleAttackVectors;
     protected AssetManager manager;
+    protected boolean isDestroyed = false;
 
     protected Chess(Texture chessTexture, GameBoard.BoardLocations location, AssetManager manager) {
         this.manager = manager;
@@ -37,15 +38,14 @@ public abstract class Chess {
                 new Vector2(1, 1));
         moveSound = manager.get("core/assets/sounds/move_sound.wav", Sound.class);
         attackSound = manager.get("core/assets/sounds/attack_sound.wav", Sound.class);
-        location.setChess(this);
-        currentLocation = location;
+        currentLocation = location.setChess(this,true);
         possibleMovesAndAttacksAsVectors = new ArrayList<>();
         possibleMovesVectors = new ArrayList<>();
         possibleAttackVectors = new ArrayList<>();
     }
 
 
-    public void moveChess(GameBoard.BoardLocations newPos, float soundVolume) {
+    public boolean moveChess(GameBoard.BoardLocations newPos, float soundVolume) {
         if (canMove(newPos)) {
             if (newPos.getChess() != null)
                 attackSound.play(soundVolume);
@@ -55,8 +55,9 @@ public abstract class Chess {
             newPos.setChess(this);
             gameObject.setSpritePos(newPos.getPosition());
             currentLocation = newPos;
-
+            return true;
         }
+        return false;
 
     }
 
@@ -73,9 +74,13 @@ public abstract class Chess {
             move.getSprite().draw(spriteBatch, 0.75f);
     }
 
-    private boolean canMove(GameBoard.BoardLocations position) {
+    public boolean canMove(GameBoard.BoardLocations position) {
         return possibleMovesAndAttacksAsVectors.stream()
-                .anyMatch(vector2i -> vector2i.epsilonEquals(position.getArrayPosition()));
+                .anyMatch(vector2i -> {
+                    if (position.getChess() == null)
+                        return vector2i.epsilonEquals(position.getArrayPosition());
+                    return vector2i.epsilonEquals(position.getArrayPosition()) && !position.getChess().getClass().equals(King.class);
+                });
     }
 
     public GameObject[] getPossibleMovesAndAttacks() {
@@ -83,23 +88,29 @@ public abstract class Chess {
     }
 
     public boolean clickedOnThisChess(int xPos, int yPos, GameBoard gameBoard) {
-        if (gameObject.spriteContains(new Vector2(xPos, yPos))) {
-            evaluateMoves(gameBoard);
-            return true;
-        }
+        if (!isDestroyed)
+            return gameObject.spriteContains(new Vector2(xPos, yPos));
         return false;
+//
+//        if (gameObject.spriteContains(new Vector2(xPos, yPos))) {
+//            //evaluateMoves(gameBoard);
+//            return true;
+//        }
+//        return false;
     }
 
     public void evaluateMoves(GameBoard gameBoard) {
-        possibleMovesAndAttacksAsVectors.clear();
-        possibleMovesVectors.clear();
-        possibleAttackVectors.clear();
-        calculatePossibleMoves(gameBoard);
-        filterMoves(gameBoard);
-        createMovesObjects(gameBoard);
+        if (!isDestroyed) {
+            possibleMovesAndAttacksAsVectors.clear();
+            possibleMovesVectors.clear();
+            possibleAttackVectors.clear();
+            calculatePossibleMoves(gameBoard);
+            filterMoves(gameBoard);
+            createMovesObjects(gameBoard);
+        }
     }
 
-    private void createMovesObjects(GameBoard gameBoard) {
+    protected void createMovesObjects(GameBoard gameBoard) {
         int possibleMoves = possibleMovesAndAttacksAsVectors.size();
         possibleMovesAndAttacks = new GameObject[possibleMoves];
         String texturePath;
@@ -148,9 +159,16 @@ public abstract class Chess {
         possibleMovesAndAttacksAsVectors.addAll(possibleAttackVectors);
     }
 
-
     public GameObject getGameObject() {
         return gameObject;
+    }
+
+    public void setDestroyed(boolean destroyed) {
+        isDestroyed = destroyed;
+    }
+
+    public boolean isDestroyed() {
+        return isDestroyed;
     }
 
     public void setGameObject(GameObject gameObject) {
@@ -168,6 +186,16 @@ public abstract class Chess {
     public GameBoard.BoardLocations getCurrentLocation() {
         return currentLocation;
     }
+
+    public ArrayList<Vector2i> getPossibleAttackVectors() {
+        return possibleAttackVectors;
+    }
+
+    public ArrayList<Vector2i> getPossibleMovesAndAttacksAsVectors() {
+        return possibleMovesAndAttacksAsVectors;
+    }
+
+    public abstract Integer getStrength();
 
     protected abstract void calculatePossibleMoves(GameBoard gameBoard);
 
