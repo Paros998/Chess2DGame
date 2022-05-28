@@ -2,23 +2,32 @@ package com.ourshipsgame.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Net;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.net.ServerSocket;
+import com.badlogic.gdx.net.ServerSocketHints;
+import com.badlogic.gdx.net.Socket;
+import com.badlogic.gdx.net.SocketHints;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.ourshipsgame.Main;
 import com.ourshipsgame.hud.Hud;
+import com.ourshipsgame.inteligentSystems.ComputerPlayerAi;
 import com.ourshipsgame.mainmenu.MenuGlobalElements;
 import com.ourshipsgame.mainmenu.MenuScreen;
+import org.lwjgl.util.vector.Vector2f;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.util.Arrays;
+import java.util.Random;
 
 import static com.ourshipsgame.game.GameBoard.BoardLocations.getEnumByPosition;
 
@@ -37,6 +46,13 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
      */
     private final MultiPlayerGameScreen multiPlayerGameScreen;
 
+    private final boolean isHost;
+
+    private boolean isClientConnected = false;
+
+    private Socket serverSender;
+    private Socket clientSender;
+
 
     // constructor
 
@@ -45,9 +61,10 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
      *
      * @param game Obiekt aplikacji
      */
-    public MultiPlayerGameScreen(Main game) {
+    public MultiPlayerGameScreen(Main game, boolean isHost) {
         this.multiPlayerGameScreen = this;
         this.game = game;
+        this.isHost = isHost;
         Gdx.app.log(id, "This class is loaded!");
         System.out.println(Gdx.app.getJavaHeap() / 1000000);
     }
@@ -111,6 +128,140 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
         }.show(hud.getStage());
     }
 
+    private void initStart() {
+        Random random = new Random(System.currentTimeMillis());
+
+        if (random.nextInt(2) == 1) {
+            MyPlayer = whitePlayer;
+            EnemyPlayer = blackPlayer;
+        } else {
+            MyPlayer = blackPlayer;
+            EnemyPlayer = whitePlayer;
+        }
+
+        MyPlayer.setPlayerName("Player 1");
+        EnemyPlayer.setPlayerName("Player 2");
+    }
+
+    private void initServer() {
+        if (isHost) {
+            ServerSocketHints hints = new ServerSocketHints();
+            ServerSocket server = Gdx.net.newServerSocket(Net.Protocol.TCP, "localhost", 8080, hints);
+            // wait for the next client connection
+            serverSender = server.accept(null);
+            // read message and send it back
+            try {
+                String message = new BufferedReader(new InputStreamReader(serverSender.getInputStream())).readLine();
+                Gdx.app.log("PingPongSocketExample", "got client message: " + message);
+                serverSender.getOutputStream().write("PONG\n".getBytes());
+                isClientConnected = true;
+            } catch (IOException e) {
+                Gdx.app.log("PingPongSocketExample", "an error occured", e);
+                isClientConnected = false;
+            }
+        } else {
+            SocketHints hints = new SocketHints();
+            clientSender = Gdx.net.newClientSocket(Net.Protocol.TCP, "localhost", 8080, hints);
+            try {
+                clientSender.getOutputStream().write("PING\n".getBytes());
+                String response = new BufferedReader(new InputStreamReader(clientSender.getInputStream())).readLine();
+                Gdx.app.log("PingPongSocketExample", "got server message: " + response);
+            } catch (IOException e) {
+                Gdx.app.log("PingPongSocketExample", "an error occured", e);
+            }
+        }
+    }
+
+    private void drawWaitingForClient(BitmapFont font, SpriteBatch batch) {
+        if (isHost) {
+            int fontSize = 20;
+            waitingForClientMessageBackground.drawSprite(batch);
+            Vector2f waitingForClientMessageBackgroundPosition = waitingForClientMessageBackground.getPosition();
+
+            String text = isClientConnected ? "Connected! Click a button to start the game" : "Waiting for player to join...";
+            int len = text.length();
+            font.draw(batch,
+                    text,
+                    (waitingForClientMessageBackgroundPosition.getX() + (waitingForClientMessageBackground.getWidth() / 2) - (fontSize * (len / 2.f))),
+                    waitingForClientMessageBackgroundPosition.getY() + 165 + 25);
+        }
+    }
+
+    @Override
+    protected void drawStage2Text(BitmapFont font, SpriteBatch batch) {
+        int fontSize = 20;
+        stage2MessageBackground.drawSprite(batch);
+        Vector2f stage2MessageBackgroundPosition = stage2MessageBackground.getPosition();
+
+        String text = "Waiting for server to start the game...";
+        int len = text.length();
+        font.draw(batch,
+                text,
+                (stage2MessageBackgroundPosition.getX() + (stage2MessageBackground.getWidth() / 2) - (fontSize * (len / 2.f))),
+                stage2MessageBackgroundPosition.getY() + 165 + 25);
+    }
+
+    @Override
+    protected void createAndDisplay(float deltaTime, InputProcessor processor) {
+        if (manager.update()) {
+            // When loading screen disappers
+            if (!createdTextures) {
+                loadingTexture.dispose();
+                createGraphics();
+                inputMultiplexer = new InputMultiplexer();
+                inputMultiplexer.addProcessor(processor);
+                inputMultiplexer.addProcessor(hud.getStage());
+                Gdx.input.setInputProcessor(inputMultiplexer);
+                initServer();
+            }
+            if (hud.isPaused())
+                Gdx.input.setInputProcessor(hud.getStage());
+            else
+                Gdx.input.setInputProcessor(inputMultiplexer);
+
+
+            // update
+            update(deltaTime);
+            // render things below
+            sb.begin();
+            sr.setAutoShapeType(true);
+            sr.begin();
+            // Do not place any drawings up!!
+
+            // Texts
+            switch (gameStage) {
+                case 2 -> {
+                    drawMap();
+                    drawChessPieces();
+                    drawWaitingForClient(font, sb);
+                }
+                case 3 -> {
+                    drawMap();
+                    drawChessPieces();
+                    drawStage2Text(font, sb);
+                }
+                case 4 -> {
+                    drawMap();
+                    drawCurrentClickedChessAvailableMoves();
+                    drawChessPieces();
+                    drawTurnInfo(sb);
+                    drawKingCondition(sb);
+                }
+                case 5 -> {
+                    drawMap();
+                    drawChessPieces();
+                    drawExitScreen();
+                }
+            }
+
+            sb.end();
+            sr.end();
+            hud.update();
+        } else {
+            // While loading the game assets
+            drawLoadingScreen();
+        }
+    }
 
     /**
      * Metoda do tworzenia wszystkich elementów graficznych gry
@@ -118,22 +269,26 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
     protected void createGraphics() {
         // changing game stage from loading to playing
         if (preparation( manager)) {
-            gameStage = 2;
-            hud = new Hud(manager, game, multiPlayerGameScreen, cursor);
+            initStart();
+            gameStage = isHost ? 2 : 3;
+            hud = new Hud(manager, game, multiPlayerGameScreen, cursor, isHost);
             createdTextures = true;
         }
 
         hud.gameSettings = game.menuElements.gameSettings;
         // Deleting GlobalMenuElements object
         game.menuElements = null;
+
         hud.getPlayButton().addListener(new InputListener() {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                if (gameStage == 2) {
-                    hud.getStage().getActors().pop();
-                    hud.getPlayersSetNameDialog().hide();
-                    PlayerOne.setPlayerName(hud.getPlayersName());
+                if (gameStage == 2 && isClientConnected) {
                     gameStage = 3;
+                }
+
+                if (gameStage == 3) {
+                    System.out.println(Arrays.toString(hud.getStage().getActors().toArray()));
+                    gameStage = 4;
                 }
             }
 
@@ -153,10 +308,7 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
     @Override
     protected void update(float deltaTime) {
         switch (gameStage){
-            case 2 -> {
-
-            }
-            case 3 -> {
+            case 4 -> {
                 if (PlayerTurn == MyPlayer)
                     MyPlayer.updateTime(deltaTime);
                 else
@@ -168,7 +320,7 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
 
                 }
             }
-            case 4 -> {
+            case 5 -> {
                 if (!createDialog) {
                     if (PlayerOneLost)
                         endSounds[1].play(hud.gameSettings.soundVolume);
@@ -305,13 +457,13 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
         screenY = 1080 - screenY;
         switch (button) {
             case Buttons.LEFT:
-                if (gameStage == 3) {
+                if (gameStage == 4) {
                     if(!checkForMoveClicked(screenX, screenY))
                         checkForChessClicked(screenX, screenY);
                 }
                 break;
             case Buttons.RIGHT:
-                if (gameStage == 3) {
+                if (gameStage == 4) {
                         currentChessClicked = null;
                 }
                 break;

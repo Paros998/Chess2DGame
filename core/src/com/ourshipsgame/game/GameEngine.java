@@ -105,6 +105,8 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
     protected GameObject stage2MessageBackground;
 
+    protected GameObject waitingForClientMessageBackground;
+
     protected Player whitePlayer = new Player(Player.PlayerColor.WHITE);
 
     protected Player blackPlayer = new Player(Player.PlayerColor.BLACK);
@@ -462,6 +464,15 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         turnFontActive = manager.get("core/assets/fonts/nunito.light2.ttf", BitmapFont.class);
 
         stage2MessageBackground = new GameObject(
+                manager.get("core/assets/backgroundtextures/message_bg.png", Texture.class),
+                Constant.GAME_WIDTH_F / 2 - 400,
+                Constant.GAME_HEIGHT_F / 2 - 165,
+                true,
+                false,
+                null
+        );
+
+        waitingForClientMessageBackground = new GameObject(
                 manager.get("core/assets/backgroundtextures/message_bg.png", Texture.class),
                 Constant.GAME_WIDTH_F / 2 - 400,
                 Constant.GAME_HEIGHT_F / 2 - 165,
