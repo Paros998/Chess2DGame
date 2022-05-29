@@ -110,7 +110,7 @@ public class ComputerPlayerAi {
     }
 
     private void calculateNextMove() {
-        int initialDepth = 3;
+        int initialDepth = 4;
 
         Instant beginning = Instant.now();
         MinMax bestMinMax = findBestMinMax(initialDepth);

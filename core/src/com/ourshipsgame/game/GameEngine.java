@@ -106,10 +106,6 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
     protected GameObject stage2MessageBackground;
 
-    protected Player whitePlayer = new Player(Player.PlayerColor.WHITE);
-
-    protected Player blackPlayer = new Player(Player.PlayerColor.BLACK);
-
     protected GameBoard.BoardLocations pawnMoveStart;
     /*
      * Board of the game
