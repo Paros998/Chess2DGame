@@ -64,6 +64,7 @@ public abstract class Chess {
     public void moveChessWhileLoading(GameBoard.BoardLocations newPos) {
         currentLocation.setChess(null);
         newPos.setChess(this);
+        this.currentLocation = newPos;
         gameObject.setSpritePos(newPos.getPosition());
         currentLocation = newPos;
     }

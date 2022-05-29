@@ -30,6 +30,7 @@ import org.lwjgl.util.vector.Vector2f;
 
 import java.text.NumberFormat;
 import java.util.Arrays;
+import java.util.List;
 
 import static com.ourshipsgame.game.GameBoard.BoardLocations.*;
 
@@ -105,6 +106,11 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
     protected GameObject stage2MessageBackground;
 
+    protected Player whitePlayer = new Player(Player.PlayerColor.WHITE);
+
+    protected Player blackPlayer = new Player(Player.PlayerColor.BLACK);
+
+    protected GameBoard.BoardLocations pawnMoveStart;
     /*
      * Board of the game
      * */
@@ -288,8 +294,12 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
     }
 
     protected void loadGameFromFile() {
-        gameHistory.historyLoad()
-                .forEach(this::loadMove);
+        List<ChessMove> chessMoves = gameHistory.historyLoad();
+
+        for (int i = 0; i < chessMoves.size() - 1; i++) {
+            loadMove(chessMoves.get(i));
+        }
+
 
         PlayerTurn = gameHistory.getPlayerTurn();
 
@@ -309,6 +319,12 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         move.getMoveLocation()
                 .getChess()
                 .moveChessWhileLoading(move.getMoveDestination());
+
+        if (move.getMoveType() == ChessMove.typesOfMoves.CHANGEFIGURE) {
+            pawnToChange = move.getMoveDestination().getChess();
+            changePawn(move.getDesiredFigure().name());
+            pawnToChange = null;
+        }
     }
 
     public void changePawn(String Clazz) {
@@ -323,6 +339,8 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         Chess[] cheeses = isBlackPlayer ? blackCheeses : whiteCheeses;
 
         int index = Arrays.stream(cheeses).toList().indexOf(pawnToChange);
+
+        String newClazz = Clazz;
 
         switch (Clazz) {
 
@@ -372,9 +390,21 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         }
 
+
+        addHistory(
+                pawnMoveStart,
+                pawnToChange.getCurrentLocation(),
+                ChessMove.typesOfMoves.CHANGEFIGURE,
+                ChessMove.pieceType.valueOf(newClazz)
+        );
+
         pawnToChange.setPlayer(pawnPlayer);
         cheeses[index] = pawnToChange;
 
+    }
+
+    private void addHistory(GameBoard.BoardLocations moveFrom, GameBoard.BoardLocations moveTo, ChessMove.typesOfMoves type, ChessMove.pieceType piece) {
+        gameHistory.updateHistoryAfterTurn(new ChessMove(moveFrom, moveTo, type, piece));
     }
 
     /**
