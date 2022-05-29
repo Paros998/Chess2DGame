@@ -261,6 +261,7 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
             initStart();
             initServer();
             gameStage = 2;
+            calculateChessMoves();
             hud = new Hud(manager, game, multiPlayerGameScreen, cursor, isHost);
             createdTextures = true;
         }
