@@ -66,7 +66,6 @@ public abstract class Chess {
         newPos.setChess(this);
         gameObject.setSpritePos(newPos.getPosition());
         currentLocation = newPos;
-
     }
 
     public void drawAvailableMovesAndAttacks(SpriteBatch spriteBatch) {
@@ -85,6 +84,10 @@ public abstract class Chess {
 
     public GameObject[] getPossibleMovesAndAttacks() {
         return possibleMovesAndAttacks;
+    }
+
+    public ArrayList<Vector2i> getPossibleMovesVectors() {
+        return possibleMovesVectors;
     }
 
     public boolean clickedOnThisChess(int xPos, int yPos, GameBoard gameBoard) {

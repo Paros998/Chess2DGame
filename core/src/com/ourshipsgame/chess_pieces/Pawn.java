@@ -66,6 +66,10 @@ public class Pawn extends Chess {
                 .anyMatch(location -> location.equals(currentLocation));
     }
 
+    public boolean isFirstMove() {
+        return firstMove;
+    }
+
     @Override
     protected void filterMoves(GameBoard gameBoard) {
         super.filterMoves(gameBoard);
@@ -82,6 +86,10 @@ public class Pawn extends Chess {
     }
 
     public Integer getStrength() {
+        return 10;
+    }
+
+    public static Integer getValue() {
         return 10;
     }
 

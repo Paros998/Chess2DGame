@@ -4,7 +4,6 @@ import com.badlogic.gdx.Files.FileType;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.ourshipsgame.Main;
-import com.ourshipsgame.game.GameBoard;
 import com.ourshipsgame.handlers.Constant;
 
 /**
@@ -26,7 +25,7 @@ public class DesktopLauncher implements Constant {
 		cfg.allowSoftwareMode = ALLOWSOFTWAREMODE;
 		cfg.foregroundFPS = FPSMAX;
 		cfg.undecorated = UNDECORATED;
-		cfg.fullscreen = FULLSCREENMODE;
+		cfg.fullscreen = false;
 		new LwjglApplication(new Main(), cfg);
 	}
 }

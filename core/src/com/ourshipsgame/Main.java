@@ -20,6 +20,7 @@ public class Main extends Game {
      */
     @Override
     public void create() {
+        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
         menuElements = new MenuGlobalElements(this);
         setScreen(new MenuScreen(this));
     }

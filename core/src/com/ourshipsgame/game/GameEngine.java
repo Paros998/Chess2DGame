@@ -105,9 +105,6 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
     protected GameObject stage2MessageBackground;
 
-    protected Player whitePlayer = new Player(Player.PlayerColor.WHITE);
-
-    protected Player blackPlayer = new Player(Player.PlayerColor.BLACK);
     /*
      * Board of the game
      * */
@@ -124,16 +121,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      * Obiekt obliczający decyzje komputera
      */
     protected ComputerPlayerAi enemyComputerPlayerAi;
-    /**
-     * Zmienna okreslająca czyja tura jest aktualnie
-     */
-    protected Player PlayerTurn = whitePlayer;
 
-    protected Player MyPlayer;
-
-    protected Player EnemyPlayer;
-
-    protected GameObject[] TurnInfos = new GameObject[2];
     /**
      * Kursor
      */
@@ -186,6 +174,21 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      * Tablica obiektów przechowujących czarne szachy
      */
     protected Chess[] blackCheeses = new Chess[16];
+
+    protected Player whitePlayer = new Player(Player.PlayerColor.WHITE, whiteCheeses);
+
+    protected Player blackPlayer = new Player(Player.PlayerColor.BLACK, blackCheeses);
+
+    /**
+     * Zmienna okreslająca czyja tura jest aktualnie
+     */
+    protected Player PlayerTurn = whitePlayer;
+
+    protected Player MyPlayer;
+
+    protected Player EnemyPlayer;
+
+    protected GameObject[] TurnInfos = new GameObject[2];
 
     // more other vars
     /**
@@ -252,7 +255,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         TieBetweenPlayers = whiteKing.isTie() | blackKing.isTie() | (PlayerOneLost && PlayerTwoLost);
 
-        if(PlayerOneLost | PlayerTwoLost | TieBetweenPlayers)
+        if (PlayerOneLost | PlayerTwoLost | TieBetweenPlayers)
             gameStage = 4;
 
     }
@@ -295,11 +298,11 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         EnemyPlayer = (MyPlayer == whitePlayer) ? blackPlayer : whitePlayer;
 
         if (EnemyPlayer == blackPlayer)
-            enemyComputerPlayerAi = new ComputerPlayerAi(blackCheeses);
+            enemyComputerPlayerAi = new ComputerPlayerAi(whiteCheeses, blackCheeses);
         else
-            enemyComputerPlayerAi = new ComputerPlayerAi(whiteCheeses);
+            enemyComputerPlayerAi = new ComputerPlayerAi(blackCheeses, whiteCheeses);
 
-        enemyComputerPlayerAi.setPlayer(EnemyPlayer);
+        enemyComputerPlayerAi.setMyPlayer(EnemyPlayer);
     }
 
     private void loadMove(ChessMove move) {
@@ -724,18 +727,18 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         boolean imPlayerOne = MyPlayer == whitePlayer;
 
         if (PlayerOneLost)
-            if(imPlayerOne){
+            if (imPlayerOne) {
                 msg = "You 've Lost!! Better luck next time!";
                 font.draw(sb, msg, (gameWidth_f / 2) - 350, gameHeight_f / 2 + 400);
-            }else{
+            } else {
                 msg = "You 've Won!! Keep it up!!";
                 font.draw(sb, msg, (gameWidth_f / 2) - 250, gameHeight_f / 2 + 400);
             }
         else if (PlayerTwoLost)
-            if (imPlayerOne){
+            if (imPlayerOne) {
                 msg = "You 've Won!! Keep it up!!";
                 font.draw(sb, msg, (gameWidth_f / 2) - 250, gameHeight_f / 2 + 400);
-            }else{
+            } else {
                 msg = "You 've Lost!! Better luck next time!";
                 font.draw(sb, msg, (gameWidth_f / 2) - 350, gameHeight_f / 2 + 400);
             }

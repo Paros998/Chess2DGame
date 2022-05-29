@@ -18,6 +18,10 @@ public class Knight extends Chess{
         return 30;
     }
 
+    public static Integer getValue() {
+        return 30;
+    }
+
     @Override
     protected void calculatePossibleMoves(GameBoard gameBoard) {
         Vector2i currentArrayPosition = currentLocation.getArrayPosition();
