@@ -5,10 +5,23 @@ import com.ourshipsgame.game.GameBoard;
 public class ChessMove {
     final GameBoard.BoardLocations moveLocation;
     final GameBoard.BoardLocations moveDestination;
+    final typesOfMoves moveType;
+    final pieceType piece;
 
-    public ChessMove(GameBoard.BoardLocations pieceLocation, GameBoard.BoardLocations moveDestination) {
+
+    public enum typesOfMoves {
+        NORMAL, CHANGEFIGURE
+    }
+
+    public enum pieceType {
+        B_BISHOP, B_KNIGHT, B_QUEEN, B_ROOK, B_NOCHANGE
+    }
+
+    public ChessMove(GameBoard.BoardLocations pieceLocation, GameBoard.BoardLocations moveDestination, typesOfMoves type, pieceType piece) {
         this.moveLocation = pieceLocation;
         this.moveDestination = moveDestination;
+        this.moveType = type;
+        this.piece = piece;
     }
 
     public GameBoard.BoardLocations getMoveLocation() {
@@ -20,18 +33,26 @@ public class ChessMove {
         return moveDestination;
     }
 
-    public String write() {
-        return  moveLocation.name() + " " + getMoveDestination().name();
+    public typesOfMoves getMoveType() {
+        return moveType;
     }
 
-    public static ChessMove readFromLine(String line){
-        String[] stringMove = new String[2];
-        stringMove[0] = line.substring(0, 2);
-        stringMove[1] = line.substring(3, 5);
+    public pieceType getDesiredFigure() {
+        return piece;
+    }
+
+    public String write() {
+        return moveLocation.name() + "." + getMoveDestination().name() + "." + moveType.name() + "." + this.piece.name();
+    }
+
+    public static ChessMove readFromLine(String line) {
+        String[] stringMove = line.split("[.]", 0);
 
         return new ChessMove(
-               GameBoard.BoardLocations.valueOf(stringMove[0].trim()),
-               GameBoard.BoardLocations.valueOf(stringMove[1].trim())
+                GameBoard.BoardLocations.valueOf(stringMove[0].trim()),
+                GameBoard.BoardLocations.valueOf(stringMove[1].trim()),
+                typesOfMoves.valueOf(stringMove[2].trim()),
+                pieceType.valueOf(stringMove[3].trim())
         );
     }
 

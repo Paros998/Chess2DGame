@@ -104,7 +104,7 @@ public class GameHistory {
         blackPlayer.setTimeLeft(Float.parseFloat(scanner.nextLine()));
         blackPlayer.setScore(Integer.parseInt(scanner.nextLine()));
 
-        if (scanner.hasNextLine())
+        while(scanner.hasNextLine())
             historyList.add(ChessMove.readFromLine(scanner.nextLine()));
 
 

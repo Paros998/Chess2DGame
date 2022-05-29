@@ -252,7 +252,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         TieBetweenPlayers = whiteKing.isTie() | blackKing.isTie() | (PlayerOneLost && PlayerTwoLost);
 
-        if(PlayerOneLost | PlayerTwoLost | TieBetweenPlayers)
+        if (PlayerOneLost | PlayerTwoLost | TieBetweenPlayers)
             gameStage = 4;
 
     }
@@ -306,6 +306,12 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         move.getMoveLocation()
                 .getChess()
                 .moveChessWhileLoading(move.getMoveDestination());
+
+        if (move.getMoveType() == ChessMove.typesOfMoves.CHANGEFIGURE) {
+            pawnToChange = move.getMoveDestination().getChess();
+            changePawn(move.getDesiredFigure().name());
+            pawnToChange = null;
+        }
     }
 
     public void changePawn(String Clazz) {
@@ -724,18 +730,18 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         boolean imPlayerOne = MyPlayer == whitePlayer;
 
         if (PlayerOneLost)
-            if(imPlayerOne){
+            if (imPlayerOne) {
                 msg = "You 've Lost!! Better luck next time!";
                 font.draw(sb, msg, (gameWidth_f / 2) - 350, gameHeight_f / 2 + 400);
-            }else{
+            } else {
                 msg = "You 've Won!! Keep it up!!";
                 font.draw(sb, msg, (gameWidth_f / 2) - 250, gameHeight_f / 2 + 400);
             }
         else if (PlayerTwoLost)
-            if (imPlayerOne){
+            if (imPlayerOne) {
                 msg = "You 've Won!! Keep it up!!";
                 font.draw(sb, msg, (gameWidth_f / 2) - 250, gameHeight_f / 2 + 400);
-            }else{
+            } else {
                 msg = "You 've Lost!! Better luck next time!";
                 font.draw(sb, msg, (gameWidth_f / 2) - 350, gameHeight_f / 2 + 400);
             }
