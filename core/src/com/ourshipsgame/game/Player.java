@@ -1,5 +1,7 @@
 package com.ourshipsgame.game;
 
+import com.ourshipsgame.chess_pieces.Chess;
+
 public class Player {
 
     public enum PlayerColor {
@@ -11,11 +13,23 @@ public class Player {
     private Integer score;
     private String playerName;
     private final PlayerColor color;
+    private Chess[] myCheeses;
+
+    public Player(PlayerColor color, Chess[] myCheeses) {
+        this.color = color;
+        this.myCheeses = myCheeses;
+        this.timeLeft = 3600.f;
+        score = 0;
+    }
 
     public Player(PlayerColor color) {
         this.color = color;
         this.timeLeft = 3600.f;
         score = 0;
+    }
+
+    public Chess[] getMyCheeses() {
+        return myCheeses;
     }
 
     public void updateTime(float deltaTime) {

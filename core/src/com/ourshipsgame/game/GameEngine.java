@@ -106,10 +106,6 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
     protected GameObject stage2MessageBackground;
 
-    protected Player whitePlayer = new Player(Player.PlayerColor.WHITE);
-
-    protected Player blackPlayer = new Player(Player.PlayerColor.BLACK);
-
     protected GameBoard.BoardLocations pawnMoveStart;
     /*
      * Board of the game
@@ -127,16 +123,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      * Obiekt obliczający decyzje komputera
      */
     protected ComputerPlayerAi enemyComputerPlayerAi;
-    /**
-     * Zmienna okreslająca czyja tura jest aktualnie
-     */
-    protected Player PlayerTurn = whitePlayer;
 
-    protected Player MyPlayer;
-
-    protected Player EnemyPlayer;
-
-    protected GameObject[] TurnInfos = new GameObject[2];
     /**
      * Kursor
      */
@@ -189,6 +176,21 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      * Tablica obiektów przechowujących czarne szachy
      */
     protected Chess[] blackCheeses = new Chess[16];
+
+    protected Player whitePlayer = new Player(Player.PlayerColor.WHITE, whiteCheeses);
+
+    protected Player blackPlayer = new Player(Player.PlayerColor.BLACK, blackCheeses);
+
+    /**
+     * Zmienna okreslająca czyja tura jest aktualnie
+     */
+    protected Player PlayerTurn = whitePlayer;
+
+    protected Player MyPlayer;
+
+    protected Player EnemyPlayer;
+
+    protected GameObject[] TurnInfos = new GameObject[2];
 
     // more other vars
     /**
@@ -302,11 +304,11 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         EnemyPlayer = (MyPlayer == whitePlayer) ? blackPlayer : whitePlayer;
 
         if (EnemyPlayer == blackPlayer)
-            enemyComputerPlayerAi = new ComputerPlayerAi(blackCheeses);
+            enemyComputerPlayerAi = new ComputerPlayerAi(whiteCheeses, blackCheeses);
         else
-            enemyComputerPlayerAi = new ComputerPlayerAi(whiteCheeses);
+            enemyComputerPlayerAi = new ComputerPlayerAi(blackCheeses, whiteCheeses);
 
-        enemyComputerPlayerAi.setPlayer(EnemyPlayer);
+        enemyComputerPlayerAi.setMyPlayer(EnemyPlayer);
     }
 
     private void loadMove(ChessMove move) {

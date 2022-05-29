@@ -41,6 +41,10 @@ public class Rook extends Chess{
         return 50;
     }
 
+    public static Integer getValue() {
+        return 50;
+    }
+
 
     @Override
     protected void calculatePossibleMoves(GameBoard gameBoard) {

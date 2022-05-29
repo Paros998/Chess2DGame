@@ -131,11 +131,11 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
         EnemyPlayer.setPlayerName("Bot Clark");
 
         if (EnemyPlayer == blackPlayer)
-            enemyComputerPlayerAi = new ComputerPlayerAi(blackCheeses);
+            enemyComputerPlayerAi = new ComputerPlayerAi(whiteCheeses, blackCheeses);
         else
-            enemyComputerPlayerAi = new ComputerPlayerAi(whiteCheeses);
+            enemyComputerPlayerAi = new ComputerPlayerAi(blackCheeses, whiteCheeses);
 
-        enemyComputerPlayerAi.setPlayer(EnemyPlayer);
+        enemyComputerPlayerAi.setMyPlayer(EnemyPlayer);
     }
 
     /**
@@ -209,9 +209,10 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
 
                             enemyComputerPlayerAi.update(deltaTime);
 
-                            if (enemyComputerPlayerAi.getReadyToMove()) {
-
+                            if (!enemyComputerPlayerAi.getIsCalculating().get() && !enemyComputerPlayerAi.getReadyToMove().get())
                                 enemyComputerPlayerAi.calculateMove();
+
+                            if (enemyComputerPlayerAi.getReadyToMove().get()) {
 
                                 enemyComputerPlayerAi.getMovableChess()
                                         .moveChess(
@@ -240,6 +241,7 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
                                     );
 
                                 switchTurn();
+                                enemyComputerPlayerAi.getReadyToMove().set(false);
                             }
                         }
                     }

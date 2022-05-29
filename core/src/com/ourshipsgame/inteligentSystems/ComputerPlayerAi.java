@@ -3,78 +3,158 @@ package com.ourshipsgame.inteligentSystems;
 import com.ourshipsgame.chess_pieces.Chess;
 import com.ourshipsgame.game.GameBoard;
 import com.ourshipsgame.game.Player;
-import org.lwjgl.util.vector.Vector2f;
+import com.ourshipsgame.utils.MinMax;
+import com.ourshipsgame.utils.MinMaxMove;
+import com.ourshipsgame.utils.SimulationBoard;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
-import static com.ourshipsgame.game.GameBoard.BoardLocations.getEnumByPosition;
+import static com.ourshipsgame.game.GameBoard.BoardLocations.getEnumByArrayPosition;
 
 /**
  * Klasa odpowiadająca za podejmowanie decyzji przez komputer
  */
 public class ComputerPlayerAi {
 
-    private Player player;
+    private Player myPlayer;
+    private final Chess[] enemyCheeses;
     private final Chess[] myCheeses;
     private Chess movableChess;
     private GameBoard.BoardLocations moveStart;
     private GameBoard.BoardLocations moveDestination;
-    private Float passedTurnTime = 0.f;
-    private Boolean isReadyToMove = false;
+    private final static Float minTurnTime = 1.5f;
+    private final AtomicReference<Float> passedTurnTime = new AtomicReference<>(0.0f);
+    private final AtomicBoolean isCalculating = new AtomicBoolean(false);
+    private final AtomicBoolean isReadyToMove = new AtomicBoolean(false);
 
     /**
      * Konstruktor główny obiektu, który inicjuje i ustawia dane do obliczeń logiki
      *
-     * @param myCheeses array of AI cheeses
-
+     * @param enemyCheeses
+     * @param myCheeses    array of AI cheeses
      */
-    public ComputerPlayerAi(Chess[] myCheeses) {
-
+    public ComputerPlayerAi(Chess[] enemyCheeses, Chess[] myCheeses) {
+        this.enemyCheeses = enemyCheeses;
         this.myCheeses = myCheeses;
     }
 
-    public void update(float rawTime){
-        float requiredPassTime = 1.5f;
+    public void update(float rawTime) {
+        passedTurnTime.set(passedTurnTime.get() + rawTime);
+    }
 
-        passedTurnTime += rawTime;
+    private MinMax findBestMinMax(int depth) {
+        Random random = new Random(System.currentTimeMillis());
 
-        if(passedTurnTime >= requiredPassTime){
-            passedTurnTime = 0.f;
-            isReadyToMove = true;
+        ArrayList<MinMaxMove> allPossibleMoves = new ArrayList<>();
+
+        SimulationBoard board = myPlayer.getColor().equals(Player.PlayerColor.WHITE) ? new SimulationBoard(myCheeses, enemyCheeses) : new SimulationBoard(enemyCheeses, myCheeses);
+
+        Arrays.stream(myCheeses)
+                .forEach(simulationChess -> {
+                            allPossibleMoves
+                                    .addAll(simulationChess.getPossibleAttackVectors()
+                                            .stream()
+                                            .map(moveDest -> new MinMaxMove(simulationChess.getCurrentLocation().getArrayPosition(), moveDest))
+                                            .collect(Collectors.toList())
+                                    );
+                            allPossibleMoves
+                                    .addAll(simulationChess.getPossibleMovesVectors()
+                                            .stream()
+                                            .filter(move -> random.nextInt(10) % 2 == 0)
+                                            .map(moveDest -> new MinMaxMove(simulationChess.getCurrentLocation().getArrayPosition(), moveDest))
+                                            .collect(Collectors.toList())
+                                    );
+                        }
+
+                );
+
+        List<MinMax> firstMinMaxes = MinMax.createFirstMinMaxes(allPossibleMoves, depth, board, myPlayer.getColor(), 0);
+
+        ArrayList<MinMax> lastMoves = new ArrayList<>();
+
+        Thread[] minMaxThreads = new Thread[firstMinMaxes.size()];
+
+        AtomicInteger index = new AtomicInteger(0);
+
+        firstMinMaxes.forEach(minMax -> {
+            minMaxThreads[index.get()] = new Thread(() ->
+                    lastMoves.add(minMax.findBestMinMax())
+            );
+            minMaxThreads[index.get()].setPriority(8);
+            minMaxThreads[index.get()].start();
+            index.getAndIncrement();
+        });
+
+        index.set(0);
+
+        for (int i = 0; i < firstMinMaxes.size(); i++) {
+            try {
+                minMaxThreads[index.get()].join();
+                index.getAndIncrement();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
+
+        return lastMoves.stream()
+                .max(Comparator.comparingInt(MinMax::getSumOfMinMax))
+                .get();
+
+    }
+
+    private void calculateNextMove() {
+        int initialDepth = 4;
+
+        Instant beginning = Instant.now();
+        MinMax bestMinMax = findBestMinMax(initialDepth);
+        Instant end = Instant.now();
+
+        MinMaxMove bestMove = bestMinMax.getFirstMove();
+
+        System.out.printf("Number of minMaxes in depth of %d search number of %d took %d seconds and got %s move to %s with strength of %d \n",
+                initialDepth,
+                MinMax.getNumOfMinMaxes(),
+                Duration.between(beginning, end).toSeconds(),
+                getEnumByArrayPosition(bestMove.getMoveLocation()),
+                getEnumByArrayPosition(bestMove.getMoveDestination()),
+                bestMinMax.getSumOfMinMax()
+        );
+
+        MinMax.setNumOfMinMaxes(0);
+
+        this.moveStart = getEnumByArrayPosition(bestMove.getMoveLocation());
+        this.movableChess = Objects.requireNonNull(moveStart).getChess();
+        this.moveDestination = getEnumByArrayPosition(bestMove.getMoveDestination());
+
+        do {
+            ;
+        } while (passedTurnTime.get() < minTurnTime);
+
+        passedTurnTime.set(0.f);
+        isReadyToMove.set(true);
+        isCalculating.set(false);
     }
 
     public void calculateMove() {
-        int chosenChess = ThreadLocalRandom.current().nextInt(0, 16);
-
-        while (myCheeses[chosenChess].isDestroyed() || myCheeses[chosenChess].getPossibleMovesAndAttacks().length == 0)
-            chosenChess = ThreadLocalRandom.current().nextInt(0, 16);
-
-        Chess movableChess = myCheeses[chosenChess];
-
-        int numberOfAvailableMoves = movableChess.getPossibleMovesAndAttacks().length;
-
-        int move = ThreadLocalRandom.current().nextInt(0, numberOfAvailableMoves);
-
-        GameBoard.BoardLocations newPosition =
-                getEnumByPosition(movableChess.getPossibleMovesAndAttacks()[move].getPosition());
-
-        while (!movableChess.canMove(newPosition)) {
-            move = ThreadLocalRandom.current().nextInt(0, numberOfAvailableMoves);
-            newPosition = getEnumByPosition(movableChess.getPossibleMovesAndAttacks()[move].getPosition());
-        }
-
-        this.movableChess = movableChess;
-        this.moveStart = movableChess.getCurrentLocation();
-        this.moveDestination = newPosition;
-        this.isReadyToMove = false;
+        isReadyToMove.set(false);
+        isCalculating.set(true);
+        Thread calculateThread = new Thread(this::calculateNextMove);
+        calculateThread.setPriority(9);
+        calculateThread.start();
     }
 
     public String choosePawn() {
         int chosenPawnUpgrade = ThreadLocalRandom.current().nextInt(1, 5);
         String newClazz = "";
 
-        switch (chosenPawnUpgrade){
+        switch (chosenPawnUpgrade) {
             case 1 -> newClazz = "B_BISHOP";
             case 2 -> newClazz = "B_ROOK";
             case 3 -> newClazz = "B_QUEEN";
@@ -84,12 +164,12 @@ public class ComputerPlayerAi {
         return newClazz;
     }
 
-    public void setPlayer(Player myPlayer) {
-        this.player = myPlayer;
+    public void setMyPlayer(Player myPlayer) {
+        this.myPlayer = myPlayer;
     }
 
-    public Player getPlayer() {
-        return player;
+    public Player getMyPlayer() {
+        return myPlayer;
     }
 
     public Chess getMovableChess() {
@@ -104,7 +184,11 @@ public class ComputerPlayerAi {
         return moveDestination;
     }
 
-    public Boolean getReadyToMove() {
+    public AtomicBoolean getReadyToMove() {
         return isReadyToMove;
+    }
+
+    public AtomicBoolean getIsCalculating() {
+        return isCalculating;
     }
 }

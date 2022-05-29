@@ -46,6 +46,10 @@ public class Queen extends Chess{
         return 90;
     }
 
+    public static Integer getValue() {
+        return 90;
+    }
+
     @Override
     protected void calculatePossibleMoves(GameBoard gameBoard) {
         Vector2i currentArrayPosition = currentLocation.getArrayPosition();
