@@ -57,8 +57,8 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
     }
 
     // Draw methods
-    private void addHistory(GameBoard.BoardLocations moveFrom, GameBoard.BoardLocations moveTo) {
-        gameHistory.updateHistoryAfterTurn(new ChessMove(moveFrom, moveTo));
+    private void addHistory(GameBoard.BoardLocations moveFrom, GameBoard.BoardLocations moveTo, ChessMove.typesOfMoves type, ChessMove.pieceType piece) {
+        gameHistory.updateHistoryAfterTurn(new ChessMove(moveFrom, moveTo, type, piece));
     }
 
     /**
@@ -131,11 +131,11 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
         EnemyPlayer.setPlayerName("Bot Clark");
 
         if (EnemyPlayer == blackPlayer)
-            enemyComputerPlayerAi = new ComputerPlayerAi(blackCheeses);
+            enemyComputerPlayerAi = new ComputerPlayerAi(whiteCheeses, blackCheeses);
         else
-            enemyComputerPlayerAi = new ComputerPlayerAi(whiteCheeses);
+            enemyComputerPlayerAi = new ComputerPlayerAi(blackCheeses, whiteCheeses);
 
-        enemyComputerPlayerAi.setPlayer(EnemyPlayer);
+        enemyComputerPlayerAi.setMyPlayer(EnemyPlayer);
     }
 
     /**
@@ -209,9 +209,10 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
 
                             enemyComputerPlayerAi.update(deltaTime);
 
-                            if(enemyComputerPlayerAi.getReadyToMove()){
-
+                            if (!enemyComputerPlayerAi.getIsCalculating().get() && !enemyComputerPlayerAi.getReadyToMove().get())
                                 enemyComputerPlayerAi.calculateMove();
+
+                            if (enemyComputerPlayerAi.getReadyToMove().get()) {
 
                                 enemyComputerPlayerAi.getMovableChess()
                                         .moveChess(
@@ -219,18 +220,28 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
                                                 hud.gameSettings.soundVolume
                                         );
 
-                                addHistory(
-                                        enemyComputerPlayerAi.getMoveStart(),
-                                        enemyComputerPlayerAi.getMoveDestination()
-                                );
-
                                 if (enemyComputerPlayerAi.getMovableChess() instanceof Pawn pawn)
                                     if (pawn.checkIfReachedEnd()) {
                                         pawnToChange = pawn;
-                                        changePawn(enemyComputerPlayerAi.choosePawn());
-                                    }
+                                        String figure = enemyComputerPlayerAi.choosePawn();
+                                        changePawn(figure);
+
+                                        addHistory(
+                                                enemyComputerPlayerAi.getMoveStart(),
+                                                enemyComputerPlayerAi.getMoveDestination(),
+                                                ChessMove.typesOfMoves.CHANGEFIGURE,
+                                                ChessMove.pieceType.valueOf(figure.trim())
+                                        );
+
+                                    } else addHistory(
+                                            enemyComputerPlayerAi.getMoveStart(),
+                                            enemyComputerPlayerAi.getMoveDestination(),
+                                            ChessMove.typesOfMoves.NORMAL,
+                                            ChessMove.pieceType.B_NOCHANGE
+                                    );
 
                                 switchTurn();
+                                enemyComputerPlayerAi.getReadyToMove().set(false);
                             }
                         }
                     }
@@ -242,12 +253,11 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
                     boolean imPlayerOne = MyPlayer == whitePlayer;
 
                     if (PlayerOneLost) {
-                        if(imPlayerOne)
+                        if (imPlayerOne)
                             endSounds[1].play(hud.gameSettings.soundVolume);
                         else endSounds[0].play(hud.gameSettings.soundVolume);
-                    }
-                    else if (PlayerTwoLost) {
-                        if(imPlayerOne)
+                    } else if (PlayerTwoLost) {
+                        if (imPlayerOne)
                             endSounds[0].play(hud.gameSettings.soundVolume);
                         else endSounds[1].play(hud.gameSettings.soundVolume);
                     }
@@ -409,17 +419,21 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
                     if (!currentChessClicked.moveChess(getEnumByPosition(move.getPosition()), hud.gameSettings.soundVolume))
                         return false;
 
-                    addHistory(
-                            currentLocation,
-                            getEnumByPosition(move.getPosition())
-                    );
-
-                    if (currentChessClicked instanceof Pawn pawn)
+                    if (currentChessClicked instanceof Pawn pawn) {
                         if (pawn.checkIfReachedEnd()) {
+                            pawnMoveStart = currentLocation;
                             pawnToChange = pawn;
                             hud.pawnChangeDialog.show(hud.getStage());
                             pause();
+
                         }
+
+                    } else addHistory(
+                            currentLocation,
+                            getEnumByPosition(move.getPosition()),
+                            ChessMove.typesOfMoves.NORMAL,
+                            ChessMove.pieceType.B_NOCHANGE
+                    );
 
                     currentChessClicked = null;
                     switchTurn();

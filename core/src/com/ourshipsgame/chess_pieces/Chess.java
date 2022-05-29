@@ -64,9 +64,9 @@ public abstract class Chess {
     public void moveChessWhileLoading(GameBoard.BoardLocations newPos) {
         currentLocation.setChess(null);
         newPos.setChess(this);
+        this.currentLocation = newPos;
         gameObject.setSpritePos(newPos.getPosition());
         currentLocation = newPos;
-
     }
 
     public void drawAvailableMovesAndAttacks(SpriteBatch spriteBatch) {
@@ -85,6 +85,10 @@ public abstract class Chess {
 
     public GameObject[] getPossibleMovesAndAttacks() {
         return possibleMovesAndAttacks;
+    }
+
+    public ArrayList<Vector2i> getPossibleMovesVectors() {
+        return possibleMovesVectors;
     }
 
     public boolean clickedOnThisChess(int xPos, int yPos, GameBoard gameBoard) {

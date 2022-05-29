@@ -8,6 +8,7 @@ import org.lwjgl.util.vector.Vector2f;
 import java.util.Iterator;
 import java.util.List;
 
+
 import static com.ourshipsgame.handlers.Constant.*;
 
 public class GameBoard {
@@ -174,6 +175,15 @@ public class GameBoard {
 
         public Chess getChess() {
             return chess;
+        }
+
+        public static BoardLocations getEnumByArrayPosition(Vector2i arrayPosition){
+            for (BoardLocations location : values()){
+                Vector2i locationPosition = location.getArrayPosition();
+                if(locationPosition.getX() == arrayPosition.getX() && locationPosition.getY() == arrayPosition.getY())
+                    return location;
+            }
+            return null;
         }
 
         public static BoardLocations getEnumByPosition(Vector2f position) {
