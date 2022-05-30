@@ -23,6 +23,7 @@ import com.ourshipsgame.hud.Hud;
 import com.ourshipsgame.inteligentSystems.ComputerPlayerAi;
 import com.ourshipsgame.mainmenu.MenuGlobalElements;
 import com.ourshipsgame.mainmenu.MenuScreen;
+import com.ourshipsgame.utils.ChessMove;
 import org.lwjgl.util.vector.Vector2f;
 
 import java.io.*;
@@ -49,6 +50,7 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
     private final boolean isHost;
 
     private boolean isClientConnected = false;
+    private boolean isClientFirstTurn = true;
 
     private Socket serverSender;
     private Socket clientSender;
@@ -334,6 +336,7 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
                 if (PlayerTurn == EnemyPlayer) {
 
                 }
+
             }
             case 5 -> {
                 if (!createDialog) {
@@ -475,6 +478,7 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
                 if (gameStage == 4) {
                     if (!checkForMoveClicked(screenX, screenY))
                         checkForChessClicked(screenX, screenY);
+                    else sendMove();
                 }
                 break;
             case Buttons.RIGHT:
@@ -486,14 +490,39 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
         return false;
     }
 
+    private void addHistory(GameBoard.BoardLocations moveFrom, GameBoard.BoardLocations moveTo, ChessMove.typesOfMoves type, ChessMove.pieceType piece) {
+        gameHistory.updateHistoryAfterTurn(new ChessMove(moveFrom, moveTo, type, piece));
+    }
+
     private boolean checkForMoveClicked(int screenX, int screenY) {
         if (currentChessClicked != null) {
             GameObject[] possibleMovesAndAttacks = currentChessClicked.getPossibleMovesAndAttacks();
             for (GameObject move : possibleMovesAndAttacks)
                 if (move.contains(screenX, screenY)) {
-                    currentChessClicked.moveChess(getEnumByPosition(move.getPosition()), hud.gameSettings.soundVolume);
-                    //later here will be some kind of changeTurn method called instead
+
+                    GameBoard.BoardLocations currentLocation = currentChessClicked.getCurrentLocation();
+
+                    if (!currentChessClicked.moveChess(getEnumByPosition(move.getPosition()), hud.gameSettings.soundVolume))
+                        return false;
+
+                    if (currentChessClicked instanceof Pawn pawn) {
+                        if (pawn.checkIfReachedEnd()) {
+                            pawnMoveStart = currentLocation;
+                            pawnToChange = pawn;
+                            hud.pawnChangeDialog.show(hud.getStage());
+                            pause();
+
+                        }
+
+                    } else addHistory(
+                            currentLocation,
+                            getEnumByPosition(move.getPosition()),
+                            ChessMove.typesOfMoves.NORMAL,
+                            ChessMove.pieceType.B_NOCHANGE
+                    );
+
                     currentChessClicked = null;
+                    switchTurn();
                     return true;
                 }
             return false;
@@ -502,16 +531,19 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
     }
 
     private void checkForChessClicked(int screenX, int screenY) {
-        for (int i = 0; i < 16; i++) {
-            if (whiteCheeses[i].clickedOnThisChess(screenX, screenY, gameBoard)) {
-                currentChessClicked = whiteCheeses[i];
-                return;
+        for (int i = 0; i < 16; i++)
+            if (isHost) {
+                if (whiteCheeses[i].clickedOnThisChess(screenX, screenY, gameBoard)) {
+                    currentChessClicked = whiteCheeses[i];
+                    return;
+                }
+            } else {
+                if (blackCheeses[i].clickedOnThisChess(screenX, screenY, gameBoard)) {
+                    currentChessClicked = blackCheeses[i];
+                    return;
+                }
             }
-            if (blackCheeses[i].clickedOnThisChess(screenX, screenY, gameBoard)) {
-                currentChessClicked = blackCheeses[i];
-                return;
-            }
-        }
+
     }
 
     /**

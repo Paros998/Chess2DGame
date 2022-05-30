@@ -313,7 +313,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         enemyComputerPlayerAi.setMyPlayer(EnemyPlayer);
     }
 
-    private void loadMove(ChessMove move) {
+    protected void loadMove(ChessMove move) {
         move.getMoveLocation()
                 .getChess()
                 .moveChessWhileLoading(move.getMoveDestination());
