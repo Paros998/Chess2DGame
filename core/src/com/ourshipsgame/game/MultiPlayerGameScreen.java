@@ -19,6 +19,8 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.ourshipsgame.Main;
+import com.ourshipsgame.chess_pieces.King;
+import com.ourshipsgame.chess_pieces.Pawn;
 import com.ourshipsgame.hud.Hud;
 import com.ourshipsgame.inteligentSystems.ComputerPlayerAi;
 import com.ourshipsgame.mainmenu.MenuGlobalElements;
@@ -131,18 +133,18 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
     }
 
     private void initStart() {
-        Random random = new Random(System.currentTimeMillis());
-
-        if (random.nextInt(2) == 1) {
+        if (isHost) {
             MyPlayer = whitePlayer;
             EnemyPlayer = blackPlayer;
+            MyPlayer.setPlayerName("Host");
+            EnemyPlayer.setPlayerName("Client");
+            isClientFirstTurn = false;
         } else {
             MyPlayer = blackPlayer;
             EnemyPlayer = whitePlayer;
+            MyPlayer.setPlayerName("Client");
+            EnemyPlayer.setPlayerName("Host");
         }
-
-        MyPlayer.setPlayerName("Player 1");
-        EnemyPlayer.setPlayerName("Player 2");
     }
 
     private void initServer() {
@@ -266,6 +268,7 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
             calculateChessMoves();
             hud = new Hud(manager, game, multiPlayerGameScreen, cursor, isHost);
             createdTextures = true;
+            gameHistory = new GameHistory(whitePlayer, blackPlayer);
         }
 
         hud.gameSettings = game.menuElements.gameSettings;
@@ -296,6 +299,107 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
             }
         });
     }
+
+    @Override
+    protected void switchTurn() {
+        if (PlayerTurn == MyPlayer)
+            PlayerTurn = EnemyPlayer;
+        else
+            PlayerTurn = MyPlayer;
+
+        calculateChessMoves();
+
+        King whiteKing = (King) whiteCheeses[ChessPiecesInArray.King.ordinal()];
+        whiteKing.checkKingCondition(blackCheeses, gameBoard);
+
+        King blackKing = (King) blackCheeses[ChessPiecesInArray.King.ordinal()];
+        blackKing.checkKingCondition(whiteCheeses, gameBoard);
+
+        PlayerOneChecked = whiteKing.isChecked();
+        PlayerTwoChecked = blackKing.isChecked();
+
+        PlayerOneLost = whiteKing.isMated();
+        PlayerTwoLost = blackKing.isMated();
+
+        TieBetweenPlayers = whiteKing.isTie() | blackKing.isTie() | (PlayerOneLost && PlayerTwoLost);
+
+        if (PlayerOneLost | PlayerTwoLost | TieBetweenPlayers)
+            gameStage = 5;
+
+    }
+
+    private void sendMove() {
+        ChessMove lastMove = gameHistory.getLastMove();
+
+        if (isHost) {
+            Thread receiver = new Thread(() -> {
+                try {
+                    serverSender.getOutputStream().write((lastMove.write() + "\n").getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            if (!receiver.isAlive()) {
+                receiver.start();
+            }
+        } else {
+            Thread receiver = new Thread(() -> {
+                try {
+                    clientSender.getOutputStream().write((lastMove.write() + "\n").getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            if (!receiver.isAlive()) {
+                receiver.start();
+            }
+
+            isClientFirstTurn = false;
+        }
+    }
+
+
+    private void receiveMove() {
+        if (isHost) {
+            Thread receiver = new Thread(() -> {
+                try {
+                    String response = new BufferedReader(new InputStreamReader(serverSender.getInputStream())).readLine();
+
+                    ChessMove lastMove = ChessMove.readFromLine(response);
+
+                    loadMove(lastMove);
+
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            if (!receiver.isAlive()) {
+                receiver.start();
+            }
+        } else {
+            Thread receiver = new Thread(() -> {
+                try {
+                    String response = new BufferedReader(new InputStreamReader(clientSender.getInputStream())).readLine();
+
+                    ChessMove lastMove = ChessMove.readFromLine(response);
+
+                    loadMove(lastMove);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            if (!receiver.isAlive()) {
+                receiver.start();
+            }
+        }
+    }
+
 
     /**
      * Metoda do aktualizacji logiki gry
@@ -331,10 +435,10 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
                 else
                     EnemyPlayer.updateTime(deltaTime);
 
-                // Update AI info
-
                 if (PlayerTurn == EnemyPlayer) {
-
+                    receiveMove();
+                    if(!isClientFirstTurn)
+                        switchTurn();
                 }
 
             }
