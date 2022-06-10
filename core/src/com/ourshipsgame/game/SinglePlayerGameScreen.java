@@ -199,7 +199,10 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
         switch (gameStage) {
 
             case 3 -> {
-                if (!pause)
+                if (!pause) {
+
+                    changeLastMoveOpacity(deltaTime);
+
                     if (PlayerTurn.equals(MyPlayer))
                         MyPlayer.updateTime(deltaTime);
                     else {
@@ -245,7 +248,7 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
                             }
                         }
                     }
-
+                }
             }
 
             case 4 -> {

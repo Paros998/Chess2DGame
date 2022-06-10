@@ -71,8 +71,9 @@ public class King extends Chess {
         {
             for (int i = 0; i < 16; i++)
                 if (!enemyCheeses[i].isDestroyed)
-                    return enemyCheeses[i].getPossibleMovesAndAttacksAsVectors().stream()
-                            .anyMatch(enemyVector2 -> vector2i.getX() == enemyVector2.getX() && vector2i.getY() == enemyVector2.getY());
+                    if (enemyCheeses[i].getPossibleMovesAndAttacksAsVectors().stream()
+                            .anyMatch(enemyVector2 -> vector2i.getX() == enemyVector2.getX() && vector2i.getY() == enemyVector2.getY()))
+                        return false;
             return true;
         };
 
@@ -90,12 +91,14 @@ public class King extends Chess {
 
         possibleMovesVectors = (ArrayList<Vector2i>) possibleMovesVectors.stream()
                 .filter(offsetPredicate)
-                .filter(ableToMovePredicate)
+                .filter(movePredicate)
+                .filter(predicateUnderAttack)
                 .collect(Collectors.toList());
 
         possibleAttackVectors = (ArrayList<Vector2i>) possibleAttackVectors.stream()
                 .filter(offsetPredicate)
-                .filter(ableToAttackPredicate)
+                .filter(attackPredicate)
+                .filter(predicateUnderAttack)
                 .collect(Collectors.toList());
 
         possibleMovesAndAttacksAsVectors.addAll(possibleMovesVectors);
@@ -117,14 +120,12 @@ public class King extends Chess {
 
         if (isChecked) {
 
-//            possibleAttackVectors.clear();
-
             possibleAttackVectors = (ArrayList<Vector2i>) possibleAttackVectors.stream()
                     .filter(attack -> {
                         boolean canAttack = true;
                         SimulationBoard board;
 
-                        if(player.getColor().equals(Player.PlayerColor.WHITE)){
+                        if (player.getColor().equals(Player.PlayerColor.WHITE)) {
 
                             board = new SimulationBoard(player.getMyCheeses(), enemyCheeses);
 
@@ -144,10 +145,10 @@ public class King extends Chess {
                                             })
                                     );
 
-                            if(isKingAttacked)
+                            if (isKingAttacked)
                                 canAttack = false;
 
-                        }else{
+                        } else {
 
                             board = new SimulationBoard(enemyCheeses, player.getMyCheeses());
 
@@ -167,7 +168,7 @@ public class King extends Chess {
                                             })
                                     );
 
-                            if(isKingAttacked)
+                            if (isKingAttacked)
                                 canAttack = false;
 
                         }
@@ -182,7 +183,7 @@ public class King extends Chess {
             createMovesObjects(gameBoard);
         }
 
-//        if(wasCheckedTurnAgo && isChecked)
+//        if(wasCheckedTurnAgo && isChecked && !possibleMovesAndAttacksAsVectors.isEmpty())
 //            isMated = true;
 
         if (possibleMovesAndAttacksAsVectors.isEmpty() && isChecked && wasCheckedTurnAgo)

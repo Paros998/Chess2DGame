@@ -316,11 +316,13 @@ public class SimulationChess {
                 possibleMovesVectors = (ArrayList<Vector2i>) possibleMovesVectors.stream()
                         .filter(boardOffsetPredicate)
                         .filter(ableToMovePredicate)
+                        .filter(predicateUnderAttack)
                         .collect(Collectors.toList());
 
                 possibleAttackVectors = (ArrayList<Vector2i>) possibleAttackVectors.stream()
                         .filter(boardOffsetPredicate)
                         .filter(ableToAttackPredicate)
+                        .filter(predicateUnderAttack)
                         .collect(Collectors.toList());
             }
 

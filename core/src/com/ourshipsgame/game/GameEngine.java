@@ -124,6 +124,9 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      */
     protected ComputerPlayerAi enemyComputerPlayerAi;
 
+    protected GameObject lastMoveStart;
+    protected GameObject lastMoveDestination;
+
     /**
      * Kursor
      */
@@ -231,6 +234,9 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
     protected boolean PlayerTwoChecked = false;
 
+    protected float lastMoveOpacity = 1.f;
+
+    protected boolean shouldLastMoveOpacityIncrease = false;
 
     /**
      * Metoda do zmiany tury
@@ -259,6 +265,36 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         if (PlayerOneLost | PlayerTwoLost | TieBetweenPlayers)
             gameStage = 4;
+
+        createLastMove(gameHistory.getLastMove());
+
+    }
+
+    protected void createLastMove(ChessMove lastMove) {
+
+        if (lastMove == null)
+            return;
+
+        Vector2f moveStart = lastMove.getMoveLocation().getPosition();
+        Vector2f moveDest = lastMove.getMoveDestination().getPosition();
+
+        lastMoveStart = new GameObject(
+                manager.get("core/assets/moves/moveStart.png", Texture.class),
+                moveStart.getX(),
+                moveStart.getY(),
+                true,
+                false,
+                null
+        );
+
+        lastMoveDestination = new GameObject(
+                manager.get("core/assets/moves/moveDest.png", Texture.class),
+                moveDest.getX(),
+                moveDest.getY(),
+                true,
+                false,
+                null
+        );
 
     }
 
@@ -431,6 +467,8 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         manager.load("core/assets/moves/attack.png", Texture.class);
         manager.load("core/assets/moves/move.png", Texture.class);
+        manager.load("core/assets/moves/moveStart.png", Texture.class);
+        manager.load("core/assets/moves/moveDest.png", Texture.class);
     }
 
     /**
@@ -853,6 +891,15 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
             currentChessClicked.drawAvailableMovesAndAttacks(sb);
     }
 
+    protected void drawLastMove() {
+
+        if (lastMoveStart != null && lastMoveDestination != null) {
+            lastMoveStart.getSprite().draw(sb, lastMoveOpacity);
+            lastMoveDestination.getSprite().draw(sb, lastMoveOpacity);
+        }
+
+    }
+
     protected void createAndDisplay(float deltaTime, InputProcessor processor) {
         if (manager.update()) {
             // When loading screen disappers
@@ -888,6 +935,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
                 }
                 case 3 -> {
                     drawMap();
+                    drawLastMove();
                     drawCurrentClickedChessAvailableMoves();
                     drawChessPieces();
                     drawTurnInfo(sb);
@@ -1003,6 +1051,25 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
     protected abstract void update(float deltaTime);
 
     protected abstract void createGraphics();
+
+    protected void changeLastMoveOpacity(float deltaTime) {
+
+        if (shouldLastMoveOpacityIncrease) {
+
+            lastMoveOpacity += deltaTime;
+
+        } else lastMoveOpacity -= deltaTime;
+
+        if (lastMoveOpacity >= 1.f) {
+            shouldLastMoveOpacityIncrease = !shouldLastMoveOpacityIncrease;
+            lastMoveOpacity = 1.f;
+        }
+
+        if (lastMoveOpacity <= 0.f) {
+            shouldLastMoveOpacityIncrease = !shouldLastMoveOpacityIncrease;
+            lastMoveOpacity = 0.f;
+        }
+    }
 
 
     /**

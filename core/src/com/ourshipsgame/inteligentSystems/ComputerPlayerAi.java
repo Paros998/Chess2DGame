@@ -57,6 +57,7 @@ public class ComputerPlayerAi {
         SimulationBoard board = myPlayer.getColor().equals(Player.PlayerColor.WHITE) ? new SimulationBoard(myCheeses, enemyCheeses) : new SimulationBoard(enemyCheeses, myCheeses);
 
         Arrays.stream(myCheeses)
+                .filter(chess -> !chess.isDestroyed())
                 .forEach(simulationChess -> {
                             allPossibleMoves
                                     .addAll(simulationChess.getPossibleAttackVectors()
@@ -110,7 +111,7 @@ public class ComputerPlayerAi {
     }
 
     private void calculateNextMove() {
-        int initialDepth = 4;
+        int initialDepth = 3;
 
         Instant beginning = Instant.now();
         MinMax bestMinMax = findBestMinMax(initialDepth);
