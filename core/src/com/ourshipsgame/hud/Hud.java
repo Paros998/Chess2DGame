@@ -51,7 +51,7 @@ public class Hud implements Constant {
     /**
      * Okno dialogowe do ustawienia nazwy gracza.
      */
-    private final Dialog playersSetNameDialog;
+    private Dialog playersSetNameDialog = null;
 
     /**
      * Okno dialogowe do ustawienia nowego pionka
@@ -113,7 +113,7 @@ public class Hud implements Constant {
      * @param gameEngineScreen Niszczy elementy Hud.
      * @param kCursor          Referencja do kursora myszki.
      */
-    // Constructor
+
     public Hud(AssetManager manager, Main game, GameEngine gameEngineScreen, Cursor kCursor) {
         skin = new Skin();
         skin = manager.get("core/assets/buttons/skins/golden-spiral/skin/golden-ui-skin.json", Skin.class);
@@ -149,6 +149,7 @@ public class Hud implements Constant {
 
         // Player Name textfield
         playersName = "Player";
+
         playersSetNameDialog = new Dialog("ENTER YOUR NAME", skin) {
 
             {
@@ -229,6 +230,103 @@ public class Hud implements Constant {
         layoutTable.setFillParent(true);
         layoutTable.add(playButton).expandX().padTop(400);
 
+        stage.addActor(gameMenuButton);
+    }
+
+    // Constructor
+    public Hud(AssetManager manager, Main game, GameEngine gameEngineScreen, Cursor kCursor, boolean isHost) {
+        skin = new Skin();
+        skin = manager.get("core/assets/buttons/skins/golden-spiral/skin/golden-ui-skin.json", Skin.class);
+        cursor = kCursor;
+        stage = new Stage(new ScreenViewport());
+
+        this.game = game;
+        this.gameEngineScreen = gameEngineScreen;
+        this.manager = manager;
+
+        // Close button
+        Texture[] buttonStyles = new Texture[2];
+        buttonStyles[0] = manager.get("core/assets/buttons/options-button.png", Texture.class);
+        buttonStyles[1] = manager.get("core/assets/buttons/options-button-pressed.png", Texture.class);
+
+        Sprite[] buttonStylesSprites = new Sprite[2];
+
+        setButtonsSprites(buttonStyles, buttonStylesSprites, 5.f);
+
+        gameMenuButton = new GameImageButton(GAME_WIDTH - 10, 100, this, buttonStylesSprites);
+        gameMenuButton.setOptionsListener();
+
+        setButtonsSprites(buttonStyles, buttonStylesSprites, 6.5f);
+
+        // Play button
+        buttonStyles[0] = manager.get("core/assets/buttons/ready-button.png", Texture.class);
+        buttonStyles[1] = manager.get("core/assets/buttons/ready-button-active.png", Texture.class);
+        playButtonGreenStyle = new Sprite(manager.get("core/assets/ui/ready-button-go.png", Texture.class));
+
+        setButtonsSprites(buttonStyles, buttonStylesSprites, 6.5f);
+
+        playButton = new GameImageButton(buttonStylesSprites);
+
+        // Player Name textfield
+        playersName = "Player";
+
+        buttonStyles[0] = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_QUEEN.ordinal()], Texture.class);
+        buttonStyles[1] = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_QUEEN.ordinal()], Texture.class);
+
+        setButtonsSprites(buttonStyles, buttonStylesSprites, 1.f);
+
+        GameImageButton Queen = new GameImageButton(buttonStylesSprites, this);
+        Queen.setOptionsListener("B_QUEEN");
+
+        buttonStyles[0] = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_ROOK.ordinal()], Texture.class);
+        buttonStyles[1] = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_ROOK.ordinal()], Texture.class);
+
+        setButtonsSprites(buttonStyles, buttonStylesSprites, 1.f);
+        GameImageButton Rook = new GameImageButton(buttonStylesSprites, this);
+        Rook.setOptionsListener("B_ROOK");
+
+        buttonStyles[0] = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_BISHOP.ordinal()], Texture.class);
+        buttonStyles[1] = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_BISHOP.ordinal()], Texture.class);
+
+        setButtonsSprites(buttonStyles, buttonStylesSprites, 1.f);
+        GameImageButton Bishop = new GameImageButton(buttonStylesSprites, this);
+        Bishop.setOptionsListener("B_BISHOP");
+
+        buttonStyles[0] = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_KNIGHT.ordinal()], Texture.class);
+        buttonStyles[1] = manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_KNIGHT.ordinal()], Texture.class);
+
+        setButtonsSprites(buttonStyles, buttonStylesSprites, 1.f);
+        GameImageButton Knight = new GameImageButton(buttonStylesSprites, this);
+        Knight.setOptionsListener("B_KNIGHT");
+
+
+        pawnChangeDialog = new Dialog("CHOOSE REPLACEMENT FOR PAWN", skin) {
+
+            {
+                this.add(this.getButtonTable());
+                this.button(Queen);
+                this.button(Rook);
+                this.button(Bishop);
+                this.button(Knight);
+                this.row();
+                this.getCells().removeIndex(1);
+
+            }
+
+            @Override
+            protected void result(final Object act) {
+                stage.addActor(layoutTable);
+                gameEngineScreen.resume();
+            }
+        };
+
+        // Table for play, repeat buttons
+        layoutTable = new Table();
+        layoutTable.right();
+        layoutTable.setFillParent(true);
+        layoutTable.add(playButton).expandX().padTop(400);
+
+        stage.addActor(layoutTable);
         stage.addActor(gameMenuButton);
     }
 

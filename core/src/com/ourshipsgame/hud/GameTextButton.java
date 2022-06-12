@@ -118,9 +118,14 @@ public class GameTextButton extends TextButton {
                 game.menuElements.disposeMenu();
                 game.setScreen(new SinglePlayerGameScreen(game, true));
             }
-            case 9 -> {
+            case 9 -> game.setScreen(new SelectMultiplayerModeScreen(game));
+            case 10 -> {
                 game.menuElements.disposeMenu();
-                game.setScreen(new MultiPlayerGameScreen(game));
+                game.setScreen(new MultiPlayerGameScreen(game, true));
+            }
+            case 11 -> {
+                game.menuElements.disposeMenu();
+                game.setScreen(new MultiPlayerGameScreen(game, false));
             }
         }
     }

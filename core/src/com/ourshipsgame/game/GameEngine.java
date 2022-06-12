@@ -106,6 +106,8 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
     protected GameObject stage2MessageBackground;
 
+    protected GameObject waitingForClientMessageBackground;
+
     protected GameBoard.BoardLocations pawnMoveStart;
     /*
      * Board of the game
@@ -359,7 +361,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         enemyComputerPlayerAi.setMyPlayer(EnemyPlayer);
     }
 
-    private void loadMove(ChessMove move) {
+    protected void loadMove(ChessMove move) {
         move.getMoveLocation()
                 .getChess()
                 .moveChessWhileLoading(move.getMoveDestination());
@@ -540,6 +542,15 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         turnFontActive = manager.get("core/assets/fonts/nunito.light2.ttf", BitmapFont.class);
 
         stage2MessageBackground = new GameObject(
+                manager.get("core/assets/backgroundtextures/message_bg.png", Texture.class),
+                Constant.GAME_WIDTH_F / 2 - 400,
+                Constant.GAME_HEIGHT_F / 2 - 165,
+                true,
+                false,
+                null
+        );
+
+        waitingForClientMessageBackground = new GameObject(
                 manager.get("core/assets/backgroundtextures/message_bg.png", Texture.class),
                 Constant.GAME_WIDTH_F / 2 - 400,
                 Constant.GAME_HEIGHT_F / 2 - 165,
