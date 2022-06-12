@@ -223,7 +223,7 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
                                                 hud.gameSettings.soundVolume
                                         );
 
-                                if (enemyComputerPlayerAi.getMovableChess() instanceof Pawn pawn)
+                                if (enemyComputerPlayerAi.getMovableChess() instanceof Pawn pawn) {
                                     if (pawn.checkIfReachedEnd()) {
                                         pawnToChange = pawn;
                                         String figure = enemyComputerPlayerAi.choosePawn();
@@ -242,6 +242,13 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
                                             ChessMove.typesOfMoves.NORMAL,
                                             ChessMove.pieceType.B_NOCHANGE
                                     );
+
+                                } else addHistory(
+                                        enemyComputerPlayerAi.getMoveStart(),
+                                        enemyComputerPlayerAi.getMoveDestination(),
+                                        ChessMove.typesOfMoves.NORMAL,
+                                        ChessMove.pieceType.B_NOCHANGE
+                                );
 
                                 switchTurn();
                                 enemyComputerPlayerAi.getReadyToMove().set(false);
@@ -429,7 +436,14 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
                             hud.pawnChangeDialog.show(hud.getStage());
                             pause();
 
-                        }
+
+
+                        } else addHistory(
+                                currentLocation,
+                                getEnumByPosition(move.getPosition()),
+                                ChessMove.typesOfMoves.NORMAL,
+                                ChessMove.pieceType.B_NOCHANGE
+                        );
 
                     } else addHistory(
                             currentLocation,

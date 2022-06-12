@@ -10,6 +10,7 @@ import com.ourshipsgame.utils.Vector2i;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -66,12 +67,11 @@ public class King extends Chess {
         Predicate<Vector2i> movePredicate = vector2i ->
                 board[vector2i.getX()][vector2i.getY()].getChess() == null;
 
-        //TODO underAttackMbNotWorking
         Predicate<Vector2i> predicateUnderAttack = vector2i ->
         {
             for (int i = 0; i < 16; i++)
                 if (!enemyCheeses[i].isDestroyed)
-                    if (enemyCheeses[i].getPossibleMovesAndAttacksAsVectors().stream()
+                    if(enemyCheeses[i].getPossibleMovesAndAttacksAsVectors().stream()
                             .anyMatch(enemyVector2 -> vector2i.getX() == enemyVector2.getX() && vector2i.getY() == enemyVector2.getY()))
                         return false;
             return true;
@@ -109,12 +109,17 @@ public class King extends Chess {
 
         isChecked = isMated = isPatted = false;
         Vector2i currentVector = currentLocation.getArrayPosition();
+        AtomicReference<Chess> enemyCheckingChess = new AtomicReference<>(null);
+        ArrayList<Vector2i> defendingMoves = new ArrayList<>();
+        Chess[] myCheeses = getPlayer().getMyCheeses();
 
         Arrays.stream(enemyCheeses).forEach(chess -> {
             if (!chess.isDestroyed())
                 chess.getPossibleAttackVectors().forEach(vector2i -> {
-                    if (vector2i.getX() == currentVector.getX() && vector2i.getY() == currentVector.getY())
+                    if (vector2i.getX() == currentVector.getX() && vector2i.getY() == currentVector.getY()) {
                         isChecked = true;
+                        enemyCheckingChess.set(chess);
+                    }
                 });
         });
 
@@ -134,15 +139,12 @@ public class King extends Chess {
 
                             board.evaluateAllMoves();
 
+                            Vector2i kingPosition = board.getWhiteCheeses()[Constant.ChessPiecesInArray.King.ordinal()].getCurrentLocation().getArrayPosition();
+
                             boolean isKingAttacked = Arrays.stream(board.getBlackCheeses())
                                     .anyMatch(simulatedChess -> simulatedChess.getPossibleAttackVectors()
                                             .stream()
-                                            .anyMatch(enemyAttack -> {
-                                                Vector2i kingPosition = board.getWhiteCheeses()[Constant.ChessPiecesInArray.King.ordinal()].getCurrentLocation().getArrayPosition();
-
-                                                return kingPosition.getX() == enemyAttack.getX() && kingPosition.getY() == enemyAttack.getY();
-
-                                            })
+                                            .anyMatch(enemyAttack -> kingPosition.getX() == enemyAttack.getX() && kingPosition.getY() == enemyAttack.getY())
                                     );
 
                             if (isKingAttacked)
@@ -157,15 +159,13 @@ public class King extends Chess {
 
                             board.evaluateAllMoves();
 
+                            Vector2i kingPosition = board.getBlackCheeses()[Constant.ChessPiecesInArray.King.ordinal()].getCurrentLocation().getArrayPosition();
+
+
                             boolean isKingAttacked = Arrays.stream(board.getWhiteCheeses())
                                     .anyMatch(simulatedChess -> simulatedChess.getPossibleAttackVectors()
                                             .stream()
-                                            .anyMatch(enemyAttack -> {
-                                                Vector2i kingPosition = board.getBlackCheeses()[Constant.ChessPiecesInArray.King.ordinal()].getCurrentLocation().getArrayPosition();
-
-                                                return kingPosition.getX() == enemyAttack.getX() && kingPosition.getY() == enemyAttack.getY();
-
-                                            })
+                                            .anyMatch(enemyAttack -> kingPosition.getX() == enemyAttack.getX() && kingPosition.getY() == enemyAttack.getY())
                                     );
 
                             if (isKingAttacked)
@@ -180,19 +180,36 @@ public class King extends Chess {
             possibleMovesAndAttacksAsVectors.clear();
 
             possibleMovesAndAttacksAsVectors.addAll(possibleMovesVectors);
+            possibleMovesAndAttacksAsVectors.addAll(possibleAttackVectors);
             createMovesObjects(gameBoard);
+
+            Vector2i enemyVector = enemyCheckingChess.get().getCurrentLocation().getArrayPosition();
+
+            Arrays.stream(myCheeses)
+                    .filter(chess -> !(chess instanceof King))
+                    .forEach(chess -> {
+                        chess.getPossibleAttackVectors().forEach(
+                                vector2i -> {
+                                    if (vector2i.getX() == enemyVector.getX() && vector2i.getY() == enemyVector.getY())
+                                        defendingMoves.add(vector2i);
+                                }
+                        );
+                    });
+
         }
 
-//        if(wasCheckedTurnAgo && isChecked && !possibleMovesAndAttacksAsVectors.isEmpty())
-//            isMated = true;
 
-        if (possibleMovesAndAttacksAsVectors.isEmpty() && isChecked && wasCheckedTurnAgo)
+        if (wasCheckedTurnAgo && isChecked && player.isMadeMoveSinceKingIsChecked())
+            isMated = true;
+
+        if (possibleMovesAndAttacksAsVectors.isEmpty() && isChecked && defendingMoves.isEmpty())
             isMated = true;
 
 //        if(possibleMovesAndAttacksAsVectors.isEmpty() && !isMated && !isChecked)
 //            isPatted = true;
 
         wasCheckedTurnAgo = isChecked;
+
     }
 
     public boolean isWasCheckedTurnAgo() {
@@ -211,4 +228,7 @@ public class King extends Chess {
         return isMated;
     }
 
+    public void setMated(boolean mated) {
+        isMated = mated;
+    }
 }

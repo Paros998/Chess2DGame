@@ -197,10 +197,15 @@ public class SimulationBoard {
 
     public void evaluateAllMoves() {
 
-        for (int i = 0; i < 16; i++) {
-            this.whiteCheeses[i].evaluateMoves(this);
-            this.blackCheeses[i].evaluateMoves(this);
+        for (int i = 1; i < 16; i++) {
+            if (!this.whiteCheeses[i].isDestroyed())
+                this.whiteCheeses[i].evaluateMoves(this);
+            if (!this.blackCheeses[i].isDestroyed())
+                this.blackCheeses[i].evaluateMoves(this);
         }
+
+        this.whiteCheeses[0].evaluateMoves(this);
+        this.blackCheeses[0].evaluateMoves(this);
 
         this.whiteCheeses[Constant.ChessPiecesInArray.King.ordinal()].checkKingCondition(blackCheeses, this);
         this.blackCheeses[Constant.ChessPiecesInArray.King.ordinal()].checkKingCondition(whiteCheeses, this);

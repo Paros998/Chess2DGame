@@ -2,11 +2,10 @@ package com.ourshipsgame.utils;
 
 import com.ourshipsgame.chess_pieces.*;
 import com.ourshipsgame.game.Player;
+import com.ourshipsgame.handlers.Constant;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class MinMax {
@@ -44,6 +43,10 @@ public class MinMax {
 
         boolean checkingKing = false;
 
+        boolean endangeringKing = false;
+
+        boolean savingKing = false;
+
         boolean isMyPlayerBlack = myPlayerColor.equals(Player.PlayerColor.BLACK);
 
         boolean myPlayerSimIsOnEven = initialDepth % 2 == 0;
@@ -54,41 +57,210 @@ public class MinMax {
 
         SimulationChess chessOrLocDestination = myDepthBoard.getLocationByArrayPosition(MyMove.getMoveDestination()).getChess();
 
-        if (chessOrLocDestination == null)
-            myMinMaxScore = 0;
-        else {
-            boolean addPoints = !chessToMove.getPlayerColor().equals(Player.PlayerColor.WHITE) || !isMyPlayerBlack;
+        Player.PlayerColor myColor = chessToMove.getPlayerColor();
+
+        if (chessOrLocDestination == null) {
+
+            Vector2i myPosition = chessToMove.getCurrentLocation().getArrayPosition();
+            boolean underAttack;
+
+            if (myColor.equals(Player.PlayerColor.WHITE)) {
+                underAttack = Arrays.stream(myDepthBoard.getBlackCheeses())
+                        .anyMatch(simulationChess -> simulationChess.getPossibleAttackVectors()
+                                .stream()
+                                .anyMatch(vector2i -> vector2i.getX() == myPosition.getX() && vector2i.getY() == myPosition.getY())
+                        );
+            } else {
+                underAttack = Arrays.stream(myDepthBoard.getWhiteCheeses())
+                        .anyMatch(simulationChess -> simulationChess.getPossibleAttackVectors()
+                                .stream()
+                                .anyMatch(vector2i -> vector2i.getX() == myPosition.getX() && vector2i.getY() == myPosition.getY())
+                        );
+            }
+
+            if (underAttack) {
+
+                SimulationBoard board = new SimulationBoard(myDepthBoard.getWhiteCheeses(), myDepthBoard.getBlackCheeses());
+
+                if (chessToMove.getClazz().getName().equals("com.ourshipsgame.chess_pieces.King")) {
+
+                    if (myColor.equals(Player.PlayerColor.WHITE)) {
+
+                        board.getWhiteCheeses()[Constant.ChessPiecesInArray.King.ordinal()]
+                                .moveChess(board.getLocationByArrayPosition(MyMove.getMoveDestination()));
+
+                        board.evaluateAllMoves();
+
+                        Vector2i kingPosition = board.getWhiteKing().getCurrentLocation().getArrayPosition();
+
+                        endangeringKing = Arrays.stream(board.getBlackCheeses())
+                                .anyMatch(simulatedChess -> simulatedChess.getPossibleAttackVectors()
+                                        .stream()
+                                        .anyMatch(enemyAttack -> kingPosition.getX() == enemyAttack.getX() && kingPosition.getY() == enemyAttack.getY())
+                                );
+
+                    } else {
+
+                        board.getBlackCheeses()[Constant.ChessPiecesInArray.King.ordinal()]
+                                .moveChess(board.getLocationByArrayPosition(MyMove.getMoveDestination()));
+
+                        board.evaluateAllMoves();
+
+                        Vector2i kingPosition = board.getBlackKing().getCurrentLocation().getArrayPosition();
+
+                        endangeringKing = Arrays.stream(board.getWhiteCheeses())
+                                .anyMatch(simulatedChess -> simulatedChess.getPossibleAttackVectors()
+                                        .stream()
+                                        .anyMatch(enemyAttack -> kingPosition.getX() == enemyAttack.getX() && kingPosition.getY() == enemyAttack.getY())
+                                );
+                    }
+
+                    myMinMaxScore = King.getValue() * 2;
+
+                    if (endangeringKing)
+                        myMinMaxScore *= -1;
+                    else
+                        savingKing = true;
+
+
+                } else {
+
+                    if (myColor.equals(Player.PlayerColor.WHITE)) {
+
+                        for (int i = 0; i < 16; i++) {
+
+                            if (board.getWhiteCheeses()[i].getCurrentLocation() == null)
+                                continue;
+
+                            Vector2i arrayPosition = board.getWhiteCheeses()[i].getCurrentLocation().getArrayPosition();
+
+                            if (myPosition.getX() == arrayPosition.getX() && myPosition.getY() == arrayPosition.getY()) {
+
+                                board.getWhiteCheeses()[i]
+                                        .moveChess(board.getLocationByArrayPosition(MyMove.getMoveDestination()));
+
+                                board.evaluateAllMoves();
+
+                                break;
+                            }
+                        }
+
+                        Vector2i kingPosition = board.getWhiteKing().getCurrentLocation().getArrayPosition();
+
+                        endangeringKing = Arrays.stream(board.getBlackCheeses())
+                                .anyMatch(simulatedChess -> simulatedChess.getPossibleAttackVectors()
+                                        .stream()
+                                        .anyMatch(enemyAttack -> kingPosition.getX() == enemyAttack.getX() && kingPosition.getY() == enemyAttack.getY())
+                                );
+
+
+                    } else {
+
+                        for (int i = 0; i < 16; i++) {
+
+                            if (board.getBlackCheeses()[i].getCurrentLocation() == null)
+                                continue;
+
+                            Vector2i arrayPosition = board.getBlackCheeses()[i].getCurrentLocation().getArrayPosition();
+
+                            if (myPosition.getX() == arrayPosition.getX() && myPosition.getY() == arrayPosition.getY()) {
+
+                                board.getBlackCheeses()[i]
+                                        .moveChess(board.getLocationByArrayPosition(MyMove.getMoveDestination()));
+
+                                board.evaluateAllMoves();
+
+                                break;
+                            }
+                        }
+
+                        Vector2i kingPosition = board.getBlackKing().getCurrentLocation().getArrayPosition();
+
+                        endangeringKing = Arrays.stream(board.getWhiteCheeses())
+                                .anyMatch(simulatedChess -> simulatedChess.getPossibleAttackVectors()
+                                        .stream()
+                                        .anyMatch(enemyAttack -> kingPosition.getX() == enemyAttack.getX() && kingPosition.getY() == enemyAttack.getY())
+                                );
+
+
+                    }
+
+                    switch (chessToMove.getClazz().getName()) {
+                        case "com.ourshipsgame.chess_pieces.Bishop" -> myMinMaxScore = Bishop.getValue() / 2;
+
+                        case "com.ourshipsgame.chess_pieces.King" -> {
+                            myMinMaxScore = King.getValue() * 2;
+                            savingKing = true;
+                        }
+
+                        case "com.ourshipsgame.chess_pieces.Knight" -> myMinMaxScore = Knight.getValue() / 2;
+
+                        case "com.ourshipsgame.chess_pieces.Pawn" -> myMinMaxScore = Pawn.getValue() / 2;
+
+                        case "com.ourshipsgame.chess_pieces.Queen" -> myMinMaxScore = Queen.getValue() / 2;
+
+                        case "com.ourshipsgame.chess_pieces.Rook" -> myMinMaxScore = Rook.getValue() / 2;
+                    }
+
+                    if (endangeringKing)
+                        myMinMaxScore -= 900;
+
+                }
+
+            } else {
+                if (chessToMove.getClazz().getName().equals("com.ourshipsgame.chess_pieces.King"))
+                    myMinMaxScore = -30;
+                else
+                    myMinMaxScore = 0;
+            }
+
+        } else {
+            boolean savingKingFromMat = false;
+            boolean savingKingByKing = false;
+            boolean addPoints = !myColor.equals(Player.PlayerColor.WHITE) || !isMyPlayerBlack;
+
+            SimulationChess myKing = myColor.equals(Player.PlayerColor.WHITE) ? myDepthBoard.getWhiteKing() : myDepthBoard.getBlackKing();
+            Vector2i kingPosition = myKing.getCurrentLocation().getArrayPosition();
+
+            if (chessToMove == myKing && myKing.isChecked()) {
+                if (chessOrLocDestination.getPossibleAttackVectors().stream()
+                        .anyMatch(vector2i -> kingPosition.getX() == vector2i.getX() && kingPosition.getY() == vector2i.getY())) {
+                    savingKingByKing = true;
+                    savingKingFromMat = true;
+                }
+            } else if (myKing.isChecked()) {
+                if (chessOrLocDestination.getPossibleAttackVectors().stream()
+                        .anyMatch(vector2i -> kingPosition.getX() == vector2i.getX() && kingPosition.getY() == vector2i.getY())) {
+                    savingKingFromMat = true;
+                }
+            }
 
             switch (chessOrLocDestination.getClazz().getName()) {
 
-                case "com.ourshipsgame.chess_pieces.Bishop" -> {
-                    myMinMaxScore = Bishop.getValue();
-                }
+                case "com.ourshipsgame.chess_pieces.Bishop" -> myMinMaxScore = Bishop.getValue();
 
                 case "com.ourshipsgame.chess_pieces.King" -> {
-                    myMinMaxScore = King.getValue();
+                    myMinMaxScore = King.getValue() / 5;
                     checkingKing = true;
                 }
 
-                case "com.ourshipsgame.chess_pieces.Knight" -> {
-                    myMinMaxScore = Knight.getValue();
-                }
+                case "com.ourshipsgame.chess_pieces.Knight" -> myMinMaxScore = Knight.getValue();
 
-                case "com.ourshipsgame.chess_pieces.Pawn" -> {
-                    myMinMaxScore = Pawn.getValue();
-                }
+                case "com.ourshipsgame.chess_pieces.Pawn" -> myMinMaxScore = Pawn.getValue();
 
-                case "com.ourshipsgame.chess_pieces.Queen" -> {
-                    myMinMaxScore = Queen.getValue();
-                }
+                case "com.ourshipsgame.chess_pieces.Queen" -> myMinMaxScore = Queen.getValue();
 
-                case "com.ourshipsgame.chess_pieces.Rook" -> {
-                    myMinMaxScore = Rook.getValue();
-                }
-                default -> {
-                    myMinMaxScore = 0;
-                }
+                case "com.ourshipsgame.chess_pieces.Rook" -> myMinMaxScore = Rook.getValue();
 
+                default -> myMinMaxScore = 0;
+
+            }
+
+            if (addPoints) {
+                if (savingKingFromMat)
+                    myMinMaxScore *= 10;
+                if (savingKingByKing)
+                    myMinMaxScore /= 2;
             }
 
             if (!addPoints)
@@ -98,10 +270,16 @@ public class MinMax {
 
         setSumOfMinMax(sumOfMinMax + myMinMaxScore);
 
-        if (sumOfMinMax > 100)
+        if (endangeringKing)
             return this;
 
-        if (sumOfMinMax < -100)
+        if (savingKing)
+            return this;
+
+        if (sumOfMinMax > 200)
+            return this;
+
+        if (sumOfMinMax < -30)
             return this;
 
         if (checkingKing)
@@ -116,22 +294,28 @@ public class MinMax {
 
         ArrayList<MinMaxMove> allPossibleMoves = new ArrayList<>();
 
+        AtomicInteger randomizer = new AtomicInteger(5);
+
         if (myPlayerSimIsOnEven && isEvenDepth) {
 
             if (isMyPlayerBlack) {
 
+                getRandomizer(randomizer, myDepthBoard.getBlackCheeses());
+
                 Arrays.stream(myDepthBoard.getBlackCheeses())
                         .filter(simulationChess -> !simulationChess.isDestroyed())
                         .forEach(simulationChess ->
-                                createNewMinMaxMoves(allPossibleMoves, simulationChess)
+                                createNewMinMaxMoves(allPossibleMoves, simulationChess, randomizer.get())
                         );
 
             } else {
 
+                getRandomizer(randomizer, myDepthBoard.getWhiteCheeses());
+
                 Arrays.stream(myDepthBoard.getWhiteCheeses())
                         .filter(simulationChess -> !simulationChess.isDestroyed())
                         .forEach(simulationChess ->
-                                createNewMinMaxMoves(allPossibleMoves, simulationChess)
+                                createNewMinMaxMoves(allPossibleMoves, simulationChess, randomizer.get())
                         );
             }
 
@@ -139,17 +323,21 @@ public class MinMax {
 
             if (isMyPlayerBlack) {
 
+                getRandomizer(randomizer, myDepthBoard.getWhiteCheeses());
+
                 Arrays.stream(myDepthBoard.getWhiteCheeses())
                         .filter(simulationChess -> !simulationChess.isDestroyed())
                         .forEach(simulationChess ->
-                                createNewMinMaxMoves(allPossibleMoves, simulationChess)
+                                createNewMinMaxMoves(allPossibleMoves, simulationChess, randomizer.get())
                         );
             } else {
+
+                getRandomizer(randomizer, myDepthBoard.getBlackCheeses());
 
                 Arrays.stream(myDepthBoard.getBlackCheeses())
                         .filter(simulationChess -> !simulationChess.isDestroyed())
                         .forEach(simulationChess ->
-                                createNewMinMaxMoves(allPossibleMoves, simulationChess)
+                                createNewMinMaxMoves(allPossibleMoves, simulationChess, randomizer.get())
                         );
             }
 
@@ -159,13 +347,55 @@ public class MinMax {
 
         ArrayList<MinMax> childrenMinMaxes = new ArrayList<>();
 
-        deeperMinMaxes.forEach(minMax -> childrenMinMaxes.add(minMax.findBestMinMax()));
 
-        return childrenMinMaxes.stream().max((o1, o2) -> o1.sumOfMinMax - o2.sumOfMinMax).orElse(this);
+        if (initialDepth > 4 && initialDepth.equals(depthLeft + 2)) {
+
+            Thread[] minMaxThreads = new Thread[deeperMinMaxes.size()];
+
+            AtomicInteger index = new AtomicInteger(0);
+
+            deeperMinMaxes.forEach(minMax -> {
+                minMaxThreads[index.get()] = new Thread(() ->
+                        childrenMinMaxes.add(minMax.findBestMinMax())
+                );
+                minMaxThreads[index.get()].setPriority(9);
+                minMaxThreads[index.get()].start();
+                index.getAndIncrement();
+            });
+
+            index.set(0);
+
+            for (int i = 0; i < deeperMinMaxes.size(); i++) {
+                try {
+                    minMaxThreads[index.get()].join();
+                    index.getAndIncrement();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        } else {
+
+            deeperMinMaxes.forEach(minMax -> childrenMinMaxes.add(minMax.findBestMinMax()));
+
+        }
+
+        return childrenMinMaxes.stream()
+                .max(Comparator.comparingInt(o -> o.sumOfMinMax))
+                .orElse(this);
 
     }
 
-    private void createNewMinMaxMoves(ArrayList<MinMaxMove> allPossibleMoves, SimulationChess simulationChess) {
+    private void getRandomizer(AtomicInteger randomizer, SimulationChess[] cheeses) {
+        long count = Arrays.stream(cheeses)
+                .filter(simulationChess -> !simulationChess.isDestroyed())
+                .count();
+
+        if (count < 9)
+            randomizer.set(3);
+    }
+
+    private void createNewMinMaxMoves(ArrayList<MinMaxMove> allPossibleMoves, SimulationChess simulationChess, int randomizer) {
         allPossibleMoves
                 .addAll(simulationChess.getPossibleAttackVectors()
                         .stream()
@@ -175,7 +405,7 @@ public class MinMax {
         allPossibleMoves
                 .addAll(simulationChess.getPossibleMovesVectors()
                         .stream()
-                        .filter(move -> random.nextInt(10) % 5 == 0)
+                        .filter(move -> random.nextInt(10) % randomizer == 0)
                         .map(moveDest -> new MinMaxMove(simulationChess.getCurrentLocation().getArrayPosition(), moveDest))
                         .collect(Collectors.toList())
                 );
