@@ -33,4 +33,8 @@ public class Vector2i extends Vector2 {
         this.y = y;
         return this;
     }
+
+    public boolean equals(Vector2i vector2i) {
+        return getX() == vector2i.getX() && getY() == vector2i.getY();
+    }
 }
