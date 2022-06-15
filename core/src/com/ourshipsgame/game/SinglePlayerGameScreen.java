@@ -159,7 +159,7 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
 
             calculateChessMoves();
 
-            hud = new Hud(manager, game, SinglePlayerGameScreen, cursor);
+            hud = new Hud(manager, game, SinglePlayerGameScreen, cursor, loadGameFromFile);
             createdTextures = true;
         }
 
@@ -435,8 +435,6 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
                             pawnToChange = pawn;
                             hud.pawnChangeDialog.show(hud.getStage());
                             pause();
-
-
 
                         } else addHistory(
                                 currentLocation,

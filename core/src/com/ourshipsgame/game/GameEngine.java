@@ -248,9 +248,9 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         King blackKing = (King) blackCheeses[ChessPiecesInArray.King.ordinal()];
 
         if (PlayerTurn == whitePlayer)
-            whitePlayer.setMadeMoveSinceKingIsChecked(whiteKing.isChecked());
+            whitePlayer.setMadeMoveSinceKingIsChecked(whiteKing.isWasCheckedTurnAgo());
         else
-            blackPlayer.setMadeMoveSinceKingIsChecked(blackKing.isChecked());
+            blackPlayer.setMadeMoveSinceKingIsChecked(blackKing.isWasCheckedTurnAgo());
 
         if (PlayerTurn == MyPlayer)
             PlayerTurn = EnemyPlayer;
@@ -265,6 +265,9 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         PlayerOneChecked = whiteKing.isChecked();
         PlayerTwoChecked = blackKing.isChecked();
+
+        whiteKing.setWasCheckedTurnAgo(PlayerOneChecked);
+        blackKing.setWasCheckedTurnAgo(PlayerTwoChecked);
 
         PlayerOneLost = whiteKing.isMated();
         PlayerTwoLost = blackKing.isMated();

@@ -4,8 +4,6 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -114,7 +112,7 @@ public class Hud implements Constant {
      * @param kCursor          Referencja do kursora myszki.
      */
 
-    public Hud(AssetManager manager, Main game, GameEngine gameEngineScreen, Cursor kCursor) {
+    public Hud(AssetManager manager, Main game, GameEngine gameEngineScreen, Cursor kCursor, boolean isGameFromLoad) {
         skin = new Skin();
         skin = manager.get("core/assets/buttons/skins/golden-spiral/skin/golden-ui-skin.json", Skin.class);
         cursor = kCursor;
@@ -222,19 +220,22 @@ public class Hud implements Constant {
             }
         };
 
-        playersSetNameDialog.show(stage);
+        if (!isGameFromLoad)
+            playersSetNameDialog.show(stage);
 
         // Table for play, repeat buttons
         layoutTable = new Table();
         layoutTable.right();
         layoutTable.setFillParent(true);
-        layoutTable.add(playButton).expandX().padTop(400);
+
+        if (!isGameFromLoad)
+            layoutTable.add(playButton).expandX().padTop(400);
 
         stage.addActor(gameMenuButton);
     }
 
     // Constructor
-    public Hud(AssetManager manager, Main game, GameEngine gameEngineScreen, Cursor kCursor, boolean isHost) {
+    public Hud(AssetManager manager, Main game, GameEngine gameEngineScreen, Cursor kCursor) {
         skin = new Skin();
         skin = manager.get("core/assets/buttons/skins/golden-spiral/skin/golden-ui-skin.json", Skin.class);
         cursor = kCursor;

@@ -69,6 +69,11 @@ public abstract class Chess {
         this.currentLocation = newPos;
         gameObject.setSpritePos(newPos.getPosition());
         currentLocation = newPos;
+
+        if(newPos.getChess() instanceof Pawn pawn)
+            if(pawn.isFirstMove())
+                pawn.setFirstMove(false);
+
     }
 
     public void drawAvailableMovesAndAttacks(SpriteBatch spriteBatch) {

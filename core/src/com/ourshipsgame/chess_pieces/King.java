@@ -208,12 +208,16 @@ public class King extends Chess {
 //        if(possibleMovesAndAttacksAsVectors.isEmpty() && !isMated && !isChecked)
 //            isPatted = true;
 
-        wasCheckedTurnAgo = isChecked;
+//        wasCheckedTurnAgo = isChecked;
 
     }
 
     public boolean isWasCheckedTurnAgo() {
         return wasCheckedTurnAgo;
+    }
+
+    public void setWasCheckedTurnAgo(boolean wasCheckedTurnAgo) {
+        this.wasCheckedTurnAgo = wasCheckedTurnAgo;
     }
 
     public boolean isTie() {

@@ -56,6 +56,10 @@ public class Pawn extends Chess {
         return super.moveChess(newPos, soundVolume);
     }
 
+    public void setFirstMove(boolean firstMove) {
+        this.firstMove = firstMove;
+    }
+
     public boolean checkIfReachedEnd() {
 
         if(player.getColor().equals(Player.PlayerColor.WHITE))
