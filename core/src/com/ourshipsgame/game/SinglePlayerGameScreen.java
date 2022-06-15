@@ -159,7 +159,7 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
 
             calculateChessMoves();
 
-            hud = new Hud(manager, game, SinglePlayerGameScreen, cursor);
+            hud = new Hud(manager, game, SinglePlayerGameScreen, cursor, loadGameFromFile);
             createdTextures = true;
         }
 
@@ -199,7 +199,10 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
         switch (gameStage) {
 
             case 3 -> {
-                if (!pause)
+                if (!pause) {
+
+                    changeLastMoveOpacity(deltaTime);
+
                     if (PlayerTurn.equals(MyPlayer))
                         MyPlayer.updateTime(deltaTime);
                     else {
@@ -220,7 +223,7 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
                                                 hud.gameSettings.soundVolume
                                         );
 
-                                if (enemyComputerPlayerAi.getMovableChess() instanceof Pawn pawn)
+                                if (enemyComputerPlayerAi.getMovableChess() instanceof Pawn pawn) {
                                     if (pawn.checkIfReachedEnd()) {
                                         pawnToChange = pawn;
                                         String figure = enemyComputerPlayerAi.choosePawn();
@@ -240,12 +243,19 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
                                             ChessMove.pieceType.B_NOCHANGE
                                     );
 
+                                } else addHistory(
+                                        enemyComputerPlayerAi.getMoveStart(),
+                                        enemyComputerPlayerAi.getMoveDestination(),
+                                        ChessMove.typesOfMoves.NORMAL,
+                                        ChessMove.pieceType.B_NOCHANGE
+                                );
+
                                 switchTurn();
                                 enemyComputerPlayerAi.getReadyToMove().set(false);
                             }
                         }
                     }
-
+                }
             }
 
             case 4 -> {
@@ -426,7 +436,12 @@ public class SinglePlayerGameScreen extends GameEngine implements InputProcessor
                             hud.pawnChangeDialog.show(hud.getStage());
                             pause();
 
-                        }
+                        } else addHistory(
+                                currentLocation,
+                                getEnumByPosition(move.getPosition()),
+                                ChessMove.typesOfMoves.NORMAL,
+                                ChessMove.pieceType.B_NOCHANGE
+                        );
 
                     } else addHistory(
                             currentLocation,

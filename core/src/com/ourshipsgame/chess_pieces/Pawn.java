@@ -56,6 +56,10 @@ public class Pawn extends Chess {
         return super.moveChess(newPos, soundVolume);
     }
 
+    public void setFirstMove(boolean firstMove) {
+        this.firstMove = firstMove;
+    }
+
     public boolean checkIfReachedEnd() {
 
         if(player.getColor().equals(Player.PlayerColor.WHITE))
@@ -71,8 +75,8 @@ public class Pawn extends Chess {
     }
 
     @Override
-    protected void filterMoves(GameBoard gameBoard) {
-        super.filterMoves(gameBoard);
+    protected void filterMoves(GameBoard gameBoard, Chess[] whiteCheeses, Chess[] blackCheeses) {
+        super.filterMoves(gameBoard, whiteCheeses, blackCheeses);
 
         Predicate<? super Vector2i> cannotJumpVerticallyOver = vector2i -> checkIfNotCrossedWithChessVertically(vector2i,gameBoard,currentLocation);
 

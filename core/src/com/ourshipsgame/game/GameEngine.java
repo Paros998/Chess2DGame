@@ -106,6 +106,8 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
     protected GameObject stage2MessageBackground;
 
+    protected GameObject waitingForClientMessageBackground;
+
     protected GameBoard.BoardLocations pawnMoveStart;
     /*
      * Board of the game
@@ -123,6 +125,9 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
      * Obiekt obliczający decyzje komputera
      */
     protected ComputerPlayerAi enemyComputerPlayerAi;
+
+    protected GameObject lastMoveStart;
+    protected GameObject lastMoveDestination;
 
     /**
      * Kursor
@@ -231,11 +236,22 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
     protected boolean PlayerTwoChecked = false;
 
+    protected float lastMoveOpacity = 1.f;
+
+    protected boolean shouldLastMoveOpacityIncrease = false;
 
     /**
      * Metoda do zmiany tury
      */
     protected void switchTurn() {
+        King whiteKing = (King) whiteCheeses[ChessPiecesInArray.King.ordinal()];
+        King blackKing = (King) blackCheeses[ChessPiecesInArray.King.ordinal()];
+
+        if (PlayerTurn == whitePlayer)
+            whitePlayer.setMadeMoveSinceKingIsChecked(whiteKing.isWasCheckedTurnAgo());
+        else
+            blackPlayer.setMadeMoveSinceKingIsChecked(blackKing.isWasCheckedTurnAgo());
+
         if (PlayerTurn == MyPlayer)
             PlayerTurn = EnemyPlayer;
         else
@@ -243,14 +259,15 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         calculateChessMoves();
 
-        King whiteKing = (King) whiteCheeses[ChessPiecesInArray.King.ordinal()];
         whiteKing.checkKingCondition(blackCheeses, gameBoard);
 
-        King blackKing = (King) blackCheeses[ChessPiecesInArray.King.ordinal()];
         blackKing.checkKingCondition(whiteCheeses, gameBoard);
 
         PlayerOneChecked = whiteKing.isChecked();
         PlayerTwoChecked = blackKing.isChecked();
+
+        whiteKing.setWasCheckedTurnAgo(PlayerOneChecked);
+        blackKing.setWasCheckedTurnAgo(PlayerTwoChecked);
 
         PlayerOneLost = whiteKing.isMated();
         PlayerTwoLost = blackKing.isMated();
@@ -260,6 +277,36 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         if (PlayerOneLost | PlayerTwoLost | TieBetweenPlayers)
             gameStage = 4;
 
+        createLastMove(gameHistory.getLastMove());
+
+    }
+
+    protected void createLastMove(ChessMove lastMove) {
+
+        if (lastMove == null)
+            return;
+
+        Vector2f moveStart = lastMove.getMoveLocation().getPosition();
+        Vector2f moveDest = lastMove.getMoveDestination().getPosition();
+
+        lastMoveStart = new GameObject(
+                manager.get("core/assets/moves/moveStart.png", Texture.class),
+                moveStart.getX(),
+                moveStart.getY(),
+                true,
+                false,
+                null
+        );
+
+        lastMoveDestination = new GameObject(
+                manager.get("core/assets/moves/moveDest.png", Texture.class),
+                moveDest.getX(),
+                moveDest.getY(),
+                true,
+                false,
+                null
+        );
+
     }
 
     protected void calculateChessMoves() {
@@ -267,21 +314,27 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         Arrays.stream(whiteCheeses).forEach(chess -> {
             if (!chess.isDestroyed()) {
 
-                if (chess instanceof King king)
-                    king.evaluateMoves(gameBoard, blackCheeses);
-                else chess.evaluateMoves(gameBoard);
+                if (!(chess instanceof King))
+                    chess.evaluateMoves(gameBoard, whiteCheeses, blackCheeses);
+
             }
         });
 
         Arrays.stream(blackCheeses).forEach(chess -> {
             if (!chess.isDestroyed()) {
 
-                if (chess instanceof King king)
-                    king.evaluateMoves(gameBoard, whiteCheeses);
-                else chess.evaluateMoves(gameBoard);
+                if (!(chess instanceof King))
+                    chess.evaluateMoves(gameBoard, whiteCheeses, blackCheeses);
 
             }
         });
+
+        if (whiteCheeses[ChessPiecesInArray.King.ordinal()] instanceof King king)
+            king.evaluateMoves(gameBoard, blackCheeses);
+
+        if (blackCheeses[ChessPiecesInArray.King.ordinal()] instanceof King king)
+            king.evaluateMoves(gameBoard, whiteCheeses);
+
     }
 
 
@@ -311,7 +364,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
         enemyComputerPlayerAi.setMyPlayer(EnemyPlayer);
     }
 
-    private void loadMove(ChessMove move) {
+    protected void loadMove(ChessMove move) {
         move.getMoveLocation()
                 .getChess()
                 .moveChessWhileLoading(move.getMoveDestination());
@@ -386,7 +439,6 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         }
 
-
         addHistory(
                 pawnMoveStart,
                 pawnToChange.getCurrentLocation(),
@@ -431,6 +483,8 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         manager.load("core/assets/moves/attack.png", Texture.class);
         manager.load("core/assets/moves/move.png", Texture.class);
+        manager.load("core/assets/moves/moveStart.png", Texture.class);
+        manager.load("core/assets/moves/moveDest.png", Texture.class);
     }
 
     /**
@@ -499,6 +553,15 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
                 null
         );
 
+        waitingForClientMessageBackground = new GameObject(
+                manager.get("core/assets/backgroundtextures/message_bg.png", Texture.class),
+                Constant.GAME_WIDTH_F / 2 - 400,
+                Constant.GAME_HEIGHT_F / 2 - 165,
+                true,
+                false,
+                null
+        );
+
         gameBackground = new GameObject(
                 manager.get("core/assets/backgroundtextures/ChessMenuBg.png", Texture.class),
                 0,
@@ -548,7 +611,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         whiteCheeses[ChessPiecesInArray.Queen.ordinal()] = new Queen(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_QUEEN.ordinal()], Texture.class),
-                E4,
+                D1,
                 manager
         );
 
@@ -578,7 +641,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         whiteCheeses[ChessPiecesInArray.FstRook.ordinal()] = new Rook(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_ROOK.ordinal()], Texture.class),
-                D4,
+                A1,
                 manager
         );
 
@@ -590,7 +653,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         whiteCheeses[ChessPiecesInArray.Pawn1.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.W_PAWN.ordinal()], Texture.class),
-                A7,
+                A2,
                 manager
         );
         whiteCheeses[ChessPiecesInArray.Pawn2.ordinal()] = new Pawn(
@@ -650,7 +713,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         blackCheeses[ChessPiecesInArray.SndBishop.ordinal()] = new Bishop(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_BISHOP.ordinal()], Texture.class),
-                F6,
+                F8,
                 manager
         );
 
@@ -668,7 +731,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         blackCheeses[ChessPiecesInArray.FstRook.ordinal()] = new Rook(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_ROOK.ordinal()], Texture.class),
-                B6,
+                A8,
                 manager
         );
 
@@ -680,7 +743,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
 
         blackCheeses[ChessPiecesInArray.Pawn1.ordinal()] = new Pawn(
                 manager.get(ChessPiecesTexturesPaths[ChessPiecesPaths.B_PAWN.ordinal()], Texture.class),
-                A5,
+                A7,
                 manager
         );
         blackCheeses[ChessPiecesInArray.Pawn2.ordinal()] = new Pawn(
@@ -853,6 +916,15 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
             currentChessClicked.drawAvailableMovesAndAttacks(sb);
     }
 
+    protected void drawLastMove() {
+
+        if (lastMoveStart != null && lastMoveDestination != null) {
+            lastMoveStart.getSprite().draw(sb, lastMoveOpacity);
+            lastMoveDestination.getSprite().draw(sb, lastMoveOpacity);
+        }
+
+    }
+
     protected void createAndDisplay(float deltaTime, InputProcessor processor) {
         if (manager.update()) {
             // When loading screen disappers
@@ -888,6 +960,7 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
                 }
                 case 3 -> {
                     drawMap();
+                    drawLastMove();
                     drawCurrentClickedChessAvailableMoves();
                     drawChessPieces();
                     drawTurnInfo(sb);
@@ -1003,6 +1076,25 @@ public abstract class GameEngine extends ScreenAdapter implements Constant {
     protected abstract void update(float deltaTime);
 
     protected abstract void createGraphics();
+
+    protected void changeLastMoveOpacity(float deltaTime) {
+
+        if (shouldLastMoveOpacityIncrease) {
+
+            lastMoveOpacity += deltaTime / 1.5;
+
+        } else lastMoveOpacity -= deltaTime / 1.5;
+
+        if (lastMoveOpacity >= 1.f) {
+            shouldLastMoveOpacityIncrease = !shouldLastMoveOpacityIncrease;
+            lastMoveOpacity = 1.f;
+        }
+
+        if (lastMoveOpacity <= 0.25f) {
+            shouldLastMoveOpacityIncrease = !shouldLastMoveOpacityIncrease;
+            lastMoveOpacity = 0.25f;
+        }
+    }
 
 
     /**

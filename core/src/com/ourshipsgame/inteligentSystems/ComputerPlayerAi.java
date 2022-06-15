@@ -1,8 +1,10 @@
 package com.ourshipsgame.inteligentSystems;
 
 import com.ourshipsgame.chess_pieces.Chess;
+import com.ourshipsgame.chess_pieces.King;
 import com.ourshipsgame.game.GameBoard;
 import com.ourshipsgame.game.Player;
+import com.ourshipsgame.handlers.Constant;
 import com.ourshipsgame.utils.MinMax;
 import com.ourshipsgame.utils.MinMaxMove;
 import com.ourshipsgame.utils.SimulationBoard;
@@ -52,11 +54,19 @@ public class ComputerPlayerAi {
     private MinMax findBestMinMax(int depth) {
         Random random = new Random(System.currentTimeMillis());
 
+        int numberOfAliveCheeses = (int) Arrays.stream(myCheeses).filter(chess -> !chess.isDestroyed()).count();
+
+        AtomicInteger division = new AtomicInteger(5);
+
+        if (numberOfAliveCheeses <= 9)
+            division.set(3);
+
         ArrayList<MinMaxMove> allPossibleMoves = new ArrayList<>();
 
-        SimulationBoard board = myPlayer.getColor().equals(Player.PlayerColor.WHITE) ? new SimulationBoard(myCheeses, enemyCheeses) : new SimulationBoard(enemyCheeses, myCheeses);
+        SimulationBoard board = myPlayer.getColor().equals(Player.PlayerColor.WHITE) ? new SimulationBoard(myCheeses, enemyCheeses)
+                : new SimulationBoard(enemyCheeses, myCheeses);
 
-        Arrays.stream(myCheeses)
+        Arrays.stream(myCheeses).filter(chess -> !chess.isDestroyed())
                 .forEach(simulationChess -> {
                             allPossibleMoves
                                     .addAll(simulationChess.getPossibleAttackVectors()
@@ -64,10 +74,17 @@ public class ComputerPlayerAi {
                                             .map(moveDest -> new MinMaxMove(simulationChess.getCurrentLocation().getArrayPosition(), moveDest))
                                             .collect(Collectors.toList())
                                     );
-                            allPossibleMoves
+                            if (!(simulationChess instanceof King))
+                                allPossibleMoves
+                                        .addAll(simulationChess.getPossibleMovesVectors()
+                                                .stream()
+                                                .filter(move -> random.nextInt(10) % division.get() == 0)
+                                                .map(moveDest -> new MinMaxMove(simulationChess.getCurrentLocation().getArrayPosition(), moveDest))
+                                                .collect(Collectors.toList())
+                                        );
+                            else allPossibleMoves
                                     .addAll(simulationChess.getPossibleMovesVectors()
                                             .stream()
-                                            .filter(move -> random.nextInt(10) % 2 == 0)
                                             .map(moveDest -> new MinMaxMove(simulationChess.getCurrentLocation().getArrayPosition(), moveDest))
                                             .collect(Collectors.toList())
                                     );
@@ -87,7 +104,7 @@ public class ComputerPlayerAi {
             minMaxThreads[index.get()] = new Thread(() ->
                     lastMoves.add(minMax.findBestMinMax())
             );
-            minMaxThreads[index.get()].setPriority(8);
+            minMaxThreads[index.get()].setPriority(9);
             minMaxThreads[index.get()].start();
             index.getAndIncrement();
         });
@@ -105,16 +122,31 @@ public class ComputerPlayerAi {
 
         return lastMoves.stream()
                 .max(Comparator.comparingInt(MinMax::getSumOfMinMax))
-                .get();
+                .orElse(null);
 
     }
 
     private void calculateNextMove() {
-        int initialDepth = 4;
+        int initialDepth = 5;
 
         Instant beginning = Instant.now();
         MinMax bestMinMax = findBestMinMax(initialDepth);
         Instant end = Instant.now();
+
+        if (bestMinMax == null) {
+            if (myCheeses[Constant.ChessPiecesInArray.King.ordinal()] instanceof King king)
+                king.setMated(true);
+            return;
+        }
+
+        Chess enemyKing = enemyCheeses[Constant.ChessPiecesInArray.King.ordinal()];
+
+        if (bestMinMax.getFirstMove().getMoveDestination().equals(enemyKing.getCurrentLocation().getArrayPosition())) {
+            if (enemyKing instanceof King king) {
+                king.setMated(true);
+                return;
+            }
+        }
 
         MinMaxMove bestMove = bestMinMax.getFirstMove();
 

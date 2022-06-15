@@ -2,23 +2,31 @@ package com.ourshipsgame.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Net;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.net.ServerSocket;
+import com.badlogic.gdx.net.ServerSocketHints;
+import com.badlogic.gdx.net.Socket;
+import com.badlogic.gdx.net.SocketHints;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.ourshipsgame.Main;
+import com.ourshipsgame.chess_pieces.Pawn;
 import com.ourshipsgame.hud.Hud;
 import com.ourshipsgame.mainmenu.MenuGlobalElements;
 import com.ourshipsgame.mainmenu.MenuScreen;
+import com.ourshipsgame.utils.ChessMove;
+import org.lwjgl.util.vector.Vector2f;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 
 import static com.ourshipsgame.game.GameBoard.BoardLocations.getEnumByPosition;
 
@@ -37,6 +45,14 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
      */
     private final MultiPlayerGameScreen multiPlayerGameScreen;
 
+    private final boolean isHost;
+
+    private boolean isClientConnected = false;
+    private boolean isClientFirstTurn = true;
+
+    private Socket serverSender;
+    private Socket clientSender;
+
 
     // constructor
 
@@ -45,9 +61,10 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
      *
      * @param game Obiekt aplikacji
      */
-    public MultiPlayerGameScreen(Main game) {
+    public MultiPlayerGameScreen(Main game, boolean isHost) {
         this.multiPlayerGameScreen = this;
         this.game = game;
+        this.isHost = isHost;
         Gdx.app.log(id, "This class is loaded!");
         System.out.println(Gdx.app.getJavaHeap() / 1000000);
     }
@@ -111,29 +128,165 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
         }.show(hud.getStage());
     }
 
+    private void initStart() {
+        if (isHost) {
+            MyPlayer = whitePlayer;
+            EnemyPlayer = blackPlayer;
+            MyPlayer.setPlayerName("Host");
+            EnemyPlayer.setPlayerName("Client");
+            isClientFirstTurn = false;
+        } else {
+            MyPlayer = blackPlayer;
+            EnemyPlayer = whitePlayer;
+            MyPlayer.setPlayerName("Client");
+            EnemyPlayer.setPlayerName("Host");
+        }
+    }
+
+    private void initServer() {
+        new Thread(() -> {
+            if (isHost) {
+                ServerSocketHints hints = new ServerSocketHints();
+                hints.acceptTimeout = 100000000;
+                ServerSocket server = Gdx.net.newServerSocket(Net.Protocol.TCP, "localhost", 9091, hints);
+                serverSender = server.accept(null);
+                try {
+                    String message = new BufferedReader(new InputStreamReader(serverSender.getInputStream())).readLine();
+                    Gdx.app.log("PingPongSocketExample", "got client message: " + message);
+                    serverSender.getOutputStream().write("PONG\n".getBytes());
+                    isClientConnected = true;
+                } catch (IOException e) {
+                    Gdx.app.log("PingPongSocketExample", "an error occured", e);
+                    isClientConnected = false;
+                }
+            } else {
+                SocketHints hints = new SocketHints();
+                clientSender = Gdx.net.newClientSocket(Net.Protocol.TCP, "localhost", 9091, hints);
+                try {
+                    clientSender.getOutputStream().write("PING\n".getBytes());
+                    String response = new BufferedReader(new InputStreamReader(clientSender.getInputStream())).readLine();
+                    Gdx.app.log("PingPongSocketExample", "got server message: " + response);
+                } catch (IOException e) {
+                    Gdx.app.log("PingPongSocketExample", "an error occured", e);
+                }
+            }
+        }).start();
+    }
+
+    private void drawWaitingForClient(BitmapFont font, SpriteBatch batch) {
+        int fontSize = 20;
+        if (isHost) {
+            waitingForClientMessageBackground.drawSprite(batch);
+            Vector2f waitingForClientMessageBackgroundPosition = waitingForClientMessageBackground.getPosition();
+
+            String text = isClientConnected ? "Connected! Click a button to start the game" : "Waiting for player to join...";
+            int len = text.length();
+            font.draw(batch,
+                    text,
+                    (waitingForClientMessageBackgroundPosition.getX() + (waitingForClientMessageBackground.getWidth() / 2) - (fontSize * (len / 2.f))),
+                    waitingForClientMessageBackgroundPosition.getY() + 165 + 25);
+        } else {
+            stage2MessageBackground.drawSprite(batch);
+            Vector2f stage2MessageBackgroundPosition = stage2MessageBackground.getPosition();
+
+            String text = "Waiting for server to start the game...";
+            int len = text.length();
+            font.draw(batch,
+                    text,
+                    (stage2MessageBackgroundPosition.getX() + (stage2MessageBackground.getWidth() / 2) - (fontSize * (len / 2.f))),
+                    stage2MessageBackgroundPosition.getY() + 165 + 25);
+        }
+    }
+
+    @Override
+    protected void createAndDisplay(float deltaTime, InputProcessor processor) {
+        if (manager.update()) {
+            // When loading screen disappers
+            if (!createdTextures) {
+                loadingTexture.dispose();
+                createGraphics();
+                inputMultiplexer = new InputMultiplexer();
+                inputMultiplexer.addProcessor(processor);
+                inputMultiplexer.addProcessor(hud.getStage());
+                Gdx.input.setInputProcessor(inputMultiplexer);
+            }
+            if (hud.isPaused())
+                Gdx.input.setInputProcessor(hud.getStage());
+            else
+                Gdx.input.setInputProcessor(inputMultiplexer);
+
+            // render things below
+            sb.begin();
+            sr.setAutoShapeType(true);
+            sr.begin();
+            // Do not place any drawings up!!
+
+            // Texts
+            switch (gameStage) {
+                case 2 -> {
+                    drawMap();
+                    drawChessPieces();
+                    drawWaitingForClient(font, sb);
+                }
+                case 4 -> {
+                    drawMap();
+                    drawLastMove();
+                    drawCurrentClickedChessAvailableMoves();
+                    drawChessPieces();
+                    drawTurnInfo(sb);
+                    drawKingCondition(sb);
+                }
+                case 5 -> {
+                    drawMap();
+                    drawChessPieces();
+                    drawExitScreen();
+                }
+            }
+
+            sb.end();
+            sr.end();
+            hud.update();
+            update(deltaTime);
+        } else {
+            // While loading the game assets
+            drawLoadingScreen();
+        }
+    }
 
     /**
      * Metoda do tworzenia wszystkich elementów graficznych gry
      */
     protected void createGraphics() {
         // changing game stage from loading to playing
-        if (preparation( manager)) {
+        if (preparation(manager)) {
+            initStart();
+            initServer();
             gameStage = 2;
-            hud = new Hud(manager, game, multiPlayerGameScreen, cursor);
+            calculateChessMoves();
+            hud = new Hud(manager, game, multiPlayerGameScreen, cursor, isHost);
             createdTextures = true;
+            gameHistory = new GameHistory(whitePlayer, blackPlayer);
         }
 
         hud.gameSettings = game.menuElements.gameSettings;
         // Deleting GlobalMenuElements object
         game.menuElements = null;
+
         hud.getPlayButton().addListener(new InputListener() {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                if (gameStage == 2) {
-                    hud.getStage().getActors().pop();
-                    hud.getPlayersSetNameDialog().hide();
-                    PlayerOne.setPlayerName(hud.getPlayersName());
+                if (gameStage == 2 && isHost && isClientConnected) {
                     gameStage = 3;
+                }
+
+                if (gameStage == 3 && isHost) {
+                    try {
+                        serverSender.getOutputStream().write("start\n".getBytes());
+                        hud.getStage().getActors().removeIndex(0);
+                        gameStage = 4;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
 
@@ -144,6 +297,98 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
         });
     }
 
+    private void sendMove() {
+        ChessMove lastMove = gameHistory.getLastMove();
+
+        if (isHost) {
+            Thread receiver = new Thread(() -> {
+                try {
+                    serverSender.getOutputStream().write((lastMove.write() + "\n").getBytes());
+                    System.out.printf("Host send move %s%n", lastMove.write());
+                    switchTurn();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            if (!receiver.isAlive()) {
+                receiver.start();
+            }
+        } else {
+            Thread receiver = new Thread(() -> {
+                try {
+                    clientSender.getOutputStream().write((lastMove.write() + "\n").getBytes());
+                    System.out.printf("Client send move %s%n", lastMove.write());
+                    switchTurn();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            if (!receiver.isAlive()) {
+                receiver.start();
+            }
+
+            isClientFirstTurn = false;
+        }
+    }
+
+
+    private void receiveMove() {
+        Thread server;
+        Thread client;
+
+        if (isHost) {
+            server = new Thread(() -> {
+                try {
+
+                    String response = new BufferedReader(new InputStreamReader(serverSender.getInputStream())).readLine();
+
+                    ChessMove lastMove = ChessMove.readFromLine(response);
+
+                    System.out.printf("Host received move %s%n", lastMove.write());
+
+                    loadMove(lastMove);
+
+                    switchTurn();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            if (!server.isAlive()) {
+                server.start();
+            }
+
+        } else {
+            client = new Thread(() -> {
+                try {
+
+                    String response = new BufferedReader(new InputStreamReader(clientSender.getInputStream())).readLine();
+
+                    ChessMove lastMove = ChessMove.readFromLine(response);
+
+                    System.out.printf("Client received move %s%n", lastMove.write());
+
+                    loadMove(lastMove);
+
+                    switchTurn();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            if (!client.isAlive()) {
+                client.start();
+            }
+
+        }
+
+    }
+
+
     /**
      * Metoda do aktualizacji logiki gry
      *
@@ -152,23 +397,43 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
     // update logics of game
     @Override
     protected void update(float deltaTime) {
-        switch (gameStage){
+        switch (gameStage) {
             case 2 -> {
+                if (!isHost) {
+                    Thread receiver = new Thread(() -> {
+                        try {
+                            String response = new BufferedReader(new InputStreamReader(clientSender.getInputStream())).readLine();
+                            if (response.equals("start")) {
+                                hud.getStage().getActors().removeIndex(0);
+                                gameStage = 4;
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
 
-            }
-            case 3 -> {
-                if (PlayerTurn == MyPlayer)
-                    MyPlayer.updateTime(deltaTime);
-                else
-                    EnemyPlayer.updateTime(deltaTime);
-
-                // Update AI info
-
-                if (PlayerTurn == EnemyPlayer) {
-
+                    if (!receiver.isAlive()) {
+                        receiver.start();
+                    }
                 }
             }
             case 4 -> {
+
+                if (!pause) {
+
+                    changeLastMoveOpacity(deltaTime);
+
+                    if (PlayerTurn == MyPlayer)
+                        MyPlayer.updateTime(deltaTime);
+                    else {
+                        EnemyPlayer.updateTime(deltaTime);
+                    }
+
+                    receiveMove();
+                }
+
+            }
+            case 5 -> {
                 if (!createDialog) {
                     if (PlayerOneLost)
                         endSounds[1].play(hud.gameSettings.soundVolume);
@@ -305,28 +570,60 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
         screenY = 1080 - screenY;
         switch (button) {
             case Buttons.LEFT:
-                if (gameStage == 3) {
-                    if(!checkForMoveClicked(screenX, screenY))
-                        checkForChessClicked(screenX, screenY);
+                if (gameStage == 4) {
+                    if (PlayerTurn.equals(MyPlayer))
+                        if (!checkForMoveClicked(screenX, screenY))
+                            checkForChessClicked(screenX, screenY);
+                        else sendMove();
                 }
                 break;
             case Buttons.RIGHT:
-                if (gameStage == 3) {
-                        currentChessClicked = null;
+                if (gameStage == 4) {
+                    currentChessClicked = null;
                 }
                 break;
         }
         return false;
     }
 
+    private void addHistory(GameBoard.BoardLocations moveFrom, GameBoard.BoardLocations moveTo, ChessMove.typesOfMoves type, ChessMove.pieceType piece) {
+        gameHistory.updateHistoryAfterTurn(new ChessMove(moveFrom, moveTo, type, piece));
+    }
+
     private boolean checkForMoveClicked(int screenX, int screenY) {
         if (currentChessClicked != null) {
             GameObject[] possibleMovesAndAttacks = currentChessClicked.getPossibleMovesAndAttacks();
-            for (GameObject move: possibleMovesAndAttacks)
-                if(move.contains(screenX,screenY)){
-                    currentChessClicked.moveChess(getEnumByPosition(move.getPosition()), hud.gameSettings.soundVolume);
-                    //later here will be some kind of changeTurn method called instead
+            for (GameObject move : possibleMovesAndAttacks)
+                if (move.contains(screenX, screenY)) {
+
+                    GameBoard.BoardLocations currentLocation = currentChessClicked.getCurrentLocation();
+
+                    if (!currentChessClicked.moveChess(getEnumByPosition(move.getPosition()), hud.gameSettings.soundVolume))
+                        return false;
+
+                    if (currentChessClicked instanceof Pawn pawn) {
+                        if (pawn.checkIfReachedEnd()) {
+                            pawnMoveStart = currentLocation;
+                            pawnToChange = pawn;
+                            hud.pawnChangeDialog.show(hud.getStage());
+                            pause();
+
+                        } else addHistory(
+                                currentLocation,
+                                getEnumByPosition(move.getPosition()),
+                                ChessMove.typesOfMoves.NORMAL,
+                                ChessMove.pieceType.B_NOCHANGE
+                        );
+
+                    } else addHistory(
+                            currentLocation,
+                            getEnumByPosition(move.getPosition()),
+                            ChessMove.typesOfMoves.NORMAL,
+                            ChessMove.pieceType.B_NOCHANGE
+                    );
+
                     currentChessClicked = null;
+
                     return true;
                 }
             return false;
@@ -335,16 +632,19 @@ public class MultiPlayerGameScreen extends GameEngine implements InputProcessor 
     }
 
     private void checkForChessClicked(int screenX, int screenY) {
-        for (int i = 0; i < 16; i++){
-            if(whiteCheeses[i].clickedOnThisChess(screenX, screenY,gameBoard)){
-                currentChessClicked = whiteCheeses[i];
-                return;
+        for (int i = 0; i < 16; i++)
+            if (isHost) {
+                if (whiteCheeses[i].clickedOnThisChess(screenX, screenY, gameBoard)) {
+                    currentChessClicked = whiteCheeses[i];
+                    return;
+                }
+            } else {
+                if (blackCheeses[i].clickedOnThisChess(screenX, screenY, gameBoard)) {
+                    currentChessClicked = blackCheeses[i];
+                    return;
+                }
             }
-            if(blackCheeses[i].clickedOnThisChess(screenX, screenY,gameBoard)){
-                currentChessClicked = blackCheeses[i];
-                return;
-            }
-        }
+
     }
 
     /**

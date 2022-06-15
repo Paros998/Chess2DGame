@@ -32,6 +32,14 @@ public class GameHistory {
         this.blackPlayer = blackPlayer;
     }
 
+    public ChessMove getLastMove(){
+
+        if(historyList.isEmpty())
+            return null;
+
+        return historyList.get(historyList.size() - 1);
+    }
+
     public void historySave() {
         File file = new File("gameSave.txt");
         if (!file.exists())

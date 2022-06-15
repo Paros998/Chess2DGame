@@ -15,8 +15,8 @@ public class Rook extends Chess{
     }
 
     @Override
-    protected void filterMoves(GameBoard gameBoard) {
-        super.filterMoves(gameBoard);
+    protected void filterMoves(GameBoard gameBoard, Chess[] whiteCheeses, Chess[] blackCheeses) {
+        super.filterMoves(gameBoard, whiteCheeses, blackCheeses);
 
         Predicate<? super Vector2i> cannotMoveHorizontallyOver = vector2i -> checkIfNotCrossedWithChessHorizontally(vector2i,gameBoard,currentLocation);
         Predicate<? super Vector2i> cannotMoveVerticallyOver = vector2i -> checkIfNotCrossedWithChessVertically(vector2i,gameBoard,currentLocation);

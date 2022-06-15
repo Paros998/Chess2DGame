@@ -142,18 +142,14 @@ public class MenuScreen implements Screen, Constant {
 
         helpButon = new GameTextButton("HELP", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 100, game.menuElements.skin, 2, game, scale);
 
-        scoreButton = new GameTextButton("SCORE", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 200, game.menuElements.skin, 3,
+        optionsButton = new GameTextButton("OPTIONS", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 200, game.menuElements.skin, 4,
                 game, scale);
 
-        optionsButton = new GameTextButton("OPTIONS", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 300, game.menuElements.skin, 4,
-                game, scale);
-
-        quitButton = new GameTextButton("EXIT", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 400, game.menuElements.skin, 5, game, scale);
+        quitButton = new GameTextButton("EXIT", GAME_WIDTH_F / 2, GAME_HEIGHT_F / 2 - 300, game.menuElements.skin, 5, game, scale);
 
         // Adding actors to scene
         stage.addActor(playButton);
         stage.addActor(helpButon);
-        stage.addActor(scoreButton);
         stage.addActor(optionsButton);
         stage.addActor(quitButton);
 

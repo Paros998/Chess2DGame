@@ -8,9 +8,11 @@ import com.badlogic.gdx.math.Vector2;
 import com.ourshipsgame.game.GameBoard;
 import com.ourshipsgame.game.GameObject;
 import com.ourshipsgame.game.Player;
+import com.ourshipsgame.utils.SimulationBoard;
 import com.ourshipsgame.utils.Vector2i;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -38,7 +40,7 @@ public abstract class Chess {
                 new Vector2(1, 1));
         moveSound = manager.get("core/assets/sounds/move_sound.wav", Sound.class);
         attackSound = manager.get("core/assets/sounds/attack_sound.wav", Sound.class);
-        currentLocation = location.setChess(this,true);
+        currentLocation = location.setChess(this, true);
         possibleMovesAndAttacksAsVectors = new ArrayList<>();
         possibleMovesVectors = new ArrayList<>();
         possibleAttackVectors = new ArrayList<>();
@@ -67,6 +69,11 @@ public abstract class Chess {
         this.currentLocation = newPos;
         gameObject.setSpritePos(newPos.getPosition());
         currentLocation = newPos;
+
+        if(newPos.getChess() instanceof Pawn pawn)
+            if(pawn.isFirstMove())
+                pawn.setFirstMove(false);
+
     }
 
     public void drawAvailableMovesAndAttacks(SpriteBatch spriteBatch) {
@@ -103,13 +110,13 @@ public abstract class Chess {
 //        return false;
     }
 
-    public void evaluateMoves(GameBoard gameBoard) {
+    public void evaluateMoves(GameBoard gameBoard, Chess[] whiteCheeses, Chess[] blackCheeses) {
         if (!isDestroyed) {
             possibleMovesAndAttacksAsVectors.clear();
             possibleMovesVectors.clear();
             possibleAttackVectors.clear();
             calculatePossibleMoves(gameBoard);
-            filterMoves(gameBoard);
+            filterMoves(gameBoard, whiteCheeses, blackCheeses);
             createMovesObjects(gameBoard);
         }
     }
@@ -136,7 +143,7 @@ public abstract class Chess {
         }
     }
 
-    protected void filterMoves(GameBoard gameBoard) {
+    protected void filterMoves(GameBoard gameBoard, Chess[] whiteCheeses, Chess[] blackCheeses) {
         GameBoard.BoardLocations[][] board = gameBoard.getBoard();
 
         Predicate<Vector2i> movePredicate = vector2i ->
@@ -151,12 +158,20 @@ public abstract class Chess {
 
         Predicate<Vector2i> vector2iPredicate = xOffsetPredicate.and(yOffsetPredicate);
 
+        Predicate<Vector2i> kingEndangerPredicate = vector2i -> endangeringKing(
+                player,
+                currentLocation.getArrayPosition(),
+                vector2i,
+                whiteCheeses,
+                blackCheeses
+        );
+
         possibleMovesVectors = (ArrayList<Vector2i>) possibleMovesVectors.stream()
-                .filter(vector2iPredicate.and(movePredicate))
+                .filter(vector2iPredicate.and(movePredicate.and(kingEndangerPredicate)))
                 .collect(Collectors.toList());
 
         possibleAttackVectors = (ArrayList<Vector2i>) possibleAttackVectors.stream()
-                .filter(vector2iPredicate.and(attackPredicate))
+                .filter(vector2iPredicate.and(attackPredicate.and(kingEndangerPredicate)))
                 .collect(Collectors.toList());
 
         possibleMovesAndAttacksAsVectors.addAll(possibleMovesVectors);
@@ -202,6 +217,77 @@ public abstract class Chess {
     public abstract Integer getStrength();
 
     protected abstract void calculatePossibleMoves(GameBoard gameBoard);
+
+    protected static boolean endangeringKing(Player myPlayer, Vector2i myPosition, Vector2i myDestination, Chess[] whiteCheeses, Chess[] blackCheeses) {
+
+        boolean isMyPlayerWhite = myPlayer.getColor().equals(Player.PlayerColor.WHITE);
+        boolean endangeringKing;
+
+        SimulationBoard board = new SimulationBoard(whiteCheeses, blackCheeses);
+
+        if (isMyPlayerWhite) {
+
+            for (int i = 0; i < 16; i++) {
+
+                if (board.getWhiteCheeses()[i].getCurrentLocation() == null)
+                    continue;
+
+                Vector2i arrayPosition = board.getWhiteCheeses()[i].getCurrentLocation().getArrayPosition();
+
+                if (myPosition.getX() == arrayPosition.getX() && myPosition.getY() == arrayPosition.getY()) {
+
+                    board.getWhiteCheeses()[i]
+                            .moveChess(board.getLocationByArrayPosition(myDestination));
+
+                    board.evaluateAllMoves();
+
+                    break;
+                }
+            }
+
+            Vector2i kingPosition = board.getWhiteKing().getCurrentLocation().getArrayPosition();
+
+            endangeringKing = Arrays.stream(board.getBlackCheeses())
+                    .anyMatch(simulatedChess -> simulatedChess.getPossibleAttackVectors()
+                            .stream()
+                            .anyMatch(enemyAttack -> kingPosition.getX() == enemyAttack.getX() && kingPosition.getY() == enemyAttack.getY())
+                    );
+
+
+        } else {
+
+            for (int i = 0; i < 16; i++) {
+
+                if (board.getBlackCheeses()[i].getCurrentLocation() == null)
+                    continue;
+
+                Vector2i arrayPosition = board.getBlackCheeses()[i].getCurrentLocation().getArrayPosition();
+
+                if (myPosition.getX() == arrayPosition.getX() && myPosition.getY() == arrayPosition.getY()) {
+
+                    board.getBlackCheeses()[i]
+                            .moveChess(board.getLocationByArrayPosition(myDestination));
+
+                    board.evaluateAllMoves();
+
+                    break;
+                }
+            }
+
+            Vector2i kingPosition = board.getBlackKing().getCurrentLocation().getArrayPosition();
+
+            endangeringKing = Arrays.stream(board.getWhiteCheeses())
+                    .anyMatch(simulatedChess -> simulatedChess.getPossibleAttackVectors()
+                            .stream()
+                            .anyMatch(enemyAttack -> kingPosition.getX() == enemyAttack.getX() && kingPosition.getY() == enemyAttack.getY())
+                    );
+
+
+        }
+
+        return !endangeringKing;
+
+    }
 
     protected static boolean checkIfNotCrossedWithChessHorizontally(Vector2i vector2i, GameBoard gameBoard, GameBoard.BoardLocations currentLocation) {
         int currentX = currentLocation.getArrayPosition().getX();

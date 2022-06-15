@@ -148,6 +148,7 @@ public class SimulationChess {
                 possibleMovesAndAttacksAsVectors.clear();
 
                 possibleMovesAndAttacksAsVectors.addAll(possibleMovesVectors);
+                possibleMovesAndAttacksAsVectors.addAll(possibleAttackVectors);
 
             }
         }
@@ -293,7 +294,6 @@ public class SimulationChess {
         Predicate<Vector2i> cannotMoveHorizontallyOver = vector2i -> checkIfNotCrossedWithChessHorizontally(vector2i, gameBoard, currentLocation);
         Predicate<Vector2i> cannotMoveVerticallyOver = vector2i -> checkIfNotCrossedWithChessVertically(vector2i, gameBoard, currentLocation);
 
-
         switch (clazz.getName()) {
 
             case "com.ourshipsgame.chess_pieces.Bishop" -> {
@@ -315,12 +315,14 @@ public class SimulationChess {
                 //TODO fix predicateUnderAttack
                 possibleMovesVectors = (ArrayList<Vector2i>) possibleMovesVectors.stream()
                         .filter(boardOffsetPredicate)
-                        .filter(ableToMovePredicate)
+                        .filter(movePredicate)
+                        .filter(predicateUnderAttack)
                         .collect(Collectors.toList());
 
                 possibleAttackVectors = (ArrayList<Vector2i>) possibleAttackVectors.stream()
                         .filter(boardOffsetPredicate)
-                        .filter(ableToAttackPredicate)
+                        .filter(attackPredicate)
+                        .filter(predicateUnderAttack)
                         .collect(Collectors.toList());
             }
 

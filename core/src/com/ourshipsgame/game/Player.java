@@ -14,6 +14,7 @@ public class Player {
     private String playerName;
     private final PlayerColor color;
     private Chess[] myCheeses;
+    private boolean madeMoveSinceKingIsChecked = false;
 
     public Player(PlayerColor color, Chess[] myCheeses) {
         this.color = color;
@@ -30,6 +31,14 @@ public class Player {
 
     public Chess[] getMyCheeses() {
         return myCheeses;
+    }
+
+    public boolean isMadeMoveSinceKingIsChecked() {
+        return madeMoveSinceKingIsChecked;
+    }
+
+    public void setMadeMoveSinceKingIsChecked(boolean madeMoveSinceKingIsChecked) {
+        this.madeMoveSinceKingIsChecked = madeMoveSinceKingIsChecked;
     }
 
     public void updateTime(float deltaTime) {
